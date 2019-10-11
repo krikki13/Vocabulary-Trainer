@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" >
+    </androidx.appcompat.widget.Toolbar>
+
+    <LinearLayout
+        android:id="@+id/addButtonLayout"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:background="@color/colorPrimaryDark"
+        android:layout_alignParentBottom="true"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@color/adder_button_bg_color"
+            android:textColor="@color/adder_button_text_color"
+            android:text="Save and Return"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@color/adder_button_bg_color"
+            android:textColor="@color/adder_button_text_color"
+            android:text="Save and Add Another"/>
+
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/addButtonLayout"
+        android:layout_below="@id/toolbar"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="15sp"
+            android:layout_marginEnd="15sp"
+            android:layout_marginBottom="15dp">
+                <TextView
+                    android:id="@+id/word"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="pottery"
+                    android:textColor="@color/adder_primary_text_color"
+                    android:textSize="@dimen/adder_primary_text_size" />
+
+                <TextView
+                    android:id="@+id/wordDesc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
+                    android:text="english"
+                    android:textColor="@color/adder_secondary_text_color"
+                    android:textSize="@dimen/adder_secondary_text_size" />
+            <TextView
+                android:id="@+id/translatedWord"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="lončarstvo"
+                android:textColor="@color/adder_primary_text_color"
+                android:textSize="@dimen/adder_primary_text_size" />
+
+            <TextView
+                android:id="@+id/translatedWordDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
+                android:text="slovene"
+                android:textColor="@color/adder_secondary_text_color"
+                android:textSize="@dimen/adder_secondary_text_size" />
+
+            <TextView
+                android:id="@+id/describedWord"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="articles made of fired clay"
+                android:textColor="@color/adder_primary_text_color"
+                android:textSize="@dimen/adder_primary_text_size" />
+
+            <TextView
+                android:id="@+id/describedWordDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
+                android:text="description in english"
+                android:textColor="@color/adder_secondary_text_color"
+                android:textSize="@dimen/adder_secondary_text_size" />
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:id="@+id/headerOptionalNotes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Optional Notes or Demands"
+                android:textColor="@color/adder_section_header_color"
+                android:textSize="@dimen/adder_section_header_text_size" />
+
+            <TextView
+                android:id="@+id/wordNote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="on 'p'"
+                android:textColor="@color/adder_primary_text_color"
+                android:textSize="@dimen/adder_primary_text_size" />
+
+            <TextView
+                android:id="@+id/wordNoteDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
+                android:text="Note or demand for player when guessing word in english"
+                android:textColor="@color/adder_secondary_text_color"
+                android:textSize="@dimen/adder_secondary_text_size" />
+
+            <TextView
+                android:id="@+id/translatedWordNote"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="ne glinarjenje recimo"
+                android:textColor="@color/adder_primary_text_color"
+                android:textSize="@dimen/adder_primary_text_size" />
+
+            <TextView
+                android:id="@+id/translatedWordNoteDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
+                android:text="Note or demand for player when guessing word in slovene"
+                android:textColor="@color/adder_secondary_text_color"
+                android:textSize="@dimen/adder_secondary_text_size" />
+
+            <View
+                android:id="@+id/divider2"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:id="@+id/headerOtherData"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Other information"
+                android:textColor="@color/adder_section_header_color"
+                android:textSize="@dimen/adder_section_header_text_size" />
+
+            <TextView
+                android:id="@+id/categories"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="trades,nouns"
+                android:textColor="@color/adder_primary_text_color"
+                android:textSize="@dimen/adder_primary_text_size" />
+
+            <TextView
+                android:id="@+id/categoriesDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
+                android:text="Categories in which this words belongs (useful for grouping words)"
+                android:textColor="@color/adder_secondary_text_color"
+                android:textSize="@dimen/adder_secondary_text_size" />
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>
