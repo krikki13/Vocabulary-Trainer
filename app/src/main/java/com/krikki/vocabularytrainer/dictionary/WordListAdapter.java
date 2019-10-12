@@ -21,14 +21,17 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View listItem= layoutInflater.inflate(R.layout.word_item, parent, false);
+        View listItem = layoutInflater.inflate(R.layout.word_item, parent, false);
         ViewHolder viewHolder = new ViewHolder(listItem);
         return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.textView.setText(words[position].getWords());
+        Word theWord = words[position];
+        holder.wordText.setText(theWord.getWords());
+        holder.describedWord.setText(theWord.getTranslatedWords());
+        holder.translatedWord.setText(theWord.getDescription());
     }
 
 
@@ -38,12 +41,12 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView textView;
-        public RelativeLayout relativeLayout;
+        public TextView wordText, describedWord, translatedWord;
         public ViewHolder(View itemView) {
             super(itemView);
-            this.textView = (TextView) itemView.findViewById(R.id.textView);
-            relativeLayout = (RelativeLayout)itemView.findViewById(R.id.relativeLayout);
+            wordText = itemView.findViewById(R.id.wordText);
+            describedWord = itemView.findViewById(R.id.describedWord);
+            translatedWord = itemView.findViewById(R.id.translatedWord);
         }
     }
 }

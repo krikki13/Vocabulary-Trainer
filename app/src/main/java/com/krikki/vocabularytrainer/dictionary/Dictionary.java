@@ -11,6 +11,10 @@ import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
 import com.krikki.vocabularytrainer.wordadder.WordAdder;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
@@ -36,28 +40,13 @@ public class Dictionary extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_dictionary);
-        ArrayList<Word> words = new ArrayList<>();
-        try {
-            words.add(new Word("Apple"));
-            words.add(new Word("Orange"));
-            words.add(new Word("Pear"));
-            words.add(new Word("Banana"));
-            words.add(new Word("Blueberry"));
-            words.add(new Word("Pineapple"));
-            words.add(new Word("Strawberry"));
-            words.add(new Word("Currant"));
-            words.add(new Word("Watermelon"));
-            words.add(new Word("Grape"));
-        }catch (Word.UnsuccessfulWordCreationException e){
-
-        }
+        ArrayList<Word> words = readWordsFromStorage();
 
         recyclerView = findViewById(R.id.recyclerView);
         WordListAdapter adapter = new WordListAdapter(words.toArray(new Word[0]));
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
-
 
 
         toolbar = findViewById(R.id.toolbar);
@@ -122,6 +111,18 @@ public class Dictionary extends AppCompatActivity {
         return true;
     }
 
+
+    private ArrayList<Word> readWordsFromStorage(){
+        ArrayList<Word> words;
+        try(FileInputStream fis = openFileInput(Word.WORDS_FILE)){
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            words = (ArrayList<Word>) ois.readObject();
+            ois.close();
+        } catch (Exception ex) {
+            words = new ArrayList<>();
+        }
+        return words;
+    }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {

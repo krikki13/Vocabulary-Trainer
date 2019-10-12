@@ -27,7 +27,7 @@
             android:layout_height="match_parent"
             android:scrollbars="vertical"
             android:id="@+id/recyclerView"
-            android:background="#93CBD3"
+            android:background="#FFFFFF"
             tools:context="com.krikki.vocabularytrainer.dictionary.Dictionary">
 
         </androidx.recyclerview.widget.RecyclerView>
