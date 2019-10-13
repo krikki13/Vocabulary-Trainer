@@ -1,12 +1,15 @@
 package com.krikki.vocabularytrainer.wordadder;
 
 import android.content.Context;
-import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -22,20 +25,23 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class WordAdder extends AppCompatActivity {
     private Toolbar toolbar;
     private final Context context = this;
 
-    private String word, translatedWord, describedWord, note, translatedWordNote, categories;
+    private String word, translatedWord, describedWord, note, translatedWordNote;
+    private List<SelectableData> categories;
     private LinearLayout wordLayout, translatedWordLayout, describedWordLayout, wordNoteLayout, translatedWordNoteLayout, categoriesLayout;
     private TextView wordText, translatedWordText, describedWordText, wordNoteText, translatedWordNoteText, categoriesText;
     private TextView buttonSaveAndReturn, buttonSaveAndAnother;
@@ -49,6 +55,7 @@ public class WordAdder extends AppCompatActivity {
         word = "pottery";
         translatedWord = "lončarstvo";
         describedWord = "articles made of fired clay";
+        categories = Arrays.asList(new SelectableData("A",true), new SelectableData("B", true));
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -88,7 +95,7 @@ public class WordAdder extends AppCompatActivity {
         });
 
 
-        wordLayout.setOnClickListener((view) -> createDialog("English word", word, (newWord) -> {
+        wordLayout.setOnClickListener((view) -> createListDialog("English word", word, (newWord) -> {
             if(!Word.verifyWord(newWord)){
                 Toast.makeText(context, "You have a word with zero length", Toast.LENGTH_LONG).show();
                 return false;
@@ -98,7 +105,7 @@ public class WordAdder extends AppCompatActivity {
                 return true;
             }
         }));
-        translatedWordLayout.setOnClickListener((view) -> createDialog("Slovene word", translatedWord, (newWord) -> {
+        translatedWordLayout.setOnClickListener((view) -> createListDialog("Slovene word", translatedWord, (newWord) -> {
             if(!Word.verifyWord(newWord)){
                 Toast.makeText(context, "You have a word with zero length", Toast.LENGTH_LONG).show();
                 return false;
@@ -108,15 +115,17 @@ public class WordAdder extends AppCompatActivity {
                 return true;
             }
         }));
-        describedWordLayout.setOnClickListener((view) -> createDialog("Described word", describedWord, null));
-        wordNoteLayout.setOnClickListener((view) -> createDialog("Note or demand for english word", note, null));
-        translatedWordNoteLayout.setOnClickListener((view) -> createDialog("Note or demand for slovene word", translatedWordNote, null));
-        categoriesLayout.setOnClickListener((view) -> createDialog("Categories", categories, null));
+        describedWordLayout.setOnClickListener((view) -> createListDialog("Described word", describedWord, null));
+        wordNoteLayout.setOnClickListener((view) -> createListDialog("Note or demand for english word", note, null));
+        translatedWordNoteLayout.setOnClickListener((view) -> createListDialog("Note or demand for slovene word", translatedWordNote, null));
+        categoriesLayout.setOnClickListener((view) -> {
+            createListDialog();
+        });
     }
 
-    private void createDialog(String title, String defaultText, Predicate<String> saveWord){
+    private void createListDialog(String title, String defaultText, Predicate<String> saveWord){
         LayoutInflater layoutInflaterAndroid = LayoutInflater.from(context);
-        View mView = layoutInflaterAndroid.inflate(R.layout.input_dialog, null);
+        View mView = layoutInflaterAndroid.inflate(R.layout.dialog_input, null);
         AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(context);
         alertDialogBuilderUserInput.setView(mView);
 
@@ -143,6 +152,46 @@ public class WordAdder extends AppCompatActivity {
                     }
                 }
             });
+        });
+        alertDialog.show();
+    }
+
+    private void createListDialog(){
+        LayoutInflater layoutInflaterAndroid = LayoutInflater.from(context);
+        View mView = layoutInflaterAndroid.inflate(R.layout.dialog_selectable_list, null);
+        AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(context);
+        alertDialogBuilderUserInput.setView(mView);
+
+        final EditText editTextWithAdd = mView.findViewById(R.id.editTextWithAdd);
+        final RecyclerView recyclerView = mView.findViewById(R.id.recyclerCategories);
+        final CategoriesListAdapter adapter = new CategoriesListAdapter(categories);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
+        alertDialogBuilderUserInput
+                .setCancelable(false)
+                .setPositiveButton("Done", null)
+                .setNegativeButton("Cancel",
+                        (dialogBox, id) -> dialogBox.cancel());
+
+        AlertDialog alertDialog = alertDialogBuilderUserInput.create();
+
+        alertDialog.setOnShowListener(dialogInterface -> {
+            editTextWithAdd.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+
+                }
+            });
+            editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(
+                    ContextCompat.getDrawable(getApplicationContext(),android.R.drawable.ic_input_add), null,null,null);
         });
         alertDialog.show();
     }
