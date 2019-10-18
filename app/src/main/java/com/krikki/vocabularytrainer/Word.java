@@ -1,14 +1,14 @@
 package com.krikki.vocabularytrainer;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Created by Kristjan on 15/09/2019.
  */
 
 public class Word implements Serializable {
-    public static final String FORBIDDEN_SIGNS = "\"'()/<>:?";
+    public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"'()/<>:?,;";
     public static final String WORDS_FILE = "words_file";
 
     private String mainLanguage, supportingLanguage;
@@ -24,12 +24,12 @@ public class Word implements Serializable {
     private String translatedDemands;
 
     private int[] successNumbers;
-    private LocalDate lastDate;
+    private LocalDateTime lastDate;
 
     private String[] categories;
 
     public Word(String word) throws UnsuccessfulWordCreationException {
-        if(!verifyWord(word)){
+        if(!verifyWord(word) || word.length() == 0){
             throw new UnsuccessfulWordCreationException("Word does not contain any primary words");
         }else if(word.indexOf(";") > 0){
             synonyms = word.substring(word.indexOf(";")).split("[,;]+");
@@ -52,7 +52,7 @@ public class Word implements Serializable {
 
 
     public void setTranslatedWord(String word) throws UnsuccessfulWordCreationException {
-        if(!verifyWord(word)){
+        if(!verifyWord(word) || word.length() == 0){
             throw new UnsuccessfulWordCreationException("Translated word does not contain any primary words");
         }else if(word.indexOf(";") > 0){
             translatedSynonyms = word.substring(word.indexOf(";")).split("[,;]+");
@@ -78,9 +78,16 @@ public class Word implements Serializable {
         }
         this.categories = categories.split(",+");
     }
+    public void setCategories(String[] categories) {
+        this.categories = categories;
+    }
+
+    public String[] getCategories() {
+        return categories;
+    }
 
     public static boolean verifyWord(String word){
-        return word.length() != 0 && !word.startsWith(",") && !word.startsWith(";") && !word.endsWith(",") && !word.endsWith(";") && !word.matches(".*[,;]{2,}.*");
+        return !word.startsWith(",") && !word.startsWith(";") && !word.endsWith(",") && !word.endsWith(";") && !word.matches(".*[,;]{2,}.*");
     }
 
     public class UnsuccessfulWordCreationException extends Exception{

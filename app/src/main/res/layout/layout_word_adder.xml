@@ -85,8 +85,8 @@
                     android:id="@+id/word"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="pottery"
                     android:textColor="@color/adder_primary_text_color"
+                    android:text="@string/entry_missing"
                     android:textSize="@dimen/adder_primary_text_size" />
                 <TextView
                     android:id="@+id/wordDesc"
@@ -111,8 +111,8 @@
                     android:id="@+id/translatedWord"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="lončarstvo"
                     android:textColor="@color/adder_primary_text_color"
+                    android:text="@string/entry_missing"
                     android:textSize="@dimen/adder_primary_text_size" />
                 <TextView
                     android:id="@+id/translatedWordDesc"
@@ -137,8 +137,8 @@
                     android:id="@+id/describedWord"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="articles made of fired clay"
                     android:textColor="@color/adder_primary_text_color"
+                    android:text="@string/entry_missing"
                     android:textSize="@dimen/adder_primary_text_size" />
                 <TextView
                     android:id="@+id/describedWordDesc"
@@ -180,8 +180,8 @@
                     android:id="@+id/wordNote"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="on 'p'"
                     android:textColor="@color/adder_primary_text_color"
+                    android:text="@string/entry_missing"
                     android:textSize="@dimen/adder_primary_text_size" />
                 <TextView
                     android:id="@+id/wordNoteDesc"
@@ -206,8 +206,8 @@
                     android:id="@+id/translatedWordNote"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ne glinarjenje recimo"
                     android:textColor="@color/adder_primary_text_color"
+                    android:text="@string/entry_missing"
                     android:textSize="@dimen/adder_primary_text_size" />
                 <TextView
                     android:id="@+id/translatedWordNoteDesc"
@@ -249,7 +249,7 @@
                     android:id="@+id/categories"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="trades,nouns"
+                    android:text="@string/entry_missing"
                     android:textColor="@color/adder_primary_text_color"
                     android:textSize="@dimen/adder_primary_text_size" />
                 <TextView

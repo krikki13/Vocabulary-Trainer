@@ -1,16 +1,12 @@
 package com.krikki.vocabularytrainer.wordadder;
 
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckedTextView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.krikki.vocabularytrainer.R;
-import com.krikki.vocabularytrainer.Word;
 
 import java.util.List;
 
@@ -35,6 +31,7 @@ public class CategoriesListAdapter extends RecyclerView.Adapter<CategoriesListAd
         SelectableData category = categories.get(position);
         holder.categoryText.setText(category.getText());
         holder.categoryText.setChecked(categories.get(position).isSelected());
+        holder.categoryText.setCheckMarkDrawable(category.isSelected() ? android.R.drawable.checkbox_on_background : android.R.drawable.checkbox_off_background);
 
         holder.categoryText.setTag(position);
         holder.categoryText.setOnClickListener(v -> {

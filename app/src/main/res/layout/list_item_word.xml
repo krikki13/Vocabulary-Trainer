@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        android:textColor="#222233"/>
+        android:textColor="#3E3E47"/>
 
     <TextView
         android:id="@+id/describedWord"
@@ -28,6 +28,6 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:textSize="16sp"
-        android:textColor="#222233"/>
+        android:textColor="#3E3E47"/>
 
 </LinearLayout>

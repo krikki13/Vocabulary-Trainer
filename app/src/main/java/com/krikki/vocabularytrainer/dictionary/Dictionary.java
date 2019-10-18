@@ -12,16 +12,16 @@ import com.krikki.vocabularytrainer.Word;
 import com.krikki.vocabularytrainer.wordadder.WordAdder;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public class Dictionary extends AppCompatActivity {
     RecyclerView recyclerView;
+    private ArrayList<Word> words;
     private DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
     private NavigationView nv;
@@ -40,12 +41,13 @@ public class Dictionary extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_dictionary);
-        ArrayList<Word> words = readWordsFromStorage();
+        words = readWordsFromStorage();
 
         recyclerView = findViewById(R.id.recyclerView);
         WordListAdapter adapter = new WordListAdapter(words.toArray(new Word[0]));
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setAdapter(adapter);
 
 
@@ -99,6 +101,8 @@ public class Dictionary extends AppCompatActivity {
             case R.id.addWords: // Add words
                 Toast.makeText(this, "Add words", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(this, WordAdder.class);
+                String[] set = words.stream().map(Word::getCategories).flatMap(Arrays::stream).toArray(String[]::new);
+                intent.putExtra("categories", set);
                 startActivity(intent);
                 break;
             case R.id.deleteWords:
