@@ -18,14 +18,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.krikki.vocabularytrainer.DataStorageManager;
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import org.json.JSONException;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -51,6 +51,8 @@ public class WordAdder extends AppCompatActivity {
     private TextView buttonSaveAndReturn, buttonSaveAndAnother;
 
     private boolean categoryCanBeAdded = false;
+    private Drawable addIcon;
+    private ColorMatrixColorFilter blackAndWhiteColorFilter;
     private final float[] colorMatrix = {
             0.33f, 0.33f, 0.33f, 0, 0, //red
             0.33f, 0.33f, 0.33f, 0, 0, //green
@@ -93,6 +95,9 @@ public class WordAdder extends AppCompatActivity {
 
         buttonSaveAndReturn = findViewById(R.id.buttonSaveAndReturn);
         buttonSaveAndAnother = findViewById(R.id.buttonSaveAndAnother);
+
+        addIcon = ContextCompat.getDrawable(getApplicationContext(),android.R.drawable.ic_input_add);
+        blackAndWhiteColorFilter = new ColorMatrixColorFilter(colorMatrix);
 
         buttonSaveAndAnother.setOnClickListener(view -> {
             if(!verifyWordData()) return;
@@ -224,27 +229,28 @@ public class WordAdder extends AppCompatActivity {
 
                 @Override
                 public void afterTextChanged(Editable editable) {
-                    Drawable drawable = ContextCompat.getDrawable(getApplicationContext(),android.R.drawable.ic_input_add);
-                    if(editable.toString().matches("\\s*") || allCategories.stream().map(SelectableData::getText).anyMatch(cat -> cat.equalsIgnoreCase(editable.toString().trim()))){
-                        drawable.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
+                    if(editable.toString().matches("\\s*") ||
+                            allCategories.stream().map(SelectableData::getText).anyMatch(cat -> cat.equalsIgnoreCase(editable.toString().trim()))){
+                        addIcon.setColorFilter(blackAndWhiteColorFilter);
                         categoryCanBeAdded = false;
                     }else{
-                        drawable.clearColorFilter();
+                        addIcon.clearColorFilter();
                         categoryCanBeAdded = true;
                     }
-                    editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(drawable,null,null,null);
+                    editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(addIcon,null,null,null);
                 }
             });
-            Drawable drawable = ContextCompat.getDrawable(getApplicationContext(),android.R.drawable.ic_input_add);
-            drawable.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
-            editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(drawable,null,null,null);
+            addIcon.setColorFilter(blackAndWhiteColorFilter);
+            editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(addIcon,null,null,null);
 
 
             editTextWithAdd.setOnTouchListener((v, event) -> {
                 if(event.getAction() == MotionEvent.ACTION_UP) {
                     if(categoryCanBeAdded && event.getX() <= editTextWithAdd.getTotalPaddingLeft()) {
-                        Toast.makeText(context, "Clicked", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Clicked", Toast.LENGTH_LONG).show();
                         allCategories.add(new SelectableData(editTextWithAdd.getText().toString(), true));
+                        addIcon.setColorFilter(blackAndWhiteColorFilter);
+                        editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(addIcon,null,null,null);
                         adapter.notifyItemInserted(allCategories.size() - 1);
                         return true;
                     }
@@ -253,7 +259,7 @@ public class WordAdder extends AppCompatActivity {
             });
         });
         alertDialog.show();
-        Toast.makeText(context, "Filtering will be added in future release", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Filtering will be added in future release", Toast.LENGTH_LONG).show();
     }
 
     private void saveWordToStorage() throws Word.UnsuccessfulWordCreationException {
@@ -264,27 +270,23 @@ public class WordAdder extends AppCompatActivity {
         wordObject.setTranslatedDemands(translatedWordNote);
         wordObject.setCategories(allCategories.stream().filter(SelectableData::isSelected).map(SelectableData::getText).toArray(String[]::new));
 
-
+        DataStorageManager storageManager = new DataStorageManager(context);
         ArrayList<Word> words;
 
-        final String[] strings = fileList();
         try {
-            FileInputStream fis = openFileInput(Word.WORDS_FILE);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            words = (ArrayList<Word>) ois.readObject();
-            ois.close();
-        } catch (IOException|ClassNotFoundException ex) {
-          words = new ArrayList<>();
+            String wordsRawText = storageManager.readFromStorage(DataStorageManager.WORDS_FILE);
+            words = storageManager.convertToListOfWords(wordsRawText);
+        }catch (FileNotFoundException e1){
+            words = new ArrayList<>();
+        }catch (IOException | JSONException e){
+            Toast.makeText(context, "Exception thrown when reading: "+e.getMessage(), Toast.LENGTH_LONG).show();
+            words = new ArrayList<>();
         }
 
         words.add(wordObject);
         try {
-            FileOutputStream fos = openFileOutput(Word.WORDS_FILE, Context.MODE_PRIVATE);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(words);
-            oos.close();
-
-        }catch(IOException e){
+            storageManager.writeToStorage(DataStorageManager.WORDS_FILE, storageManager.convertToJson(words));
+        }catch(IOException | JSONException e){
             e.printStackTrace();
         }
     }

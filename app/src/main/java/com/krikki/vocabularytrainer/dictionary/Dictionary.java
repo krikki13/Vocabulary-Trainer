@@ -1,5 +1,6 @@
 package com.krikki.vocabularytrainer.dictionary;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -7,12 +8,16 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
+import com.krikki.vocabularytrainer.DataStorageManager;
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
 import com.krikki.vocabularytrainer.wordadder.WordAdder;
 
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
+import org.json.JSONException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -36,6 +41,7 @@ public class Dictionary extends AppCompatActivity {
     private ActionBarDrawerToggle toggle;
     private NavigationView nv;
     private Toolbar toolbar;
+    private Context context = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,11 +76,11 @@ public class Dictionary extends AppCompatActivity {
                 switch(id)
                 {
                     case R.id.account:
-                        Toast.makeText(Dictionary.this, "My Account",Toast.LENGTH_SHORT).show();break;
+                        Toast.makeText(Dictionary.this, "My Account",Toast.LENGTH_LONG).show();break;
                     case R.id.settings:
-                        Toast.makeText(Dictionary.this, "Settings",Toast.LENGTH_SHORT).show();break;
+                        Toast.makeText(Dictionary.this, "Settings",Toast.LENGTH_LONG).show();break;
                     case R.id.mycart:
-                        Toast.makeText(Dictionary.this, "My Cart",Toast.LENGTH_SHORT).show();break;
+                        Toast.makeText(Dictionary.this, "My Cart",Toast.LENGTH_LONG).show();break;
                     default:
                         return true;
                 }
@@ -97,32 +103,70 @@ public class Dictionary extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        DataStorageManager storageManager = new DataStorageManager(context);
         switch (item.getItemId()) {
             case R.id.addWords: // Add words
-                Toast.makeText(this, "Add words", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Add words", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(this, WordAdder.class);
-                String[] set = words.stream().map(Word::getCategories).flatMap(Arrays::stream).toArray(String[]::new);
+                String[] set = words.stream().filter(word -> word.getCategories() != null).map(Word::getCategories).flatMap(Arrays::stream).distinct().toArray(String[]::new);
                 intent.putExtra("categories", set);
                 startActivity(intent);
                 break;
             case R.id.deleteWords:
-                Toast.makeText(this, "Delete words", Toast.LENGTH_SHORT).show(); break;
+                try {
+                    storageManager.writeToStorage(DataStorageManager.WORDS_FILE, "");
+                    Toast.makeText(this, "Deleted words (empty file)", Toast.LENGTH_LONG).show(); break;
+                }catch(IOException e){
+                    e.printStackTrace();
+                    Toast.makeText(this, "Failed to delete words", Toast.LENGTH_LONG).show(); break;
+                }
             case R.id.addDict:
-                Toast.makeText(this, "Add dictionary file", Toast.LENGTH_SHORT).show(); break;
+                try {
+                    Word word = new Word("constellation");
+                    word.setDescription("A bunch of stars together");
+                    word.setTranslatedWord("ozvezdje");
+                    word.setCategories("astronomy,science,noun");
+                    Word word2 = new Word("prodigy");
+                    word2.setDescription("someone very smart");
+                    word2.setDemands("not genius");
+                    word2.setTranslatedWord("genij");
+                    word2.setCategories("noun");
+                    Word word3 = new Word("shiver,shudder,tremble;quiver");
+                    word3.setDescription("Shake slightly and uncontrollably as a result of being cold, frightened, or excited");
+                    words.add(word);
+                    words.add(word2);
+                    words.add(word3);
+                    try {
+                        storageManager.writeToStorage(DataStorageManager.WORDS_FILE, storageManager.convertToJson(words));
+                        Toast.makeText(this, "Added 3 sample words", Toast.LENGTH_LONG).show(); break;
+                    }catch(IOException | JSONException e){
+                        e.printStackTrace();
+                        Toast.makeText(this, "Failed to add sample words", Toast.LENGTH_LONG).show(); break;
+                    }
+                } catch (Word.UnsuccessfulWordCreationException e) {
+                    e.printStackTrace();
+                }
+                break;
             case R.id.customize:
-                Toast.makeText(this, "Customize", Toast.LENGTH_SHORT).show(); break;
+                File dir = getFilesDir();
+                File file = new File(dir, DataStorageManager.WORDS_FILE);
+                boolean deleted = file.delete();
+                Toast.makeText(this, "Deleted words file", Toast.LENGTH_LONG).show(); break;
         }
         return true;
     }
 
 
     private ArrayList<Word> readWordsFromStorage(){
+        DataStorageManager storageManager = new DataStorageManager(this);
         ArrayList<Word> words;
-        try(FileInputStream fis = openFileInput(Word.WORDS_FILE)){
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            words = (ArrayList<Word>) ois.readObject();
-            ois.close();
-        } catch (Exception ex) {
+        try {
+            String wordsRawText = storageManager.readFromStorage(DataStorageManager.WORDS_FILE);
+            words = storageManager.convertToListOfWords(wordsRawText);
+        }catch (FileNotFoundException e1){
+            words = new ArrayList<>();
+        }catch (IOException | JSONException e){
+            Toast.makeText(this, "Exception thrown when reading: "+e.getMessage(), Toast.LENGTH_LONG).show();
             words = new ArrayList<>();
         }
         return words;
