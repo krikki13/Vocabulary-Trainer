@@ -13,6 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
+        android:text="shiver,shudder,tremble,quiver"
         android:textColor="#222233"/>
 
     <TextView
@@ -20,12 +21,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
+        android:text="trepetanje, tresenje"
         android:textColor="#3E3E47"/>
 
     <TextView
         android:id="@+id/describedWord"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="shaking uncontrollably due to cold or fear"
         android:gravity="center_vertical"
         android:textSize="16sp"
         android:textColor="#3E3E47"/>

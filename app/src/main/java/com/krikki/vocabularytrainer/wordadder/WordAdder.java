@@ -2,14 +2,8 @@ package com.krikki.vocabularytrainer.wordadder;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.InputFilter;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -35,30 +29,17 @@ import java.util.stream.Collectors;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 public class WordAdder extends AppCompatActivity {
     private Toolbar toolbar;
     private final Context context = this;
 
-    private String word, translatedWord, describedWord, note, translatedWordNote;
+    private String word, translatedWord, describedWord, note, translatedWordNote, categories;
     private List<SelectableData> allCategories;
-    private LinearLayout wordLayout, translatedWordLayout, describedWordLayout, wordNoteLayout, translatedWordNoteLayout, categoriesLayout;
-    private TextView wordText, translatedWordText, describedWordText, wordNoteText, translatedWordNoteText, categoriesText;
+    private EditingCell wordCell, translatedWordCell, describedWordCell, wordNoteCell, translatedWordNoteCell, categoriesCell;
     private TextView buttonSaveAndReturn, buttonSaveAndAnother;
 
-    private boolean categoryCanBeAdded = false;
-    private Drawable addIcon;
-    private ColorMatrixColorFilter blackAndWhiteColorFilter;
-    private final float[] colorMatrix = {
-            0.33f, 0.33f, 0.33f, 0, 0, //red
-            0.33f, 0.33f, 0.33f, 0, 0, //green
-            0.33f, 0.33f, 0.33f, 0, 0, //blue
-            0, 0, 0, 1, 0    //alpha
-    };
+    private int indexOfEditedWord; // -1 if word is being added
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,25 +60,15 @@ public class WordAdder extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        wordLayout = findViewById(R.id.wordLayout);
-        translatedWordLayout = findViewById(R.id.translatedWordLayout);
-        describedWordLayout = findViewById(R.id.describedWordLayout);
-        wordNoteLayout = findViewById(R.id.wordNoteLayout);
-        translatedWordNoteLayout = findViewById(R.id.translatedWordNoteLayout);
-        categoriesLayout = findViewById(R.id.categoriesLayout);
-
-        wordText = findViewById(R.id.word);
-        translatedWordText = findViewById(R.id.translatedWord);
-        describedWordText = findViewById(R.id.describedWord);
-        wordNoteText = findViewById(R.id.wordNote);
-        translatedWordNoteText = findViewById(R.id.translatedWordNote);
-        categoriesText = findViewById(R.id.categories);
+        wordCell = new EditingCell(R.id.wordLayout, R.id.word);
+        translatedWordCell = new EditingCell(R.id.translatedWordLayout, R.id.translatedWord);
+        describedWordCell = new EditingCell(R.id.describedWordLayout, R.id.describedWord);
+        wordNoteCell = new EditingCell(R.id.wordNoteLayout, R.id.wordNote);
+        translatedWordNoteCell = new EditingCell(R.id.translatedWordNoteLayout, R.id.translatedWordNote);
+        categoriesCell = new EditingCell(R.id.categoriesLayout, R.id.categories);
 
         buttonSaveAndReturn = findViewById(R.id.buttonSaveAndReturn);
         buttonSaveAndAnother = findViewById(R.id.buttonSaveAndAnother);
-
-        addIcon = ContextCompat.getDrawable(getApplicationContext(),android.R.drawable.ic_input_add);
-        blackAndWhiteColorFilter = new ColorMatrixColorFilter(colorMatrix);
 
         buttonSaveAndAnother.setOnClickListener(view -> {
             if(!verifyWordData()) return;
@@ -121,35 +92,35 @@ public class WordAdder extends AppCompatActivity {
         });
 
 
-        wordLayout.setOnClickListener((view) -> createInputDialog("English word", word, (newWord) -> {
+        wordCell.setOnClickListener((view) -> createInputDialog("English word", word, (newWord) -> {
             if(newWord.length() == 0 || !Word.verifyWord(newWord)){
                 Toast.makeText(context, "You have a word with zero length", Toast.LENGTH_LONG).show();
                 return false;
             }
             word = newWord;
-            wordText.setText(word);
+            wordCell.setText(word);
             return true;
         }));
-        translatedWordLayout.setOnClickListener((view) -> createInputDialog("Slovene word", translatedWord, (newWord) -> {
+        translatedWordCell.setOnClickListener((view) -> createInputDialog("Slovene word", translatedWord, (newWord) -> {
             if(!Word.verifyWord(newWord)){
                 Toast.makeText(context, "You have a word with zero length", Toast.LENGTH_LONG).show();
                 return false;
             }
             translatedWord = newWord;
-            translatedWordText.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord);
+            translatedWordCell.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord);
             return true;
         }));
-        describedWordLayout.setOnClickListener((view) -> createInputDialog("Described word", describedWord, newWord -> {
+        describedWordCell.setOnClickListener((view) -> createInputDialog("Described word", describedWord, newWord -> {
             describedWord = newWord;
-            describedWordText.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord); return true;
+            describedWordCell.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord); return true;
         }));
-        wordNoteLayout.setOnClickListener((view) -> createInputDialog("Note or demand for english word", note, newWord -> {
+        wordNoteCell.setOnClickListener((view) -> createInputDialog("Note or demand for english word", note, newWord -> {
             note = newWord;
-            wordNoteText.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord); return true;}));
-        translatedWordNoteLayout.setOnClickListener((view) -> createInputDialog("Note or demand for slovene word", translatedWordNote, newWord -> {
+            wordNoteCell.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord); return true;}));
+        translatedWordNoteCell.setOnClickListener((view) -> createInputDialog("Note or demand for slovene word", translatedWordNote, newWord -> {
             translatedWordNote = newWord;
-            translatedWordNoteText.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord); return true;}));
-        categoriesLayout.setOnClickListener((view) -> createListDialog(categoriesText));
+            translatedWordNoteCell.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord); return true;}));
+        categoriesCell.setOnClickListener((view) -> createListDialog(categoriesCell.textView));
     }
 
     private void createInputDialog(String title, String defaultText, Predicate<String> saveWord){
@@ -186,80 +157,10 @@ public class WordAdder extends AppCompatActivity {
     }
 
     private void createListDialog(TextView buttonTextView){
-        LayoutInflater layoutInflaterAndroid = LayoutInflater.from(context);
-        View mView = layoutInflaterAndroid.inflate(R.layout.dialog_selectable_list, null);
-        AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(context);
-        alertDialogBuilderUserInput.setView(mView);
-
-        final EditText editTextWithAdd = mView.findViewById(R.id.editTextWithAdd);
-        final RecyclerView recyclerView = mView.findViewById(R.id.recyclerCategories);
-        final CategoriesListAdapter adapter = new CategoriesListAdapter(allCategories);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
-        recyclerView.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
-        alertDialogBuilderUserInput
-                .setCancelable(false)
-                .setPositiveButton("Done", (dialogBox,id) -> {
-                    buttonTextView.setText(allCategories.stream().filter(SelectableData::isSelected).map(SelectableData::getText).collect(Collectors.joining( ", " )));
-                })
-                .setNegativeButton("Cancel",
-                        (dialogBox, id) -> dialogBox.cancel());
-
-        AlertDialog alertDialog = alertDialogBuilderUserInput.create();
-
-        alertDialog.setOnShowListener(dialogInterface -> {
-            editTextWithAdd.setFilters(new InputFilter[]{
-                    (charSequence, i, i1, spanned, i2, i3) -> {
-                        String string = spanned.toString();
-                        if(string.matches(".*["+Word.FORBIDDEN_SIGNS_FOR_WORDS +"].*")){
-                            string = string.replace("["+Word.FORBIDDEN_SIGNS_FOR_WORDS +"]+", "");
-                            return string;
-                        }
-                        return null;
-                    }
-            });
-            editTextWithAdd.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                }
-
-                @Override
-                public void afterTextChanged(Editable editable) {
-                    if(editable.toString().matches("\\s*") ||
-                            allCategories.stream().map(SelectableData::getText).anyMatch(cat -> cat.equalsIgnoreCase(editable.toString().trim()))){
-                        addIcon.setColorFilter(blackAndWhiteColorFilter);
-                        categoryCanBeAdded = false;
-                    }else{
-                        addIcon.clearColorFilter();
-                        categoryCanBeAdded = true;
-                    }
-                    editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(addIcon,null,null,null);
-                }
-            });
-            addIcon.setColorFilter(blackAndWhiteColorFilter);
-            editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(addIcon,null,null,null);
-
-
-            editTextWithAdd.setOnTouchListener((v, event) -> {
-                if(event.getAction() == MotionEvent.ACTION_UP) {
-                    if(categoryCanBeAdded && event.getX() <= editTextWithAdd.getTotalPaddingLeft()) {
-                        Toast.makeText(context, "Clicked", Toast.LENGTH_LONG).show();
-                        allCategories.add(new SelectableData(editTextWithAdd.getText().toString(), true));
-                        addIcon.setColorFilter(blackAndWhiteColorFilter);
-                        editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(addIcon,null,null,null);
-                        adapter.notifyItemInserted(allCategories.size() - 1);
-                        return true;
-                    }
-                }
-                return false;
-            });
-        });
-        alertDialog.show();
-        Toast.makeText(context, "Filtering will be added in future release", Toast.LENGTH_LONG).show();
+        new SelectableListDialog(context, allCategories, categories -> {
+            this.categories = categories;
+            buttonTextView.setText(categories);
+        }).show();
     }
 
     private void saveWordToStorage() throws Word.UnsuccessfulWordCreationException {
@@ -299,5 +200,22 @@ public class WordAdder extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+    private class EditingCell{
+        private LinearLayout layout;
+        private TextView textView;
+
+        public EditingCell(int layoutId, int textViewId) {
+            layout = findViewById(layoutId);
+            textView = findViewById(textViewId);
+        }
+
+        private void setOnClickListener(View.OnClickListener listener){
+            layout.setOnClickListener(listener);
+        }
+        private void setText(String text){
+            textView.setText(text);
+        }
     }
 }

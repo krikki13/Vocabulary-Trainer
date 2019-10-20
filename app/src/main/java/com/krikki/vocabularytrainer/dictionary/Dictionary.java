@@ -50,7 +50,7 @@ public class Dictionary extends AppCompatActivity {
         words = readWordsFromStorage();
 
         recyclerView = findViewById(R.id.recyclerView);
-        WordListAdapter adapter = new WordListAdapter(words.toArray(new Word[0]));
+        WordListAdapter adapter = new WordListAdapter(this, words.toArray(new Word[0]));
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -106,10 +106,10 @@ public class Dictionary extends AppCompatActivity {
         DataStorageManager storageManager = new DataStorageManager(context);
         switch (item.getItemId()) {
             case R.id.addWords: // Add words
-                Toast.makeText(this, "Add words", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(this, WordAdder.class);
-                String[] set = words.stream().filter(word -> word.getCategories() != null).map(Word::getCategories).flatMap(Arrays::stream).distinct().toArray(String[]::new);
-                intent.putExtra("categories", set);
+                String[] existingCategories = words.stream().filter(word -> word.getCategories() != null).map(Word::getCategories).flatMap(Arrays::stream).distinct().toArray(String[]::new);
+                intent.putExtra("categories", existingCategories);
+                intent.putExtra("indexOfEditedWord", -1); // -1 means that word is being added
                 startActivity(intent);
                 break;
             case R.id.deleteWords:
