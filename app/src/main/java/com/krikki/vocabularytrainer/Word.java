@@ -12,19 +12,21 @@ import java.time.LocalDateTime;
  */
 
 public class Word {
-    public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"'()/<>:?";
+    public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"'()/<>:;?";
 
     private String mainLanguage, supportingLanguage;
 
     private String[] word;
     private String[] synonyms;
-    private String demands;
+    private String demand;
+    private String note;
 
     private String description;
 
     private String[] translatedWord;
     private String[] translatedSynonyms;
-    private String translatedDemands;
+    private String translatedDemand;
+    private String translatedNote;
 
     private int[] successNumbers;
     private LocalDateTime lastDate;
@@ -92,18 +94,32 @@ public class Word {
         this.description = description;
     }
 
-    public void setDemands(String demands){
-        if(demands == null || demands.length() == 0) {
-            this.demands = null;
+    public void setDemand(String demand){
+        if(demand == null || demand.length() == 0) {
+            this.demand = null;
         }
-        this.demands = demands;
+        this.demand = demand;
     }
 
-    public void setTranslatedDemands(String demands){
+    public void setTranslatedDemand(String demands){
         if(demands == null || demands.length() == 0) {
-            this.translatedDemands = null;
+            this.translatedDemand = null;
         }
-        this.translatedDemands = demands;
+        this.translatedDemand = demands;
+    }
+
+    public void setNote(String note){
+        if(note == null || note.length() == 0) {
+            this.note = null;
+        }
+        this.note = note;
+    }
+
+    public void setTranslatedNote(String note){
+        if(note == null || note.length() == 0) {
+            this.translatedNote = null;
+        }
+        this.translatedNote = note;
     }
 
     public void setCategories(String categories) throws UnsuccessfulWordCreationException {
@@ -155,11 +171,17 @@ public class Word {
         if(this.translatedSynonyms != null){
             obj.put("translatedSynonyms", fromArrayToJsonArray(this.translatedSynonyms));
         }
-        if(this.demands != null){
-            obj.put("demands", this.demands);
+        if(this.demand != null){
+            obj.put("demand", this.demand);
         }
-        if(this.translatedDemands != null){
-            obj.put("translatedDemands", this.translatedDemands);
+        if(this.translatedDemand != null){
+            obj.put("translatedDemand", this.translatedDemand);
+        }
+        if(this.note != null){
+            obj.put("note", this.note);
+        }
+        if(this.translatedNote != null){
+            obj.put("translatedNote", this.translatedNote);
         }
         if(this.categories != null){
             obj.put("categories", fromArrayToJsonArray(this.categories));
@@ -203,11 +225,17 @@ public class Word {
         if(obj.has("translatedSynonyms")){
             word.setTranslatedSynonyms(fromJsonArrayToArray(obj.getJSONArray("translatedSynonyms")));
         }
-        if(obj.has("demands")){
-            word.setDemands(obj.getString("demands"));
+        if(obj.has("demand")){
+            word.setDemand(obj.getString("demand"));
         }
-        if(obj.has("translatedDemands")){
-            word.setTranslatedDemands(obj.getString("translatedDemands"));
+        if(obj.has("translatedDemand")){
+            word.setTranslatedDemand(obj.getString("translatedDemand"));
+        }
+        if(obj.has("note")){
+            word.setNote(obj.getString("note"));
+        }
+        if(obj.has("translatedNote")){
+            word.setTranslatedNote(obj.getString("translatedNote"));
         }
         if(obj.has("categories")){
             word.setCategories(fromJsonArrayToArray(obj.getJSONArray("categories")));

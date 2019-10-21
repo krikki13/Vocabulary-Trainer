@@ -166,7 +166,6 @@
                 android:text="Optional Notes or Demands"
                 android:textColor="@color/adder_section_header_color"
                 android:textSize="@dimen/adder_section_header_text_size" />
-
             <LinearLayout
                 android:id="@+id/wordNoteLayout"
                 android:layout_width="match_parent"

@@ -128,11 +128,12 @@ public class Dictionary extends AppCompatActivity {
                     word.setCategories("astronomy,science,noun");
                     Word word2 = new Word("prodigy");
                     word2.setDescription("someone very smart");
-                    word2.setDemands("not genius");
+                    word2.setDemand("not genius");
                     word2.setTranslatedWord("genij");
                     word2.setCategories("noun");
                     Word word3 = new Word("shiver,shudder,tremble;quiver");
                     word3.setDescription("Shake slightly and uncontrollably as a result of being cold, frightened, or excited");
+                    word3.setTranslatedWord("tresenje,drgetanje");
                     words.add(word);
                     words.add(word2);
                     words.add(word3);

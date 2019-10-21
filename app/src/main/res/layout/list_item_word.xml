@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/relativeLayout"
+    android:id="@+id/itemLayout"
     android:layout_width="match_parent"
-    android:layout_height="?android:attr/listPreferredItemHeightLarge"
+    android:layout_height="wrap_content"
     android:paddingStart="5dp"
     android:paddingEnd="5dp"
     android:orientation="vertical">
@@ -12,25 +12,63 @@
         android:id="@+id/wordText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:drawablePadding="5dp"
+        android:maxLines="1"
+        android:ellipsize="end"
         android:textSize="18sp"
-        android:text="shiver,shudder,tremble,quiver"
         android:textColor="#222233"/>
+
+    <TextView
+        android:id="@+id/demandText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:drawablePadding="5dp"
+        android:text="demand"
+        android:visibility="gone"
+        />
 
     <TextView
         android:id="@+id/translatedWord"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:drawablePadding="5dp"
+        android:maxLines="1"
+        android:ellipsize="end"
         android:textSize="16sp"
-        android:text="trepetanje, tresenje"
         android:textColor="#3E3E47"/>
+
+    <TextView
+        android:id="@+id/translatedDemandText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:drawablePadding="5dp"
+        android:text="demand"
+        android:visibility="gone"
+        />
 
     <TextView
         android:id="@+id/describedWord"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="shaking uncontrollably due to cold or fear"
         android:gravity="center_vertical"
+        android:layout_marginLeft="6dp"
+        android:drawablePadding="5dp"
+        android:maxLines="1"
+        android:ellipsize="end"
         android:textSize="16sp"
         android:textColor="#3E3E47"/>
 
+    <TextView
+        android:id="@+id/categoriesText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:drawablePadding="5dp"
+        android:text="categories"
+        android:visibility="gone"
+        />
 </LinearLayout>

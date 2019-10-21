@@ -92,15 +92,18 @@ public class WordAdder extends AppCompatActivity {
         });
 
 
-        wordCell.setOnClickListener((view) -> createInputDialog("English word", word, (newWord) -> {
-            if(newWord.length() == 0 || !Word.verifyWord(newWord)){
-                Toast.makeText(context, "You have a word with zero length", Toast.LENGTH_LONG).show();
-                return false;
-            }
-            word = newWord;
-            wordCell.setText(word);
-            return true;
-        }));
+        wordCell.setOnClickListener((view) -> {
+            new WordInputDialog(context, "English word") {
+                @Override
+                public boolean onPositiveResponse(String word, String synonyms, String note, String demand) {
+                    if(word.length() == 0 || !Word.verifyWord(word)){
+                        Toast.makeText(context, "You have a word with zero length", Toast.LENGTH_LONG).show();
+                        return false;
+                    }
+                    return false;
+                }
+            }.show();
+        });
         translatedWordCell.setOnClickListener((view) -> createInputDialog("Slovene word", translatedWord, (newWord) -> {
             if(!Word.verifyWord(newWord)){
                 Toast.makeText(context, "You have a word with zero length", Toast.LENGTH_LONG).show();
@@ -167,8 +170,8 @@ public class WordAdder extends AppCompatActivity {
         final Word wordObject = new Word(word);
         wordObject.setDescription(describedWord);
         wordObject.setTranslatedWord(translatedWord);
-        wordObject.setDemands(note);
-        wordObject.setTranslatedDemands(translatedWordNote);
+        wordObject.setDemand(note);
+        wordObject.setTranslatedDemand(translatedWordNote);
         wordObject.setCategories(allCategories.stream().filter(SelectableData::isSelected).map(SelectableData::getText).toArray(String[]::new));
 
         DataStorageManager storageManager = new DataStorageManager(context);
