@@ -21,7 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHolder>{
     private Word[] words;
     private Context context;
-    private Drawable exclamationMarkIcon, translationIcon, descriptionIcon, categoryIcon;
+    private Drawable infoIcon, exclamationMarkIcon, translationIcon, descriptionIcon, categoryIcon;
 
     // RecyclerView recyclerView;
     public WordListAdapter(Context context, Word[] words) {
@@ -33,6 +33,10 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
         exclamationMarkIcon = ContextCompat.getDrawable(context, R.drawable.exclamation_mark);
         if (exclamationMarkIcon != null) {
             exclamationMarkIcon.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
+        }
+        infoIcon = ContextCompat.getDrawable(context, R.drawable.info);
+        if (infoIcon != null) {
+            infoIcon.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
         }
         translationIcon = ContextCompat.getDrawable(context, R.drawable.translation);
         if (translationIcon != null) {
@@ -70,7 +74,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
-        public TextView wordText, describedWord, translatedWord , demandText, translatedDemandText, categoriesText;
+        public TextView wordText, describedWord, translatedWord , demandText, translatedDemandText, categoriesText, noteText, translatedNoteText;
         public LinearLayout layout;
         public boolean isExpanded;
 
@@ -85,6 +89,8 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
             translatedWord = itemView.findViewById(R.id.translatedWord);
             demandText = itemView.findViewById(R.id.demandText);
             translatedDemandText = itemView.findViewById(R.id.translatedDemandText);
+            noteText = itemView.findViewById(R.id.noteText);
+            translatedNoteText = itemView.findViewById(R.id.translatedNoteText);
             categoriesText = itemView.findViewById(R.id.categoriesText);
             isExpanded = false;
 
@@ -109,10 +115,15 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 demandText.setVisibility(View.GONE);
                 translatedDemandText.setVisibility(View.GONE);
                 categoriesText.setVisibility(View.GONE);
-            }else{
+                noteText.setVisibility(View.GONE);
+                translatedNoteText.setVisibility(View.GONE);
+
+                wordText.setText(words[getAdapterPosition()].getWords());
+            }else {
                 isExpanded = true;
                 layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 
+                // remove line limits for textviewa
                 wordText.setMaxLines(Integer.MAX_VALUE);
                 describedWord.setMaxLines(Integer.MAX_VALUE);
                 translatedWord.setMaxLines(Integer.MAX_VALUE);
@@ -120,12 +131,36 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 describedWord.setEllipsize(null);
                 translatedWord.setEllipsize(null);
 
-                demandText.setVisibility(View.VISIBLE);
-                translatedDemandText.setVisibility(View.VISIBLE);
-                categoriesText.setVisibility(View.VISIBLE);
-                demandText.setCompoundDrawables(exclamationMarkIcon, null, null, null);
-                translatedDemandText.setCompoundDrawables(exclamationMarkIcon, null, null, null);
-                categoriesText.setCompoundDrawables(categoryIcon, null, null, null);
+                // set text
+                Word word = words[getAdapterPosition()];
+                if (!word.getSynonymsJoined().isEmpty()) {
+                    wordText.append(" (" + String.join(", ", word.getSynonyms()) + ")");
+                }
+                if (!word.getDemand().isEmpty()) {
+                    demandText.setText(word.getDemand());
+                    demandText.setVisibility(View.VISIBLE);
+                    demandText.setCompoundDrawables(exclamationMarkIcon, null, null, null);
+                }
+                if (!word.getTranslatedDemand().isEmpty()) {
+                    translatedDemandText.setText(word.getTranslatedDemand());
+                    translatedDemandText.setVisibility(View.VISIBLE);
+                    translatedDemandText.setCompoundDrawables(exclamationMarkIcon, null, null, null);
+                }
+                if (!word.getNote().isEmpty()) {
+                    noteText.setText(word.getNote());
+                    noteText.setVisibility(View.VISIBLE);
+                    noteText.setCompoundDrawables(infoIcon, null, null, null);
+                }
+                if (!word.getTranslatedNote().isEmpty()) {
+                    translatedNoteText.setText(word.getTranslatedNote());
+                    translatedNoteText.setVisibility(View.VISIBLE);
+                    translatedNoteText.setCompoundDrawables(infoIcon, null, null, null);
+                }
+                if (!word.getCategoriesJoined().isEmpty()) {
+                    categoriesText.setText(word.getCategoriesJoined());
+                    categoriesText.setVisibility(View.VISIBLE);
+                    categoriesText.setCompoundDrawables(categoryIcon, null, null, null);
+                }
             }
         }
 

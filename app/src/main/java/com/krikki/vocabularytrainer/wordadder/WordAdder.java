@@ -2,6 +2,7 @@ package com.krikki.vocabularytrainer.wordadder;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,15 +30,17 @@ import java.util.stream.Collectors;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 public class WordAdder extends AppCompatActivity {
     private Toolbar toolbar;
     private final Context context = this;
 
-    private String word, translatedWord, describedWord, note, translatedWordNote, categories;
     private List<SelectableData> allCategories;
-    private EditingCell wordCell, translatedWordCell, describedWordCell, wordNoteCell, translatedWordNoteCell, categoriesCell;
+    private EditingCell describedWordCell, categoriesCell;
+    private WordEditingCell wordCell, translatedWordCell;
     private TextView buttonSaveAndReturn, buttonSaveAndAnother;
+    private Drawable infoIcon, exclamationMarkIcon;
 
     private int indexOfEditedWord; // -1 if word is being added
 
@@ -60,12 +63,16 @@ public class WordAdder extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        wordCell = new EditingCell(R.id.wordLayout, R.id.word);
-        translatedWordCell = new EditingCell(R.id.translatedWordLayout, R.id.translatedWord);
-        describedWordCell = new EditingCell(R.id.describedWordLayout, R.id.describedWord);
-        wordNoteCell = new EditingCell(R.id.wordNoteLayout, R.id.wordNote);
-        translatedWordNoteCell = new EditingCell(R.id.translatedWordNoteLayout, R.id.translatedWordNote);
-        categoriesCell = new EditingCell(R.id.categoriesLayout, R.id.categories);
+        infoIcon = ContextCompat.getDrawable(context, R.drawable.info);
+        exclamationMarkIcon = ContextCompat.getDrawable(context, R.drawable.exclamation_mark);
+        int pixelDrawableSize = getResources().getDimensionPixelSize(R.dimen.compound_drawable_size);
+        infoIcon.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize);
+        exclamationMarkIcon.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize);
+
+        wordCell = new WordEditingCell(R.id.wordLayout, R.id.wordText, R.id.synonymText, R.id.noteText, R.id.demandText);
+        translatedWordCell = new WordEditingCell(R.id.translatedWordLayout, R.id.translatedWordText, R.id.translatedSynonymText, R.id.translatedNoteText, R.id.translatedDemandText);
+        describedWordCell = new EditingCell(R.id.descriptionLayout, R.id.descriptionText);
+        categoriesCell = new EditingCell(R.id.categoriesLayout, R.id.categoriesText);
 
         buttonSaveAndReturn = findViewById(R.id.buttonSaveAndReturn);
         buttonSaveAndAnother = findViewById(R.id.buttonSaveAndAnother);
@@ -92,38 +99,33 @@ public class WordAdder extends AppCompatActivity {
         });
 
 
-        wordCell.setOnClickListener((view) -> {
-            new WordInputDialog(context, "English word") {
-                @Override
-                public boolean onPositiveResponse(String word, String synonyms, String note, String demand) {
-                    if(word.length() == 0 || !Word.verifyWord(word)){
-                        Toast.makeText(context, "You have a word with zero length", Toast.LENGTH_LONG).show();
-                        return false;
-                    }
+        wordCell.setOnClickListener((view) -> new WordInputDialog(context, "English word", wordCell.getWord(), wordCell.getSynonym(), wordCell.getNote(), wordCell.getDemand()) {
+            @Override
+            public boolean onPositiveResponse(String word, String synonyms, String note, String demand) {
+                if(word.length() == 0 || !Word.verifyWord(word)){
+                    Toast.makeText(context, "You have a word with zero length", Toast.LENGTH_LONG).show();
                     return false;
                 }
-            }.show();
-        });
-        translatedWordCell.setOnClickListener((view) -> createInputDialog("Slovene word", translatedWord, (newWord) -> {
-            if(!Word.verifyWord(newWord)){
-                Toast.makeText(context, "You have a word with zero length", Toast.LENGTH_LONG).show();
-                return false;
+                wordCell.setAll(word, synonyms, note, demand);
+                return true;
             }
-            translatedWord = newWord;
-            translatedWordCell.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord);
-            return true;
+        }.show());
+        translatedWordCell.setOnClickListener((view) -> new WordInputDialog(context, "Slovene word", translatedWordCell.getWord(), translatedWordCell.getSynonym(), translatedWordCell.getNote(), translatedWordCell.getDemand()) {
+            @Override
+            public boolean onPositiveResponse(String word, String synonyms, String note, String demand) {
+                if(!Word.verifyWord(word)){
+                    Toast.makeText(context, "You have a word with zero length", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+                translatedWordCell.setAll(word, synonyms, note, demand);
+                return true;
+            }
+        }.show());
+        describedWordCell.setOnClickListener((view) -> createInputDialog("Described word", describedWordCell.getText(), newWord -> {
+            describedWordCell.setText(newWord); return true;
         }));
-        describedWordCell.setOnClickListener((view) -> createInputDialog("Described word", describedWord, newWord -> {
-            describedWord = newWord;
-            describedWordCell.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord); return true;
-        }));
-        wordNoteCell.setOnClickListener((view) -> createInputDialog("Note or demand for english word", note, newWord -> {
-            note = newWord;
-            wordNoteCell.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord); return true;}));
-        translatedWordNoteCell.setOnClickListener((view) -> createInputDialog("Note or demand for slovene word", translatedWordNote, newWord -> {
-            translatedWordNote = newWord;
-            translatedWordNoteCell.setText(newWord.isEmpty() ? getResources().getString(R.string.entry_missing) : newWord); return true;}));
         categoriesCell.setOnClickListener((view) -> createListDialog(categoriesCell.textView));
+
     }
 
     private void createInputDialog(String title, String defaultText, Predicate<String> saveWord){
@@ -161,17 +163,20 @@ public class WordAdder extends AppCompatActivity {
 
     private void createListDialog(TextView buttonTextView){
         new SelectableListDialog(context, allCategories, categories -> {
-            this.categories = categories;
             buttonTextView.setText(categories);
         }).show();
     }
 
     private void saveWordToStorage() throws Word.UnsuccessfulWordCreationException {
-        final Word wordObject = new Word(word);
-        wordObject.setDescription(describedWord);
-        wordObject.setTranslatedWord(translatedWord);
-        wordObject.setDemand(note);
-        wordObject.setTranslatedDemand(translatedWordNote);
+        final Word wordObject = new Word(wordCell.getWord());
+        wordObject.setDescription(describedWordCell.getText());
+        wordObject.setTranslatedWord(translatedWordCell.getWord());
+        wordObject.setDemand(wordCell.getDemand());
+        wordObject.setTranslatedDemand(translatedWordCell.getDemand());
+        wordObject.setNote(wordCell.getNote());
+        wordObject.setTranslatedNote(translatedWordCell.getNote());
+        wordObject.setSynonym(wordCell.getSynonym());
+        wordObject.setTranslatedSynonym(translatedWordCell.getSynonym());
         wordObject.setCategories(allCategories.stream().filter(SelectableData::isSelected).map(SelectableData::getText).toArray(String[]::new));
 
         DataStorageManager storageManager = new DataStorageManager(context);
@@ -195,30 +200,128 @@ public class WordAdder extends AppCompatActivity {
         }
     }
     private boolean verifyWordData(){
-        if(word == null || word.isEmpty()){
+        if(wordCell.getWord().isEmpty()){
             Toast.makeText(context, "Main word is not specified!", Toast.LENGTH_LONG).show();
             return false;
-        }else if((translatedWord == null || translatedWord.isEmpty()) && (describedWord == null || describedWord.isEmpty())){
+        }else if(translatedWordCell.getWord().isEmpty() && describedWordCell.getText().isEmpty()){
             Toast.makeText(context, "Either translation or description must be specified!", Toast.LENGTH_LONG).show();
             return false;
         }
         return true;
     }
 
+
+
+    private class WordEditingCell{
+        private LinearLayout layout;
+        private TextView wordText, synonymText, noteText, demandText;
+        private String word, synonym, note, demand;
+
+        public WordEditingCell(int layoutId, int wordTextId, int synonymTextId, int noteTextId, int demandTextId) {
+            layout = findViewById(layoutId);
+            wordText = findViewById(wordTextId);
+            synonymText = findViewById(synonymTextId);
+            noteText = findViewById(noteTextId);
+            demandText = findViewById(demandTextId);
+            word = "";
+            synonym = "";
+            note = "";
+            demand = "";
+
+            noteText.setCompoundDrawables(infoIcon, null, null, null);
+            demandText.setCompoundDrawables(exclamationMarkIcon, null, null, null);
+        }
+        private void setOnClickListener(View.OnClickListener listener){
+            layout.setOnClickListener(listener);
+        }
+
+        public void setAll(String word, String synonym, String note, String demand){
+            setWord(word);
+            setSynonym(synonym);
+            setNote(note);
+            setDemand(demand);
+        }
+
+        public void setWord(String word) {
+            if(word != null && !word.isEmpty()){
+                this.word = word;
+                this.wordText.setText(word);
+            }else{
+                this.word = "";
+                this.wordText.setText(getResources().getString(R.string.entry_missing));
+            }
+        }
+        public void setSynonym(String synonym) {
+            if(synonym != null && !synonym.isEmpty()){
+                this.synonym = synonym;
+                this.synonymText.setVisibility(View.VISIBLE);
+                this.synonymText.setText(String.format("(%s)", synonym));
+            }else{
+                this.synonym = "";
+                this.synonymText.setVisibility(View.GONE);
+            }
+        }
+        public void setNote(String note) {
+            if(note != null && !note.isEmpty()){
+                this.note = note;
+                this.noteText.setVisibility(View.VISIBLE);
+                this.noteText.setText(note);
+            }else{
+                this.note = "";
+                this.noteText.setVisibility(View.GONE);
+            }
+        }
+        public void setDemand(String demand) {
+            if(demand != null && !demand.isEmpty()){
+                this.demand = demand;
+                this.demandText.setVisibility(View.VISIBLE);
+                this.demandText.setText(demand);
+            }else{
+                this.demand = "";
+                this.demandText.setVisibility(View.GONE);
+            }
+        }
+        public String getWord(){
+            return word;
+        }
+        public String getSynonym(){
+            return synonym;
+        }
+        public String getNote(){
+            return note;
+        }
+        public String getDemand(){
+            return demand;
+        }
+    }
+
+
     private class EditingCell{
         private LinearLayout layout;
         private TextView textView;
+        private String text;
 
         public EditingCell(int layoutId, int textViewId) {
             layout = findViewById(layoutId);
             textView = findViewById(textViewId);
+            text = "";
         }
 
         private void setOnClickListener(View.OnClickListener listener){
             layout.setOnClickListener(listener);
         }
         private void setText(String text){
-            textView.setText(text);
+            if(text != null && !text.isEmpty()) {
+                this.text = text;
+                textView.setText(text);
+            }else{
+                this.text = "";
+                textView.setText(getResources().getString(R.string.entry_missing));
+            }
+        }
+
+        private String getText(){
+            return text;
         }
     }
 }

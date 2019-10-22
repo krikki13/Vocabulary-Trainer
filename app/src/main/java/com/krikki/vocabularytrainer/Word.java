@@ -53,28 +53,36 @@ public class Word {
 
     public void setWord(String word) throws UnsuccessfulWordCreationException {
         if(!verifyWord(word) || word.length() == 0){
-            throw new UnsuccessfulWordCreationException("Word does not contain any primary words");
-        }else if(word.indexOf(";") > 0){
-            synonyms = word.substring(word.indexOf(";")).split("[,;]+");
-        }else{
-            synonyms = null;
+            throw new UnsuccessfulWordCreationException("Word contains words of zero length");
         }
         this.word = word.split(",+");
     }
+    public void setSynonym(String synonym) throws UnsuccessfulWordCreationException {
+        if(synonym == null || synonym.length() == 0) {
+            synonyms = null;
+            return;
+        }else if(!verifyWord(synonym)){
+            throw new UnsuccessfulWordCreationException("Synonym contains words of zero length");
+        }
+        this.synonyms = synonym.split(",+");
+    }
     public void setTranslatedWord(String word) throws UnsuccessfulWordCreationException {
         if(word == null || word.length() == 0) { // translated word is allowed to be removed. But when saving it or description will have to exist
-            translatedSynonyms = null;
             translatedWord = null;
             return;
         }else if (!verifyWord(word)) {
-            throw new UnsuccessfulWordCreationException("Translated word does not contain any primary words");
-        }else if(word.indexOf(";") > 0){
-            translatedSynonyms = word.substring(word.indexOf(";")).split("[,;]+");
-        }else{
-            translatedSynonyms = null;
+            throw new UnsuccessfulWordCreationException("Translated word contains words of zero length");
         }
-
         this.translatedWord = word.split(",+");
+    }
+    public void setTranslatedSynonym(String synonym) throws UnsuccessfulWordCreationException {
+        if(synonym == null || synonym.length() == 0) {
+            translatedSynonyms = null;
+            return;
+        }else if (!verifyWord(synonym)) {
+            throw new UnsuccessfulWordCreationException("Translated synonym contains words of zero length");
+        }
+        this.translatedSynonyms = synonym.split(",+");
     }
 
     private void setTranslatedWord(String[] word){
@@ -83,7 +91,7 @@ public class Word {
     private void setSynonyms(String[] synonyms){
         this.synonyms = synonyms;
     }
-    private void setTranslatedSynonyms(String[] translatedSynonyms){
+    private void setTranslatedSynonym(String[] translatedSynonyms){
         this.translatedSynonyms = translatedSynonyms;
     }
 
@@ -132,16 +140,41 @@ public class Word {
         this.categories = categories;
     }
 
+    public String getDemand() {
+        return demand == null ? "" : demand;
+    }
+    public String getTranslatedDemand() {
+        return translatedDemand == null ? "" : translatedDemand;
+    }
+    public String getNote() {
+        return note == null ? "" : note;
+    }
+    public String getTranslatedNote() {
+        return translatedNote == null ? "" : translatedNote;
+    }
+
+    public String[] getSynonyms() {
+        return synonyms;
+    }
+    public String getSynonymsJoined() {
+        if(synonyms == null) return "";
+        return String.join(", ",synonyms);
+    }
+
     public String[] getCategories() {
         return categories;
     }
+    public String getCategoriesJoined() {
+        if(categories == null) return "";
+        return String.join(", ",categories);
+    }
 
     /**
-     * Checks that word is not null, that it does not start or end with comma or semicolon and it does not have two commas or semicolons consecutively.
-     * It does not check word's length, beacuse some words are allowed to be empty.
+     * Checks that word is not null, that it does not start or end with comma and it does not have two commas consecutively.
+     * It does not check word's length, because some words are allowed to be empty.
      */
     public static boolean verifyWord(String word){
-        return word != null && !word.startsWith(",") && !word.startsWith(";") && !word.endsWith(",") && !word.endsWith(";") && !word.matches(".*[,;]{2,}.*");
+        return word != null && !word.startsWith(",") && !word.endsWith(",") && !word.contains(",,");
     }
 
     public class UnsuccessfulWordCreationException extends Exception{
@@ -223,7 +256,7 @@ public class Word {
             word.setSynonyms(fromJsonArrayToArray(obj.getJSONArray("synonyms")));
         }
         if(obj.has("translatedSynonyms")){
-            word.setTranslatedSynonyms(fromJsonArrayToArray(obj.getJSONArray("translatedSynonyms")));
+            word.setTranslatedSynonym(fromJsonArrayToArray(obj.getJSONArray("translatedSynonyms")));
         }
         if(obj.has("demand")){
             word.setDemand(obj.getString("demand"));

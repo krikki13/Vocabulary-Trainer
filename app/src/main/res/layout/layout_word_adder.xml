@@ -72,6 +72,16 @@
             android:layout_marginTop="8dp"
             android:paddingBottom="20dp">
 
+            <TextView
+                android:id="@+id/headerPrimaryLanguage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:text="English"
+                android:textColor="@color/adder_section_header_color"
+                android:textSize="@dimen/adder_section_header_text_size" />
+
             <LinearLayout
                 android:id="@+id/wordLayout"
                 android:layout_width="match_parent"
@@ -82,79 +92,54 @@
                 android:padding="8dp"
                 android:orientation="vertical" >
                 <TextView
-                    android:id="@+id/word"
+                    android:id="@+id/wordText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/adder_primary_text_color"
                     android:text="@string/entry_missing"
                     android:textSize="@dimen/adder_primary_text_size" />
-                <TextView
-                    android:id="@+id/wordDesc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
-                    android:text="english"
-                    android:textColor="@color/adder_secondary_text_color"
-                    android:textSize="@dimen/adder_secondary_text_size" />
-            </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/translatedWordLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackground"
-                android:padding="8dp"
-                android:orientation="vertical" >
                 <TextView
-                    android:id="@+id/translatedWord"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/adder_primary_text_color"
-                    android:text="@string/entry_missing"
-                    android:textSize="@dimen/adder_primary_text_size" />
-                <TextView
-                    android:id="@+id/translatedWordDesc"
+                    android:id="@+id/synonymText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
-                    android:text="slovene"
-                    android:textColor="@color/adder_secondary_text_color"
-                    android:textSize="@dimen/adder_secondary_text_size" />
-            </LinearLayout>
+                    android:gravity="center_vertical"
+                    android:text="synonym"
+                    android:textColor="@color/adder_primary_text_color"
+                    android:textSize="@dimen/adder_secondary_text_size"
+                    android:visibility="gone" />
 
-            <LinearLayout
-                android:id="@+id/describedWordLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackground"
-                android:padding="8dp"
-                android:orientation="vertical" >
                 <TextView
-                    android:id="@+id/describedWord"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/adder_primary_text_color"
-                    android:text="@string/entry_missing"
-                    android:textSize="@dimen/adder_primary_text_size" />
-                <TextView
-                    android:id="@+id/describedWordDesc"
+                    android:id="@+id/noteText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
-                    android:text="description in english"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical"
+                    android:text="note"
                     android:textColor="@color/adder_secondary_text_color"
-                    android:textSize="@dimen/adder_secondary_text_size" />
+                    android:textSize="@dimen/adder_secondary_text_size"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/demandText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical"
+                    android:text="demand"
+                    android:textColor="@color/adder_secondary_text_color"
+                    android:textSize="@dimen/adder_secondary_text_size"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <View
                 android:id="@+id/divider"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="10dp"
                 android:background="?android:attr/listDivider" />
 
             <TextView
@@ -162,12 +147,83 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:text="Optional Notes or Demands"
+                android:layout_marginBottom="4dp"
+                android:text="Slovene"
+                android:textColor="@color/adder_section_header_color"
+                android:textSize="@dimen/adder_section_header_text_size" />
+
+            <LinearLayout
+                android:id="@+id/translatedWordLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/translatedWordText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/entry_missing"
+                    android:textColor="@color/adder_primary_text_color"
+                    android:textSize="@dimen/adder_primary_text_size" />
+
+                <TextView
+                    android:id="@+id/translatedSynonymText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
+                    android:gravity="center_vertical"
+                    android:text="synonym"
+                    android:textColor="@color/adder_primary_text_color"
+                    android:textSize="@dimen/adder_secondary_text_size"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/translatedNoteText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical"
+                    android:text="note"
+                    android:textColor="@color/adder_secondary_text_color"
+                    android:textSize="@dimen/adder_secondary_text_size"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/translatedDemandText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical"
+                    android:text="demand"
+                    android:textColor="@color/adder_secondary_text_color"
+                    android:textSize="@dimen/adder_secondary_text_size"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <View
+                android:id="@+id/divider3"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:id="@+id/headerDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:text="Description"
                 android:textColor="@color/adder_section_header_color"
                 android:textSize="@dimen/adder_section_header_text_size" />
             <LinearLayout
-                android:id="@+id/wordNoteLayout"
+                android:id="@+id/descriptionLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="true"
@@ -175,54 +231,21 @@
                 android:background="?attr/selectableItemBackground"
                 android:padding="8dp"
                 android:orientation="vertical" >
-                <TextView
-                    android:id="@+id/wordNote"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/adder_primary_text_color"
-                    android:text="@string/entry_missing"
-                    android:textSize="@dimen/adder_primary_text_size" />
-                <TextView
-                    android:id="@+id/wordNoteDesc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
-                    android:text="Note or demand for player when guessing word in english"
-                    android:textColor="@color/adder_secondary_text_color"
-                    android:textSize="@dimen/adder_secondary_text_size" />
-            </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/translatedWordNoteLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackground"
-                android:padding="8dp"
-                android:orientation="vertical" >
                 <TextView
-                    android:id="@+id/translatedWordNote"
+                    android:id="@+id/descriptionText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/adder_primary_text_color"
                     android:text="@string/entry_missing"
+                    android:textColor="@color/adder_primary_text_color"
                     android:textSize="@dimen/adder_primary_text_size" />
-                <TextView
-                    android:id="@+id/translatedWordNoteDesc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
-                    android:text="Note or demand for player when guessing word in slovene"
-                    android:textColor="@color/adder_secondary_text_color"
-                    android:textSize="@dimen/adder_secondary_text_size" />
             </LinearLayout>
 
             <View
                 android:id="@+id/divider2"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="10dp"
                 android:background="?android:attr/listDivider" />
 
             <TextView
@@ -230,8 +253,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:text="Other information"
+                android:layout_marginBottom="4dp"
+                android:text="Categories by which words can be grouped"
                 android:textColor="@color/adder_section_header_color"
                 android:textSize="@dimen/adder_section_header_text_size" />
 
@@ -245,20 +268,12 @@
                 android:padding="8dp"
                 android:orientation="vertical" >
                 <TextView
-                    android:id="@+id/categories"
+                    android:id="@+id/categoriesText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/entry_missing"
                     android:textColor="@color/adder_primary_text_color"
                     android:textSize="@dimen/adder_primary_text_size" />
-                <TextView
-                    android:id="@+id/categoriesDesc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/adder_primary_to_secondary_spacing"
-                    android:text="Categories in which this words belongs (useful for grouping words)"
-                    android:textColor="@color/adder_secondary_text_color"
-                    android:textSize="@dimen/adder_secondary_text_size" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

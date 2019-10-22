@@ -20,6 +20,16 @@
         android:textColor="#222233"/>
 
     <TextView
+        android:id="@+id/noteText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:drawablePadding="5dp"
+        android:text="note"
+        android:visibility="gone"
+        />
+
+    <TextView
         android:id="@+id/demandText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,6 +49,16 @@
         android:ellipsize="end"
         android:textSize="16sp"
         android:textColor="#3E3E47"/>
+
+    <TextView
+        android:id="@+id/translatedNoteText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:drawablePadding="5dp"
+        android:text="note"
+        android:visibility="gone"
+        />
 
     <TextView
         android:id="@+id/translatedDemandText"

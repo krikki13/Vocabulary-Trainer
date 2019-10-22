@@ -4,14 +4,14 @@ import android.content.Context;
 import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.krikki.vocabularytrainer.R;
-
-import java.util.function.BiConsumer;
+import com.krikki.vocabularytrainer.TriConsumer;
 
 import androidx.appcompat.app.AlertDialog;
 
@@ -23,7 +23,7 @@ public abstract class WordInputDialog {
     private final TextInputEditText mainInput, synonymInput, noteInput, demandInput;
     private final TextView addSynonym, addNote, addDemand, titleView;
 
-    public WordInputDialog(Context context, String title) {
+    public WordInputDialog(Context context, String title, String word, String synonyms, String note, String demand) {
         this.context = context;
 
         final LayoutInflater layoutInflaterAndroid = LayoutInflater.from(context);
@@ -52,13 +52,35 @@ public abstract class WordInputDialog {
         titleView.setText(title);
         alertDialog = alertDialogBuilderUserInput.create();
 
-        final BiConsumer<TextView, TextInputLayout> expandInputLayout = (button, layout) -> {
-          button.setVisibility(View.GONE);
-          layout.setVisibility(View.VISIBLE);
+        final TriConsumer<TextView, TextInputLayout, TextInputEditText> expandInputLayout = (button, layout, inputEditText) -> {
+            button.setVisibility(View.GONE);
+            layout.setVisibility(View.VISIBLE);
+            inputEditText.requestFocus();
+            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(inputEditText, InputMethodManager.SHOW_IMPLICIT);
+            }
         };
-        addSynonym.setOnClickListener(view -> expandInputLayout.accept(addSynonym, synonymInputLayout));
-        addNote.setOnClickListener(view -> expandInputLayout.accept(addNote, noteInputLayout));
-        addDemand.setOnClickListener(view -> expandInputLayout.accept(addDemand, demandInputLayout));
+
+        mainInput.setText(word);
+        if(synonyms.isEmpty()){
+            addSynonym.setOnClickListener(view -> expandInputLayout.accept(addSynonym, synonymInputLayout, synonymInput));
+        }else{
+            expandInputLayout.accept(addSynonym, synonymInputLayout, synonymInput);
+            synonymInput.setText(synonyms);
+        }
+        if(note.isEmpty()) {
+            addNote.setOnClickListener(view -> expandInputLayout.accept(addNote, noteInputLayout, noteInput));
+        }else{
+            expandInputLayout.accept(addNote, noteInputLayout, noteInput);
+            noteInput.setText(note);
+        }
+        if(demand.isEmpty()) {
+            addDemand.setOnClickListener(view -> expandInputLayout.accept(addDemand, demandInputLayout, demandInput));
+        }else{
+            expandInputLayout.accept(addDemand, demandInputLayout, demandInput);
+            demandInput.setText(demand);
+        }
     }
 
     public void show(){
@@ -73,6 +95,11 @@ public abstract class WordInputDialog {
                 }
 
             });
+            mainInput.requestFocus();
+            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(mainInput, InputMethodManager.SHOW_IMPLICIT);
+            }
         });
         alertDialog.show();
     }
