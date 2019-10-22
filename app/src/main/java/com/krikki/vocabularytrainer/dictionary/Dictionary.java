@@ -50,7 +50,7 @@ public class Dictionary extends AppCompatActivity {
         words = readWordsFromStorage();
 
         recyclerView = findViewById(R.id.recyclerView);
-        WordListAdapter adapter = new WordListAdapter(this, words.toArray(new Word[0]));
+        WordListAdapter adapter = new WordListAdapter(this, words.toArray(new Word[0]), this::startWordAdderActivity);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -106,11 +106,7 @@ public class Dictionary extends AppCompatActivity {
         DataStorageManager storageManager = new DataStorageManager(context);
         switch (item.getItemId()) {
             case R.id.addWords: // Add words
-                Intent intent = new Intent(this, WordAdder.class);
-                String[] existingCategories = words.stream().filter(word -> word.getCategories() != null).map(Word::getCategories).flatMap(Arrays::stream).distinct().toArray(String[]::new);
-                intent.putExtra("categories", existingCategories);
-                intent.putExtra("indexOfEditedWord", -1); // -1 means that word is being added
-                startActivity(intent);
+                this.startWordAdderActivity(null);
                 break;
             case R.id.deleteWords:
                 try {
@@ -131,7 +127,8 @@ public class Dictionary extends AppCompatActivity {
                     word2.setDemand("not genius");
                     word2.setTranslatedWord("genij");
                     word2.setCategories("noun");
-                    Word word3 = new Word("shiver,shudder,tremble;quiver");
+                    Word word3 = new Word("shiver,shudder,tremble");
+                    word3.setSynonym("quiver");
                     word3.setDescription("Shake slightly and uncontrollably as a result of being cold, frightened, or excited");
                     word3.setTranslatedWord("tresenje,drgetanje");
                     words.add(word);
@@ -171,6 +168,18 @@ public class Dictionary extends AppCompatActivity {
             words = new ArrayList<>();
         }
         return words;
+    }
+
+    /**
+     * Starts WordAdder activity for adding or editing words.
+     * @param wordId ID of word being edited; null if it is being added
+     */
+    private void startWordAdderActivity(String wordId){
+        Intent intent = new Intent(this, WordAdder.class);
+        String[] existingCategories = words.stream().filter(word -> word.getCategories() != null).map(Word::getCategories).flatMap(Arrays::stream).distinct().toArray(String[]::new);
+        intent.putExtra("categories", existingCategories);
+        intent.putExtra("idOfEditedWord", wordId);
+        startActivity(intent);
     }
 
     @Override

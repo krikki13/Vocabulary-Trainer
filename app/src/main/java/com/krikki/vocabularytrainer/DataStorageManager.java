@@ -18,6 +18,7 @@ import java.util.List;
 
 public class DataStorageManager {
     public static final String WORDS_FILE = "words_file";
+    private static int idCounter = 0;
 
     private Context context;
 
@@ -59,10 +60,15 @@ public class DataStorageManager {
         return list;
     }
 
-    public String convertToJson(List<Word> list) throws JSONException{
+    public String convertToJson(List<Word> list) throws JSONException, Word.UnsuccessfulWordCreationException {
+        String time = String.valueOf(System.currentTimeMillis());
+
         JSONObject obj = new JSONObject();
         JSONArray jsonArray = new JSONArray();
         for (Word word : list) {
+            if(word.getId() == null){
+                word.setId(time + String.format("%03d", idCounter++));
+            }
             jsonArray.put(word.getJson());
         }
 

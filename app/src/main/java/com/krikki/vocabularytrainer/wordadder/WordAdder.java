@@ -42,7 +42,7 @@ public class WordAdder extends AppCompatActivity {
     private TextView buttonSaveAndReturn, buttonSaveAndAnother;
     private Drawable infoIcon, exclamationMarkIcon;
 
-    private int indexOfEditedWord; // -1 if word is being added
+    private String idOfEditedWord; // null if word is being added
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,10 +51,14 @@ public class WordAdder extends AppCompatActivity {
         setContentView(R.layout.layout_word_adder);
 
         Intent intent = getIntent();
-        Bundle b = intent.getExtras();
-        String[] s = b.getStringArray("categories");
-        if(s != null)
-            allCategories = Arrays.stream(s).map(str -> new SelectableData(str, false)).collect(Collectors.toList());
+        Bundle bundle = intent.getExtras();
+        String[] categories = null;
+        if(bundle != null) {
+            categories = bundle.getStringArray("categories");
+            idOfEditedWord = bundle.getString("idOfEditedWord");
+        }
+        if(categories != null)
+            allCategories = Arrays.stream(categories).map(str -> new SelectableData(str, false)).collect(Collectors.toList());
         else
             allCategories = new ArrayList<>();
 
@@ -65,7 +69,7 @@ public class WordAdder extends AppCompatActivity {
 
         infoIcon = ContextCompat.getDrawable(context, R.drawable.info);
         exclamationMarkIcon = ContextCompat.getDrawable(context, R.drawable.exclamation_mark);
-        int pixelDrawableSize = getResources().getDimensionPixelSize(R.dimen.compound_drawable_size);
+        int pixelDrawableSize = getResources().getDimensionPixelSize(R.dimen.compound_drawable_size_small);
         infoIcon.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize);
         exclamationMarkIcon.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize);
 
@@ -294,7 +298,6 @@ public class WordAdder extends AppCompatActivity {
             return demand;
         }
     }
-
 
     private class EditingCell{
         private LinearLayout layout;

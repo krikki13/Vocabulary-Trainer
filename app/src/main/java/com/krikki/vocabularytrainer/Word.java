@@ -15,6 +15,7 @@ public class Word {
     public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"'()/<>:;?";
 
     private String mainLanguage, supportingLanguage;
+    private String id;
 
     private String[] word;
     private String[] synonyms;
@@ -160,6 +161,12 @@ public class Word {
         if(synonyms == null) return "";
         return String.join(", ",synonyms);
     }
+    public void setId(String id){
+        this.id = id;
+    }
+    public String getId(){
+        return id;
+    }
 
     public String[] getCategories() {
         return categories;
@@ -183,14 +190,18 @@ public class Word {
         }
     }
 
-    public String getJson() throws JSONException {
+    public String getJson() throws JSONException, UnsuccessfulWordCreationException {
         if(this.description == null && this.translatedWord == null ){
-            throw new JSONException("Crucial data (description and translated word) is missing");
+            throw new UnsuccessfulWordCreationException("Crucial data (description and translated word) is missing");
+        }
+        if(this.id == null || this.id.isEmpty()){
+            throw new UnsuccessfulWordCreationException("Id is not set when creating JSON");
         }
 
         JSONObject obj = new JSONObject();
 
         obj.put("word", fromArrayToJsonArray(this.word));
+        obj.put("id", this.id);
 
         if(this.description != null) {
             obj.put("description", this.description);
@@ -245,6 +256,7 @@ public class Word {
 
         JSONArray array = obj.getJSONArray("word");
         word = new Word(fromJsonArrayToArray(array));
+        word.setId(obj.getString("id"));
 
         if(obj.has("description")){
             word.setDescription(obj.getString("description"));

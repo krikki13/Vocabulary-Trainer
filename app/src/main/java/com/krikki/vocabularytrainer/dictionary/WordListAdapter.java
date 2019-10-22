@@ -3,16 +3,16 @@ package com.krikki.vocabularytrainer.dictionary;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
+
+import java.util.function.Consumer;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,33 +22,36 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
     private Word[] words;
     private Context context;
     private Drawable infoIcon, exclamationMarkIcon, translationIcon, descriptionIcon, categoryIcon;
+    private Consumer<String> longClickConsumer;
 
     // RecyclerView recyclerView;
-    public WordListAdapter(Context context, Word[] words) {
+    public WordListAdapter(Context context, Word[] words, Consumer<String> longClickConsumer) {
         this.words = words;
         this.context = context;
+        this.longClickConsumer = longClickConsumer;
 
         // int pixelDrawableSize = context.getResources().getDimension()
-        int pixelDrawableSize = spToPx(context, 18);
+        int drawableSize = context.getResources().getDimensionPixelSize(R.dimen.compound_drawable_size);
+        int smallDrawableSize = context.getResources().getDimensionPixelSize(R.dimen.compound_drawable_size_small);
         exclamationMarkIcon = ContextCompat.getDrawable(context, R.drawable.exclamation_mark);
         if (exclamationMarkIcon != null) {
-            exclamationMarkIcon.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
+            exclamationMarkIcon.setBounds(0, 0, smallDrawableSize, smallDrawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
         }
         infoIcon = ContextCompat.getDrawable(context, R.drawable.info);
         if (infoIcon != null) {
-            infoIcon.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
+            infoIcon.setBounds(0, 0, smallDrawableSize, smallDrawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
         }
         translationIcon = ContextCompat.getDrawable(context, R.drawable.translation);
         if (translationIcon != null) {
-            translationIcon.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
+            translationIcon.setBounds(0, 0, drawableSize, drawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
         }
         descriptionIcon = ContextCompat.getDrawable(context, R.drawable.description);
         if (descriptionIcon != null) {
-            descriptionIcon.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
+            descriptionIcon.setBounds(0, 0, drawableSize, drawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
         }
         categoryIcon = ContextCompat.getDrawable(context, R.drawable.tag);
         if (categoryIcon != null) {
-            categoryIcon.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
+            categoryIcon.setBounds(0, 0, smallDrawableSize, smallDrawableSize); // setBounds(int left, int top, int right, int bottom), in this case, drawable is a square image
         }
 
     }
@@ -85,8 +88,8 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
             layout = itemView.findViewById(R.id.itemLayout);
             wordText = itemView.findViewById(R.id.wordText);
-            describedWord = itemView.findViewById(R.id.describedWord);
-            translatedWord = itemView.findViewById(R.id.translatedWord);
+            describedWord = itemView.findViewById(R.id.describedWordText);
+            translatedWord = itemView.findViewById(R.id.translatedWordText);
             demandText = itemView.findViewById(R.id.demandText);
             translatedDemandText = itemView.findViewById(R.id.translatedDemandText);
             noteText = itemView.findViewById(R.id.noteText);
@@ -166,12 +169,8 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
         @Override
         public boolean onLongClick(View view) {
-            Toast.makeText(context, "Congratulations! You have just long clicked item "+getAdapterPosition(), Toast.LENGTH_LONG).show();
+            longClickConsumer.accept(words[getAdapterPosition()].getId());
             return true;
         }
-    }
-
-    public static int spToPx(Context context, float sp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.getResources().getDisplayMetrics());
     }
 }
