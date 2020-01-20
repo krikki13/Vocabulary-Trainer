@@ -11,7 +11,7 @@ import android.widget.TextView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.krikki.vocabularytrainer.R;
-import com.krikki.vocabularytrainer.TriConsumer;
+import com.krikki.vocabularytrainer.util.TriConsumer;
 
 import androidx.appcompat.app.AlertDialog;
 

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ import androidx.core.content.ContextCompat;
 public class WordAdder extends AppCompatActivity {
     private Toolbar toolbar;
     private final Context context = this;
+    private DataStorageManager storageManager;
 
     private List<SelectableData> allCategories;
     private EditingCell describedWordCell, categoriesCell;
@@ -52,15 +54,14 @@ public class WordAdder extends AppCompatActivity {
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
-        String[] categories = null;
         if(bundle != null) {
-            categories = bundle.getStringArray("categories");
             idOfEditedWord = bundle.getString("idOfEditedWord");
         }
-        if(categories != null)
-            allCategories = Arrays.stream(categories).map(str -> new SelectableData(str, false)).collect(Collectors.toList());
-        else
-            allCategories = new ArrayList<>();
+        // TODO
+        Toast.makeText(this, idOfEditedWord == null ? "Word is being added" : "idOfEditedWord = "+idOfEditedWord, Toast.LENGTH_SHORT).show();
+        if(idOfEditedWord != null) {
+            this.setTitle(R.string.title_activity_word_adder_edit);
+        }
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -82,22 +83,32 @@ public class WordAdder extends AppCompatActivity {
         buttonSaveAndAnother = findViewById(R.id.buttonSaveAndAnother);
 
         buttonSaveAndAnother.setOnClickListener(view -> {
-            if(!verifyWordData()) return;
-            try {
-                saveWordToStorage();
-                Toast.makeText(context, "Saving successful", Toast.LENGTH_LONG).show();
-                recreate();
-            } catch (Word.UnsuccessfulWordCreationException e) {
-                Toast.makeText(context, "Saving word failed", Toast.LENGTH_LONG).show();
+            if(idOfEditedWord != null){ // remove word
+                try {
+                    removeWordFromStorage();
+                    Toast.makeText(context, "Removing successful", Toast.LENGTH_LONG).show();
+                    finish();
+                } catch (Word.UnsuccessfulWordCreationException | Word.DuplicatedIdException e) {
+                    Toast.makeText(context, "Removing word failed", Toast.LENGTH_LONG).show();
+                }
+            }else { // add or edit word
+                if (!verifyWordData()) return;
+                try {
+                    saveWordToStorage();
+                    Toast.makeText(context, "Saving successful", Toast.LENGTH_LONG).show();
+                    recreate();
+                } catch (Word.UnsuccessfulWordCreationException | Word.DuplicatedIdException e) {
+                    Toast.makeText(context, "Saving word failed", Toast.LENGTH_LONG).show();
+                }
             }
         });
         buttonSaveAndReturn.setOnClickListener(view -> {
-            if(!verifyWordData()) return;
+            if (!verifyWordData()) return;
             try {
                 saveWordToStorage();
                 Toast.makeText(context, "Saving successful", Toast.LENGTH_LONG).show();
                 finish();
-            } catch (Word.UnsuccessfulWordCreationException e) {
+            } catch (Word.UnsuccessfulWordCreationException | Word.DuplicatedIdException e) {
                 Toast.makeText(context, "Saving word failed", Toast.LENGTH_LONG).show();
             }
         });
@@ -130,6 +141,12 @@ public class WordAdder extends AppCompatActivity {
         }));
         categoriesCell.setOnClickListener((view) -> createListDialog(categoriesCell.textView));
 
+        if(idOfEditedWord != null){
+            buttonSaveAndAnother.setText("Delete");
+        }
+
+        storageManager = new DataStorageManager(context);
+        initializeValues();
     }
 
     private void createInputDialog(String title, String defaultText, Predicate<String> saveWord){
@@ -171,7 +188,38 @@ public class WordAdder extends AppCompatActivity {
         }).show();
     }
 
-    private void saveWordToStorage() throws Word.UnsuccessfulWordCreationException {
+    private void removeWordFromStorage() throws Word.DuplicatedIdException, Word.UnsuccessfulWordCreationException {
+        ArrayList<Word> words;
+        try {
+            String wordsRawText = storageManager.readFromStorage(DataStorageManager.WORDS_FILE);
+            words = storageManager.convertToListOfWords(wordsRawText);
+        }catch (FileNotFoundException e1){
+            words = new ArrayList<>();
+        }catch (IOException | JSONException e){
+            Toast.makeText(context, "Exception thrown when reading: "+e.getMessage(), Toast.LENGTH_LONG).show();
+            words = new ArrayList<>();
+        }
+
+        int index = -1; // find index of existing word in the list
+        for (int i = 0; i < words.size(); i++) {
+            if(words.get(i).getId().equals(idOfEditedWord)){
+                index = i;
+                break;
+            }
+        }
+        if(index == -1){
+            Toast.makeText(this, "Removed word was not found in storage file!", Toast.LENGTH_LONG).show();
+        }else{
+            words.remove(index);
+        }
+
+        try {
+            storageManager.writeToStorage(DataStorageManager.WORDS_FILE, storageManager.convertToJson(words));
+        }catch(IOException | JSONException e){
+            e.printStackTrace();
+        }
+    }
+    private void saveWordToStorage() throws Word.UnsuccessfulWordCreationException, Word.DuplicatedIdException {
         final Word wordObject = new Word(wordCell.getWord());
         wordObject.setDescription(describedWordCell.getText());
         wordObject.setTranslatedWord(translatedWordCell.getWord());
@@ -183,9 +231,7 @@ public class WordAdder extends AppCompatActivity {
         wordObject.setTranslatedSynonym(translatedWordCell.getSynonym());
         wordObject.setCategories(allCategories.stream().filter(SelectableData::isSelected).map(SelectableData::getText).toArray(String[]::new));
 
-        DataStorageManager storageManager = new DataStorageManager(context);
         ArrayList<Word> words;
-
         try {
             String wordsRawText = storageManager.readFromStorage(DataStorageManager.WORDS_FILE);
             words = storageManager.convertToListOfWords(wordsRawText);
@@ -196,13 +242,34 @@ public class WordAdder extends AppCompatActivity {
             words = new ArrayList<>();
         }
 
-        words.add(wordObject);
+
+        if(idOfEditedWord == null){ // word is being added
+            wordObject.setIdAndAvoidDuplication(words);
+            words.add(wordObject);
+        }else{ // word is being edited
+            int index = -1; // find index of existing word in the list
+            for (int i = 0; i < words.size(); i++) {
+                if(words.get(i).getId().equals(idOfEditedWord)){
+                    index = i;
+                    break;
+                }
+            }
+            wordObject.setId(idOfEditedWord);
+            if(index == -1){
+                Toast.makeText(this, "Edited word was not found in storage file. Adding it instead!", Toast.LENGTH_LONG).show();
+                words.add(wordObject);
+            }else{
+                words.set(index, wordObject);
+            }
+        }
+
         try {
             storageManager.writeToStorage(DataStorageManager.WORDS_FILE, storageManager.convertToJson(words));
         }catch(IOException | JSONException e){
             e.printStackTrace();
         }
     }
+
     private boolean verifyWordData(){
         if(wordCell.getWord().isEmpty()){
             Toast.makeText(context, "Main word is not specified!", Toast.LENGTH_LONG).show();
@@ -214,6 +281,42 @@ public class WordAdder extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Initialize values is meant to be called from onCreate() method and fills the ArrayList words with
+     * words.
+     */
+    private void initializeValues(){
+        ArrayList<Word> words;
+        try {
+            String wordsRawText = storageManager.readFromStorage(DataStorageManager.WORDS_FILE);
+            words = storageManager.convertToListOfWords(wordsRawText);
+        }catch (IOException | JSONException e){
+            words = new ArrayList<>();
+        }catch (Word.DuplicatedIdException e){
+            words = new ArrayList<>();
+            Toast.makeText(this, "Duplicated ID found in storage file!", Toast.LENGTH_LONG).show();
+        }
+        allCategories = words.stream().filter(word -> word.getCategories() != null).map(Word::getCategories).flatMap(Arrays::stream).distinct()
+                .map(string -> new SelectableData(string, false)).collect(Collectors.toList());
+        if(idOfEditedWord != null){
+            Optional<Word> currentWord = words.stream().filter(word -> word.getId().equals(idOfEditedWord)).findFirst();
+            if(currentWord.isPresent()){
+                Word word = currentWord.get();
+                wordCell.setAll(word.getWords(), word.getSynonymsJoined(), word.getNote(), word.getDemand());
+                translatedWordCell.setAll(word.getTranslatedWords(), word.getTranslatedSynonymsJoined(), word.getTranslatedNote(), word.getTranslatedDemand());
+                describedWordCell.setText(word.getDescription());
+                categoriesCell.setText(word.getCategoriesJoined());
+
+                allCategories.forEach(cat -> {
+                    if(word.getCategories() != null && word.getCategories().length > 0 &&
+                            Arrays.stream(word.getCategories()).anyMatch(wordCat -> wordCat.equalsIgnoreCase(cat.getText()))){
+                        cat.setSelected(true);
+                    }
+                });
+            }
+        }
+    }
+    // TODO implement saving logic and do a quick sanity check
 
 
     private class WordEditingCell{

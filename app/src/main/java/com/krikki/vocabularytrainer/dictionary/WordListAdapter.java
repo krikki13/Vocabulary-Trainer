@@ -11,7 +11,9 @@ import android.widget.TextView;
 
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
+import com.krikki.vocabularytrainer.util.TriConsumer;
 
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import androidx.core.content.ContextCompat;
@@ -19,13 +21,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHolder>{
-    private Word[] words;
+    private ArrayList<Word> words;
     private Context context;
     private Drawable infoIcon, exclamationMarkIcon, translationIcon, descriptionIcon, categoryIcon;
     private Consumer<String> longClickConsumer;
 
     // RecyclerView recyclerView;
-    public WordListAdapter(Context context, Word[] words, Consumer<String> longClickConsumer) {
+    public WordListAdapter(Context context, ArrayList<Word> words, Consumer<String> longClickConsumer) {
         this.words = words;
         this.context = context;
         this.longClickConsumer = longClickConsumer;
@@ -65,7 +67,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Word theWord = words[position];
+        Word theWord = words.get(position);
         holder.wordText.setText(theWord.getWords());
         holder.describedWord.setText(theWord.getDescription());
         holder.translatedWord.setText(theWord.getTranslatedWords());
@@ -73,7 +75,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        return words.length;
+        return words.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
@@ -121,7 +123,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 noteText.setVisibility(View.GONE);
                 translatedNoteText.setVisibility(View.GONE);
 
-                wordText.setText(words[getAdapterPosition()].getWords());
+                wordText.setText(words.get(getAdapterPosition()).getWords());
             }else {
                 isExpanded = true;
                 layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -134,42 +136,29 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 describedWord.setEllipsize(null);
                 translatedWord.setEllipsize(null);
 
-                // set text
-                Word word = words[getAdapterPosition()];
+                // set text, visibility and icon to word info fields
+                Word word = words.get(getAdapterPosition());
                 if (!word.getSynonymsJoined().isEmpty()) {
                     wordText.append(" (" + String.join(", ", word.getSynonyms()) + ")");
                 }
-                if (!word.getDemand().isEmpty()) {
-                    demandText.setText(word.getDemand());
-                    demandText.setVisibility(View.VISIBLE);
-                    demandText.setCompoundDrawables(exclamationMarkIcon, null, null, null);
-                }
-                if (!word.getTranslatedDemand().isEmpty()) {
-                    translatedDemandText.setText(word.getTranslatedDemand());
-                    translatedDemandText.setVisibility(View.VISIBLE);
-                    translatedDemandText.setCompoundDrawables(exclamationMarkIcon, null, null, null);
-                }
-                if (!word.getNote().isEmpty()) {
-                    noteText.setText(word.getNote());
-                    noteText.setVisibility(View.VISIBLE);
-                    noteText.setCompoundDrawables(infoIcon, null, null, null);
-                }
-                if (!word.getTranslatedNote().isEmpty()) {
-                    translatedNoteText.setText(word.getTranslatedNote());
-                    translatedNoteText.setVisibility(View.VISIBLE);
-                    translatedNoteText.setCompoundDrawables(infoIcon, null, null, null);
-                }
-                if (!word.getCategoriesJoined().isEmpty()) {
-                    categoriesText.setText(word.getCategoriesJoined());
-                    categoriesText.setVisibility(View.VISIBLE);
-                    categoriesText.setCompoundDrawables(categoryIcon, null, null, null);
-                }
+                final TriConsumer<String, TextView, Drawable> setWordFields = (text,textView,icon) -> {
+                    if(!text.isEmpty()) {
+                        textView.setText(text);
+                        textView.setVisibility(View.VISIBLE);
+                        textView.setCompoundDrawables(icon, null, null, null);
+                    }
+                };
+                setWordFields.accept(word.getDemand(), demandText, exclamationMarkIcon);
+                setWordFields.accept(word.getTranslatedDemand(), translatedDemandText, exclamationMarkIcon);
+                setWordFields.accept(word.getNote(), noteText, infoIcon);
+                setWordFields.accept(word.getTranslatedNote(), translatedNoteText, infoIcon);
+                setWordFields.accept(word.getCategoriesJoined(), categoriesText, categoryIcon);
             }
         }
 
         @Override
         public boolean onLongClick(View view) {
-            longClickConsumer.accept(words[getAdapterPosition()].getId());
+            longClickConsumer.accept(words.get(getAdapterPosition()).getId());
             return true;
         }
     }

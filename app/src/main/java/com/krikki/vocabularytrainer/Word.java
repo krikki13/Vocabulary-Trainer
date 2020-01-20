@@ -6,9 +6,11 @@ import org.json.JSONObject;
 
 import java.io.StringWriter;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * Created by Kristjan on 15/09/2019.
+ * Data object. It contains at least String word (in primary language) and one of: description (in primary language)
+ * or translated word.
  */
 
 public class Word {
@@ -161,6 +163,10 @@ public class Word {
         if(synonyms == null) return "";
         return String.join(", ",synonyms);
     }
+    public String getTranslatedSynonymsJoined() {
+        if(translatedSynonyms == null) return "";
+        return String.join(", ",translatedSynonyms);
+    }
     public void setId(String id){
         this.id = id;
     }
@@ -184,12 +190,20 @@ public class Word {
         return word != null && !word.startsWith(",") && !word.endsWith(",") && !word.contains(",,");
     }
 
-    public class UnsuccessfulWordCreationException extends Exception{
+    public static class UnsuccessfulWordCreationException extends Exception{
         public UnsuccessfulWordCreationException(String msg){
             super(msg);
         }
     }
+    public static class DuplicatedIdException extends Exception{
+        public DuplicatedIdException(String msg){
+            super(msg);
+        }
+    }
 
+    /**
+     * Returns word data in a form of JSON.
+     */
     public String getJson() throws JSONException, UnsuccessfulWordCreationException {
         if(this.description == null && this.translatedWord == null ){
             throw new UnsuccessfulWordCreationException("Crucial data (description and translated word) is missing");
@@ -287,6 +301,23 @@ public class Word {
         }
 
         return word;
+    }
+
+    /**
+     * Finds an ID that does not yet exist in the list. It then returns the id.
+     */
+    public String setIdAndAvoidDuplication(List<Word> words){
+        String time = String.valueOf(System.currentTimeMillis());
+        String base = time;
+        //+ String.format("%03d", idCounter++));
+        long x = words.stream().map(Word::getId).filter(id -> id.startsWith(base)).mapToLong(Long::parseLong).sorted().reduce(Long.parseLong(base) * 1000, (a, b) -> {
+            if (a == b) {
+                return a + 1;
+            }
+            return a;
+        });
+        setId("" + x);
+        return "" + x;
     }
 }
 

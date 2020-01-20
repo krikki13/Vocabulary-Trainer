@@ -36,7 +36,7 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public class Dictionary extends AppCompatActivity {
     RecyclerView recyclerView;
-    private ArrayList<Word> words;
+    private final ArrayList<Word> words = new ArrayList<>();
     private DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
     private NavigationView nv;
@@ -47,10 +47,10 @@ public class Dictionary extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_dictionary);
-        words = readWordsFromStorage();
+        readWordsFromStorage();
 
         recyclerView = findViewById(R.id.recyclerView);
-        WordListAdapter adapter = new WordListAdapter(this, words.toArray(new Word[0]), this::startWordAdderActivity);
+        WordListAdapter adapter = new WordListAdapter(this, words, this::startWordAdderActivity);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -131,6 +131,9 @@ public class Dictionary extends AppCompatActivity {
                     word3.setSynonym("quiver");
                     word3.setDescription("Shake slightly and uncontrollably as a result of being cold, frightened, or excited");
                     word3.setTranslatedWord("tresenje,drgetanje");
+                    word.setId("111");
+                    word2.setId("2");
+                    word3.setId("123");
                     words.add(word);
                     words.add(word2);
                     words.add(word3);
@@ -143,6 +146,7 @@ public class Dictionary extends AppCompatActivity {
                     }
                 } catch (Word.UnsuccessfulWordCreationException e) {
                     e.printStackTrace();
+                    Toast.makeText(this, "Failed to add sample words!", Toast.LENGTH_LONG).show();
                 }
                 break;
             case R.id.customize:
@@ -155,7 +159,7 @@ public class Dictionary extends AppCompatActivity {
     }
 
 
-    private ArrayList<Word> readWordsFromStorage(){
+    private void readWordsFromStorage(){
         DataStorageManager storageManager = new DataStorageManager(this);
         ArrayList<Word> words;
         try {
@@ -166,8 +170,12 @@ public class Dictionary extends AppCompatActivity {
         }catch (IOException | JSONException e){
             Toast.makeText(this, "Exception thrown when reading: "+e.getMessage(), Toast.LENGTH_LONG).show();
             words = new ArrayList<>();
+        }catch (Word.DuplicatedIdException e){
+            Toast.makeText(this, "Word ID was duplicated in the data file", Toast.LENGTH_LONG).show();
+            words = new ArrayList<>();
         }
-        return words;
+        this.words.clear();
+        this.words.addAll(words);
     }
 
     /**
@@ -187,5 +195,15 @@ public class Dictionary extends AppCompatActivity {
         super.onPostCreate(savedInstanceState);
         // Sync the toggle state after onRestoreInstanceState has occurred.
         toggle.syncState();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Toast.makeText(this, "Resumed", Toast.LENGTH_SHORT).show();
+        readWordsFromStorage();
+        // TODO could be done more efficiently
+        recyclerView.getAdapter().notifyDataSetChanged();
     }
 }
