@@ -63,7 +63,7 @@ public class DataStorageManager {
 
     /**
      * Takes string in a JSON format as an argument and parses it. Data is then returned as an
-     * ArrayList of {@link Word}. Each individual word is parsed from JSON format using {@link Word#getWordFromJson(String)}.
+     * ArrayList of {@link Word}. Each individual word is parsed from JSON format using {@link Word#getWordFromJson(JSONObject)}.
      * @param jsonText string in JSON format describing list of words
      * @return arrayList of words composed from received JSON string
      * @throws JSONException
@@ -77,7 +77,7 @@ public class DataStorageManager {
 
         ArrayList<Word> list = new ArrayList<>(jsonArray.length());
         for (int i = 0; i < jsonArray.length(); i++) {
-            list.add(Word.getWordFromJson(jsonArray.getString(i)));
+            list.add(Word.getWordFromJson(jsonArray.getJSONObject(i)));
         }
         if(list.stream().map(Word::getId).distinct().count() != list.size()){
             throw new Word.DuplicatedIdException("Duplicated Word ID");

@@ -2,9 +2,13 @@ package com.krikki.vocabularytrainer.dictionary;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
@@ -15,13 +19,17 @@ import com.krikki.vocabularytrainer.wordadder.WordAdder;
 
 import org.json.JSONException;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -35,6 +43,8 @@ import androidx.recyclerview.widget.RecyclerView;
  * Created by Kristjan on 15/09/2019.
  */
 public class Dictionary extends AppCompatActivity {
+    private static final int IMPORT_RESULT_CODE = 44157;
+
     RecyclerView recyclerView;
     private final ArrayList<Word> words = new ArrayList<>();
     private DrawerLayout drawer;
@@ -42,6 +52,7 @@ public class Dictionary extends AppCompatActivity {
     private NavigationView nv;
     private Toolbar toolbar;
     private Context context = this;
+    private boolean refreshAfterResume = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,56 +119,98 @@ public class Dictionary extends AppCompatActivity {
             case R.id.addWords: // Add words
                 this.startWordAdderActivity(null);
                 break;
-            case R.id.deleteWords:
+            case R.id.export:
                 try {
-                    storageManager.writeToStorage(DataStorageManager.WORDS_FILE, "");
-                    Toast.makeText(this, "Deleted words (empty file)", Toast.LENGTH_LONG).show(); break;
-                }catch(IOException e){
-                    e.printStackTrace();
-                    Toast.makeText(this, "Failed to delete words", Toast.LENGTH_LONG).show(); break;
-                }
-            case R.id.addDict:
-                try {
-                    Word word = new Word("constellation");
-                    word.setDescription("A bunch of stars together");
-                    word.setTranslatedWord("ozvezdje");
-                    word.setCategories("astronomy,science,noun");
-                    Word word2 = new Word("prodigy");
-                    word2.setDescription("someone very smart");
-                    word2.setDemand("not genius");
-                    word2.setTranslatedWord("genij");
-                    word2.setCategories("noun");
-                    Word word3 = new Word("shiver,shudder,tremble");
-                    word3.setSynonym("quiver");
-                    word3.setDescription("Shake slightly and uncontrollably as a result of being cold, frightened, or excited");
-                    word3.setTranslatedWord("tresenje,drgetanje");
-                    word.setId("111");
-                    word2.setId("2");
-                    word3.setId("123");
-                    words.add(word);
-                    words.add(word2);
-                    words.add(word3);
-                    try {
-                        storageManager.writeToStorage(DataStorageManager.WORDS_FILE, storageManager.convertToJson(words));
-                        Toast.makeText(this, "Added 3 sample words", Toast.LENGTH_LONG).show(); break;
-                    }catch(IOException | JSONException e){
-                        e.printStackTrace();
-                        Toast.makeText(this, "Failed to add sample words", Toast.LENGTH_LONG).show(); break;
-                    }
-                } catch (Word.UnsuccessfulWordCreationException e) {
-                    e.printStackTrace();
-                    Toast.makeText(this, "Failed to add sample words!", Toast.LENGTH_LONG).show();
+                    Intent sendIntent = new Intent();
+                    sendIntent.setAction(Intent.ACTION_SEND);
+                    sendIntent.putExtra(Intent.EXTRA_TITLE, "words.json");
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, storageManager.readFromStorage(DataStorageManager.WORDS_FILE));
+                    sendIntent.setType("text/json");
+
+                    Intent shareIntent = Intent.createChooser(sendIntent, null);
+                    startActivity(shareIntent);
+                } catch(IOException e) {
+                    Toast.makeText(this, "Exception thrown when reading: "+e.getMessage(), Toast.LENGTH_LONG).show();
                 }
                 break;
-            case R.id.customize:
-                File dir = getFilesDir();
-                File file = new File(dir, DataStorageManager.WORDS_FILE);
-                boolean deleted = file.delete();
-                Toast.makeText(this, "Deleted words file", Toast.LENGTH_LONG).show(); break;
+            case R.id.import_:
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("text/plain");
+                startActivityForResult(Intent.createChooser(intent, "Select words file"), IMPORT_RESULT_CODE);
+                break;
         }
         return true;
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK && requestCode == IMPORT_RESULT_CODE && data != null){
+            // TODO make this safer
+            try {
+                Uri returnUri = data.getData();
+                String text = readTextFromUri(returnUri);
+
+                toolbar.removeAllViews();
+                toolbar.setTitle("Preview");
+                final Button buttonSave = new Button(this);
+                buttonSave.setText("Save");
+                buttonSave.setTextColor(Color.WHITE);
+                buttonSave.setBackgroundColor(Color.TRANSPARENT);
+                Toolbar.LayoutParams params = new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.MATCH_PARENT);
+                params.gravity = Gravity.RIGHT;
+                buttonSave.setLayoutParams(params);
+                toolbar.addView(buttonSave);
+
+                final Button buttonRevert = new Button(this);
+                buttonRevert.setText("Revert");
+                buttonRevert.setTextColor(Color.WHITE);
+                buttonRevert.setBackgroundColor(Color.TRANSPARENT);
+                Toolbar.LayoutParams params2 = new Toolbar.LayoutParams(Toolbar.LayoutParams.WRAP_CONTENT, Toolbar.LayoutParams.MATCH_PARENT);
+                params2.gravity = Gravity.RIGHT;
+                buttonRevert.setLayoutParams(params2);
+                toolbar.addView(buttonRevert);
+
+                DataStorageManager storageManager = new DataStorageManager(this);
+                ArrayList<Word> list = storageManager.convertToListOfWords(text);
+                words.clear();
+                words.addAll(list);
+                recyclerView.getAdapter().notifyDataSetChanged();
+
+                Toast.makeText(Dictionary.this, "You are previewing the imported file, " +
+                        "which has not yet been saved. To do that click save button in the upper right corner", Toast.LENGTH_LONG).show();
+
+                buttonSave.setOnClickListener(view -> {
+                    toolbar.removeView(buttonSave);
+                    try {
+                        storageManager.writeToStorage(DataStorageManager.WORDS_FILE, text);
+                    } catch (IOException e) {
+                        Toast.makeText(Dictionary.this, "Exception when writing file to storage", Toast.LENGTH_LONG).show();
+                    }
+                    Toast.makeText(Dictionary.this, "Import successful", Toast.LENGTH_LONG).show();
+                    Dictionary.this.recreate();
+                });
+                buttonRevert.setOnClickListener(view -> Dictionary.this.recreate());
+
+            }catch (Exception e){
+                Toast.makeText(this, "Imported file is not correctly formatted", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private String readTextFromUri(Uri uri) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (InputStream inputStream =
+                     getContentResolver().openInputStream(uri);
+             BufferedReader reader = new BufferedReader(
+                     new InputStreamReader(Objects.requireNonNull(inputStream)))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+        }
+        return stringBuilder.toString();
+    }
 
     private void readWordsFromStorage(){
         DataStorageManager storageManager = new DataStorageManager(this);
@@ -183,6 +236,7 @@ public class Dictionary extends AppCompatActivity {
      * @param wordId ID of word being edited; null if it is being added
      */
     private void startWordAdderActivity(String wordId){
+        refreshAfterResume = true;
         Intent intent = new Intent(this, WordAdder.class);
         String[] existingCategories = words.stream().filter(word -> word.getCategories() != null).map(Word::getCategories).flatMap(Arrays::stream).distinct().toArray(String[]::new);
         intent.putExtra("categories", existingCategories);
@@ -201,9 +255,12 @@ public class Dictionary extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        Toast.makeText(this, "Resumed", Toast.LENGTH_SHORT).show();
-        readWordsFromStorage();
-        // TODO could be done more efficiently
-        recyclerView.getAdapter().notifyDataSetChanged();
+        if(refreshAfterResume) {
+            Toast.makeText(this, "Resumed", Toast.LENGTH_SHORT).show();
+            readWordsFromStorage();
+            // TODO could be done more efficiently
+            recyclerView.getAdapter().notifyDataSetChanged();
+            refreshAfterResume = false;
+        }
     }
 }

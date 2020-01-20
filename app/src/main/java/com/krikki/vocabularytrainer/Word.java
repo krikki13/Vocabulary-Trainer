@@ -4,7 +4,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -204,7 +203,7 @@ public class Word {
     /**
      * Returns word data in a form of JSON.
      */
-    public String getJson() throws JSONException, UnsuccessfulWordCreationException {
+    public JSONObject getJson() throws JSONException, UnsuccessfulWordCreationException {
         if(this.description == null && this.translatedWord == null ){
             throw new UnsuccessfulWordCreationException("Crucial data (description and translated word) is missing");
         }
@@ -245,8 +244,7 @@ public class Word {
             obj.put("categories", fromArrayToJsonArray(this.categories));
         }
 
-        StringWriter out = new StringWriter();
-        return obj.toString();
+        return obj;
     }
 
     private static JSONArray fromArrayToJsonArray(String[] array){
@@ -264,9 +262,8 @@ public class Word {
         return array;
     }
 
-    public static Word getWordFromJson(String json) throws JSONException{
+    public static Word getWordFromJson(JSONObject obj) throws JSONException{
         Word word;
-        JSONObject obj = new JSONObject(json);
 
         JSONArray array = obj.getJSONArray("word");
         word = new Word(fromJsonArrayToArray(array));
