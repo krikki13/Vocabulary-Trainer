@@ -2,10 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/addWords"
         android:title="Add words" />
-    <item android:id="@+id/deleteWords"
-        android:title="Delete words" />
-    <item android:id="@+id/addDict"
-        android:title="Add dictionary" />
-    <item android:id="@+id/customize"
-        android:title="Customize" />
+    <item android:id="@+id/export"
+        android:title="Export" />
+    <item android:id="@+id/import_"
+        android:title="Import" />
 </menu>

@@ -4,27 +4,32 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.StringWriter;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 
 /**
- * Created by Kristjan on 15/09/2019.
+ * Data object. It contains at least String word (in primary language) and one of: description (in primary language)
+ * or translated word.
  */
 
 public class Word {
-    public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"'()/<>:?";
+    public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"'()/<>:;?";
 
     private String mainLanguage, supportingLanguage;
+    private String id;
 
     private String[] word;
     private String[] synonyms;
-    private String demands;
+    private String demand;
+    private String note;
 
-    private String description;
+    private String description; // description and translatedWord can be null
 
     private String[] translatedWord;
     private String[] translatedSynonyms;
-    private String translatedDemands;
+    private String translatedDemand;
+    private String translatedNote;
 
     private int[] successNumbers;
     private LocalDateTime lastDate;
@@ -51,28 +56,36 @@ public class Word {
 
     public void setWord(String word) throws UnsuccessfulWordCreationException {
         if(!verifyWord(word) || word.length() == 0){
-            throw new UnsuccessfulWordCreationException("Word does not contain any primary words");
-        }else if(word.indexOf(";") > 0){
-            synonyms = word.substring(word.indexOf(";")).split("[,;]+");
-        }else{
-            synonyms = null;
+            throw new UnsuccessfulWordCreationException("Word contains words of zero length");
         }
         this.word = word.split(",+");
     }
+    public void setSynonym(String synonym) throws UnsuccessfulWordCreationException {
+        if(synonym == null || synonym.length() == 0) {
+            synonyms = null;
+            return;
+        }else if(!verifyWord(synonym)){
+            throw new UnsuccessfulWordCreationException("Synonym contains words of zero length");
+        }
+        this.synonyms = synonym.split(",+");
+    }
     public void setTranslatedWord(String word) throws UnsuccessfulWordCreationException {
         if(word == null || word.length() == 0) { // translated word is allowed to be removed. But when saving it or description will have to exist
-            translatedSynonyms = null;
             translatedWord = null;
             return;
         }else if (!verifyWord(word)) {
-            throw new UnsuccessfulWordCreationException("Translated word does not contain any primary words");
-        }else if(word.indexOf(";") > 0){
-            translatedSynonyms = word.substring(word.indexOf(";")).split("[,;]+");
-        }else{
-            translatedSynonyms = null;
+            throw new UnsuccessfulWordCreationException("Translated word contains words of zero length");
         }
-
         this.translatedWord = word.split(",+");
+    }
+    public void setTranslatedSynonym(String synonym) throws UnsuccessfulWordCreationException {
+        if(synonym == null || synonym.length() == 0) {
+            translatedSynonyms = null;
+            return;
+        }else if (!verifyWord(synonym)) {
+            throw new UnsuccessfulWordCreationException("Translated synonym contains words of zero length");
+        }
+        this.translatedSynonyms = synonym.split(",+");
     }
 
     private void setTranslatedWord(String[] word){
@@ -81,29 +94,48 @@ public class Word {
     private void setSynonyms(String[] synonyms){
         this.synonyms = synonyms;
     }
-    private void setTranslatedSynonyms(String[] translatedSynonyms){
+    private void setTranslatedSynonym(String[] translatedSynonyms){
         this.translatedSynonyms = translatedSynonyms;
     }
 
     public void setDescription(String description){
         if(description == null || description.length() == 0) { // description is allowed to be removed. But when saving it or translated word will have to exist
             this.description = null;
+            return;
         }
         this.description = description;
     }
 
-    public void setDemands(String demands){
-        if(demands == null || demands.length() == 0) {
-            this.demands = null;
+    public void setDemand(String demand){
+        if(demand == null || demand.length() == 0) {
+            this.demand = null;
+            return;
         }
-        this.demands = demands;
+        this.demand = demand;
     }
 
-    public void setTranslatedDemands(String demands){
+    public void setTranslatedDemand(String demands){
         if(demands == null || demands.length() == 0) {
-            this.translatedDemands = null;
+            this.translatedDemand = null;
+            return;
         }
-        this.translatedDemands = demands;
+        this.translatedDemand = demands;
+    }
+
+    public void setNote(String note){
+        if(note == null || note.length() == 0) {
+            this.note = null;
+            return;
+        }
+        this.note = note;
+    }
+
+    public void setTranslatedNote(String note){
+        if(note == null || note.length() == 0) {
+            this.translatedNote = null;
+            return;
+        }
+        this.translatedNote = note;
     }
 
     public void setCategories(String categories) throws UnsuccessfulWordCreationException {
@@ -116,32 +148,79 @@ public class Word {
         this.categories = categories;
     }
 
+    public String getDemand() {
+        return demand == null ? "" : demand;
+    }
+    public String getTranslatedDemand() {
+        return translatedDemand == null ? "" : translatedDemand;
+    }
+    public String getNote() {
+        return note == null ? "" : note;
+    }
+    public String getTranslatedNote() {
+        return translatedNote == null ? "" : translatedNote;
+    }
+
+    public String[] getSynonyms() {
+        return synonyms;
+    }
+    public String getSynonymsJoined() {
+        if(synonyms == null) return "";
+        return String.join(", ",synonyms);
+    }
+    public String getTranslatedSynonymsJoined() {
+        if(translatedSynonyms == null) return "";
+        return String.join(", ",translatedSynonyms);
+    }
+    public void setId(String id){
+        this.id = id;
+    }
+    public String getId(){
+        return id;
+    }
+
     public String[] getCategories() {
         return categories;
     }
-
-    /**
-     * Checks that word is not null, that it does not start or end with comma or semicolon and it does not have two commas or semicolons consecutively.
-     * It does not check word's length, beacuse some words are allowed to be empty.
-     */
-    public static boolean verifyWord(String word){
-        return word != null && !word.startsWith(",") && !word.startsWith(";") && !word.endsWith(",") && !word.endsWith(";") && !word.matches(".*[,;]{2,}.*");
+    public String getCategoriesJoined() {
+        if(categories == null) return "";
+        return String.join(", ",categories);
     }
 
-    public class UnsuccessfulWordCreationException extends Exception{
+    /**
+     * Checks that word is not null, that it does not start or end with comma and it does not have two commas consecutively.
+     * It does not check word's length, because some words are allowed to be empty.
+     */
+    public static boolean verifyWord(String word){
+        return word != null && !word.startsWith(",") && !word.endsWith(",") && !word.contains(",,");
+    }
+
+    public static class UnsuccessfulWordCreationException extends Exception{
         public UnsuccessfulWordCreationException(String msg){
             super(msg);
         }
     }
+    public static class DuplicatedIdException extends Exception{
+        public DuplicatedIdException(String msg){
+            super(msg);
+        }
+    }
 
-    public String getJson() throws JSONException {
+    /**
+     * Returns word data in a form of JSON.
+     */
+    public JSONObject getJson() throws JSONException, UnsuccessfulWordCreationException {
         if(this.description == null && this.translatedWord == null ){
-            throw new JSONException("Crucial data (description and translated word) is missing");
+            throw new UnsuccessfulWordCreationException("Crucial data (description and translated word) is missing");
+        }
+        if(this.id == null || this.id.isEmpty()){
+            throw new UnsuccessfulWordCreationException("Id is not set when creating JSON");
         }
 
         JSONObject obj = new JSONObject();
 
         obj.put("word", fromArrayToJsonArray(this.word));
+        obj.put("id", this.id);
 
         if(this.description != null) {
             obj.put("description", this.description);
@@ -155,18 +234,23 @@ public class Word {
         if(this.translatedSynonyms != null){
             obj.put("translatedSynonyms", fromArrayToJsonArray(this.translatedSynonyms));
         }
-        if(this.demands != null){
-            obj.put("demands", this.demands);
+        if(this.demand != null){
+            obj.put("demand", this.demand);
         }
-        if(this.translatedDemands != null){
-            obj.put("translatedDemands", this.translatedDemands);
+        if(this.translatedDemand != null){
+            obj.put("translatedDemand", this.translatedDemand);
+        }
+        if(this.note != null){
+            obj.put("note", this.note);
+        }
+        if(this.translatedNote != null){
+            obj.put("translatedNote", this.translatedNote);
         }
         if(this.categories != null){
             obj.put("categories", fromArrayToJsonArray(this.categories));
         }
 
-        StringWriter out = new StringWriter();
-        return obj.toString();
+        return obj;
     }
 
     private static JSONArray fromArrayToJsonArray(String[] array){
@@ -184,12 +268,12 @@ public class Word {
         return array;
     }
 
-    public static Word getWordFromJson(String json) throws JSONException{
+    public static Word getWordFromJson(JSONObject obj) throws JSONException{
         Word word;
-        JSONObject obj = new JSONObject(json);
 
         JSONArray array = obj.getJSONArray("word");
         word = new Word(fromJsonArrayToArray(array));
+        word.setId(obj.getString("id"));
 
         if(obj.has("description")){
             word.setDescription(obj.getString("description"));
@@ -201,19 +285,78 @@ public class Word {
             word.setSynonyms(fromJsonArrayToArray(obj.getJSONArray("synonyms")));
         }
         if(obj.has("translatedSynonyms")){
-            word.setTranslatedSynonyms(fromJsonArrayToArray(obj.getJSONArray("translatedSynonyms")));
+            word.setTranslatedSynonym(fromJsonArrayToArray(obj.getJSONArray("translatedSynonyms")));
         }
-        if(obj.has("demands")){
-            word.setDemands(obj.getString("demands"));
+        if(obj.has("demand")){
+            word.setDemand(obj.getString("demand"));
         }
-        if(obj.has("translatedDemands")){
-            word.setTranslatedDemands(obj.getString("translatedDemands"));
+        if(obj.has("translatedDemand")){
+            word.setTranslatedDemand(obj.getString("translatedDemand"));
+        }
+        if(obj.has("note")){
+            word.setNote(obj.getString("note"));
+        }
+        if(obj.has("translatedNote")){
+            word.setTranslatedNote(obj.getString("translatedNote"));
         }
         if(obj.has("categories")){
             word.setCategories(fromJsonArrayToArray(obj.getJSONArray("categories")));
         }
 
         return word;
+    }
+
+    /**
+     * Finds an ID that does not yet exist in the list. It then returns the id.
+     */
+    public String setIdAndAvoidDuplication(List<Word> words){
+        String time = String.valueOf(System.currentTimeMillis());
+        String base = time;
+        //+ String.format("%03d", idCounter++));
+        long x = words.stream().map(Word::getId).filter(id -> id.startsWith(base)).mapToLong(Long::parseLong).sorted().reduce(Long.parseLong(base) * 1000, (a, b) -> {
+            if (a == b) {
+                return a + 1;
+            }
+            return a;
+        });
+        setId("" + x);
+        return "" + x;
+    }
+
+    /**
+     * Returns comparator that sorts by primary words.
+     */
+    public static Comparator<Word> comparatorByPrimary(){
+        return (w1, w2) -> w1.word[0].compareTo(w2.word[0]);
+    }
+
+    /**
+     * Returns comparator that sorts by translated words. Null values are placed to the end.
+     */
+    public static Comparator<Word> comparatorByTranslated(){
+        return (w1, w2) -> {
+            if (w1.translatedWord == null && w2.translatedWord == null)
+                return 0;
+            if (w1.translatedWord == null)
+                return 1;
+            if (w2.translatedWord == null)
+                return -1;
+            return w1.translatedWord[0].compareTo(w2.translatedWord[0]);
+        };
+    }
+    /**
+     * Returns comparator that sorts by translated descriptions. Null values are placed to the end.
+     */
+    public static Comparator<Word> comparatorByDescription(){
+        return (w1, w2) -> {
+            if (w1.description == null && w2.description == null)
+                return 0;
+            if (w1.description == null)
+                return 1;
+            if (w2.description == null)
+                return -1;
+            return w1.description.compareTo(w2.description);
+        };
     }
 }
 

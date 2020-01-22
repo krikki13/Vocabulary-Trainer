@@ -2,8 +2,6 @@ package com.krikki.vocabularytrainer;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -12,9 +10,11 @@ import android.widget.Button;
 
 import com.krikki.vocabularytrainer.dictionary.Dictionary;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+
 /**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
+ * Controls main menu activity.
  */
 public class MainMenu extends AppCompatActivity {
     private View mContentView;

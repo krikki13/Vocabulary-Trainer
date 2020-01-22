@@ -6,6 +6,7 @@
     <string name="Open">Open</string>
     <string name="Close">Close</string>
     <string name="title_activity_word_adder">Add Words</string>
+    <string name="title_activity_word_adder_edit">Edit Word</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>

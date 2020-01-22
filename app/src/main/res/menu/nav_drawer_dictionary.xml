@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:id="@+id/sort"
-        android:title="Sort"/>
-    <item android:id="@+id/settings"
-        android:title="Do something"/>
-    <item android:id="@+id/mycart"
-        android:title="Do something else"/>
+    <item android:id="@+id/sort_by_primary"
+        android:title="Sort by English words"/>
+    <item android:id="@+id/sort_by_translated"
+        android:title="Sort by Slovene word"/>
+    <item android:id="@+id/sort_by_desc"
+        android:title="Sort by description"/>
 
 </menu>
