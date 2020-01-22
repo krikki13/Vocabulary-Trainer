@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -80,24 +79,22 @@ public class Dictionary extends AppCompatActivity {
 
 
         nv = findViewById(R.id.nv);
-        nv.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                /*int id = item.getItemId();
-                switch(id)
-                {
-                    case R.id.account:
-                        Toast.makeText(Dictionary.this, "My Account",Toast.LENGTH_LONG).show();break;
-                    case R.id.settings:
-                        Toast.makeText(Dictionary.this, "Settings",Toast.LENGTH_LONG).show();break;
-                    case R.id.mycart:
-                        Toast.makeText(Dictionary.this, "My Cart",Toast.LENGTH_LONG).show();break;
-                    default:
-                        return true;
-                }
-                return true;*/
-                return true;
+        nv.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            switch(id){
+                case R.id.sort_by_primary:
+                    words.sort(Word.comparatorByPrimary());
+                    break;
+                case R.id.sort_by_translated:
+                    words.sort(Word.comparatorByTranslated());
+                    break;
+                case R.id.sort_by_desc:
+                    words.sort(Word.comparatorByDescription());
+                    break;
             }
+            adapter.notifyDataSetChanged();
+            drawer.closeDrawers();
+            return true;
         });
 
         toggle.syncState();

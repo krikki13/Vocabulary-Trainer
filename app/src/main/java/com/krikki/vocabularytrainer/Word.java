@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ public class Word {
     private String demand;
     private String note;
 
-    private String description;
+    private String description; // description and translatedWord can be null
 
     private String[] translatedWord;
     private String[] translatedSynonyms;
@@ -100,6 +101,7 @@ public class Word {
     public void setDescription(String description){
         if(description == null || description.length() == 0) { // description is allowed to be removed. But when saving it or translated word will have to exist
             this.description = null;
+            return;
         }
         this.description = description;
     }
@@ -107,6 +109,7 @@ public class Word {
     public void setDemand(String demand){
         if(demand == null || demand.length() == 0) {
             this.demand = null;
+            return;
         }
         this.demand = demand;
     }
@@ -114,6 +117,7 @@ public class Word {
     public void setTranslatedDemand(String demands){
         if(demands == null || demands.length() == 0) {
             this.translatedDemand = null;
+            return;
         }
         this.translatedDemand = demands;
     }
@@ -121,6 +125,7 @@ public class Word {
     public void setNote(String note){
         if(note == null || note.length() == 0) {
             this.note = null;
+            return;
         }
         this.note = note;
     }
@@ -128,6 +133,7 @@ public class Word {
     public void setTranslatedNote(String note){
         if(note == null || note.length() == 0) {
             this.translatedNote = null;
+            return;
         }
         this.translatedNote = note;
     }
@@ -315,6 +321,42 @@ public class Word {
         });
         setId("" + x);
         return "" + x;
+    }
+
+    /**
+     * Returns comparator that sorts by primary words.
+     */
+    public static Comparator<Word> comparatorByPrimary(){
+        return (w1, w2) -> w1.word[0].compareTo(w2.word[0]);
+    }
+
+    /**
+     * Returns comparator that sorts by translated words. Null values are placed to the end.
+     */
+    public static Comparator<Word> comparatorByTranslated(){
+        return (w1, w2) -> {
+            if (w1.translatedWord == null && w2.translatedWord == null)
+                return 0;
+            if (w1.translatedWord == null)
+                return 1;
+            if (w2.translatedWord == null)
+                return -1;
+            return w1.translatedWord[0].compareTo(w2.translatedWord[0]);
+        };
+    }
+    /**
+     * Returns comparator that sorts by translated descriptions. Null values are placed to the end.
+     */
+    public static Comparator<Word> comparatorByDescription(){
+        return (w1, w2) -> {
+            if (w1.description == null && w2.description == null)
+                return 0;
+            if (w1.description == null)
+                return 1;
+            if (w2.description == null)
+                return -1;
+            return w1.description.compareTo(w2.description);
+        };
     }
 }
 
