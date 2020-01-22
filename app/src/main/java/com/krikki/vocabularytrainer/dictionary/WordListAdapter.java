@@ -6,6 +6,8 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -20,8 +22,9 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 
-public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHolder>{
-    private ArrayList<Word> words;
+public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHolder> implements Filterable {
+    private ArrayList<Word> words; // words is the full size list, which is used to refill filteredList
+    private ArrayList<Word> filteredWords; // filtered words is list of words that is being displayed
     private Context context;
     private Drawable infoIcon, exclamationMarkIcon, translationIcon, descriptionIcon, categoryIcon;
     private Consumer<String> longClickConsumer;
@@ -29,6 +32,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
     // RecyclerView recyclerView;
     public WordListAdapter(Context context, ArrayList<Word> words, Consumer<String> longClickConsumer) {
         this.words = words;
+        this.filteredWords = words;
         this.context = context;
         this.longClickConsumer = longClickConsumer;
 
@@ -67,7 +71,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Word theWord = words.get(position);
+        Word theWord = filteredWords.get(position);
         holder.wordText.setText(theWord.getWords());
         holder.describedWord.setText(theWord.getDescription());
         holder.translatedWord.setText(theWord.getTranslatedWords());
@@ -75,7 +79,45 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        return words.size();
+        return filteredWords.size();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                String charString = charSequence.toString();
+                if (charString.length() < 3) {
+                    filteredWords = words;
+                } else {
+                    ArrayList<Word> tempFilteredList = new ArrayList<>();
+                    for (Word word : words) {
+
+                        // name match condition. this might differ depending on your requirement
+                        // here we are looking for name or phone number match
+                        if (String.join("|", word.getWords().toLowerCase()).contains(charString.toLowerCase()) ||
+                                word.getTranslatedWords() != null &&
+                                        String.join("|", word.getTranslatedWords().toLowerCase()).contains(charString.toLowerCase()) ||
+                                word.getDescription() != null &&
+                                        String.join("|", word.getDescription().toLowerCase()).contains(charString.toLowerCase())) {
+                            tempFilteredList.add(word);
+                        }
+                    }
+                    filteredWords = tempFilteredList;
+                }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = filteredWords;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                filteredWords = (ArrayList<Word>) filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
@@ -123,7 +165,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 noteText.setVisibility(View.GONE);
                 translatedNoteText.setVisibility(View.GONE);
 
-                wordText.setText(words.get(getAdapterPosition()).getWords());
+                wordText.setText(filteredWords.get(getAdapterPosition()).getWords());
             }else {
                 isExpanded = true;
                 layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -137,7 +179,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 translatedWord.setEllipsize(null);
 
                 // set text, visibility and icon to word info fields
-                Word word = words.get(getAdapterPosition());
+                Word word = filteredWords.get(getAdapterPosition());
                 if (!word.getSynonymsJoined().isEmpty()) {
                     wordText.append(" (" + String.join(", ", word.getSynonyms()) + ")");
                 }
@@ -158,7 +200,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
         @Override
         public boolean onLongClick(View view) {
-            longClickConsumer.accept(words.get(getAdapterPosition()).getId());
+            longClickConsumer.accept(filteredWords.get(getAdapterPosition()).getId());
             return true;
         }
     }
