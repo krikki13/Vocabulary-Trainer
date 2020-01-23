@@ -4,6 +4,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.RuleBasedCollator;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -15,6 +17,16 @@ import java.util.List;
 
 public class Word {
     public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"'()/<>:;?";
+    /* Collation rules specify sorting order using RuleBasedCollator
+     * < letter difference
+     * ; accent difference
+     * , case difference
+     * = equal
+     */
+    private static final String COLLATION_RULES = "< a,A < ä,Ä < b,B < ß,ß < c,C < č,Č < ć,Ć < đ,Đ < d,D < e,E" +
+            " ; é,É < ë,Ë < f,F < g,G < h,H < i,I < j,J < k,K < l,L < m,M < n,N < o,O ; ó,Ó < ö,Ö < p,P < q,Q <" +
+            " r,R < s,S < š,Š < t,T < u,U < ü,Ü < v,V < w,W < x,X < y,Y < z,Z < ž,Ž";
+    private static RuleBasedCollator ruleBasedCollator;
 
     private String mainLanguage, supportingLanguage;
     private String id;
@@ -307,7 +319,7 @@ public class Word {
     }
 
     /**
-     * Finds an ID that does not yet exist in the list. It then returns the id.
+     * Finds an ID that does not yet exist in the list. It then returns the ID.
      */
     public String setIdAndAvoidDuplication(List<Word> words){
         String time = String.valueOf(System.currentTimeMillis());
@@ -323,15 +335,27 @@ public class Word {
         return "" + x;
     }
 
+    private static void initializeRuleBasedCollator(){
+        if (ruleBasedCollator == null){
+            try {
+                ruleBasedCollator = new RuleBasedCollator(COLLATION_RULES);
+            } catch (ParseException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        }
+    }
+
     /**
-     * Returns comparator that sorts by primary words.
+     * Returns comparator that sorts by primary words. Internally it uses a {@link RuleBasedCollator}
+     * with a custom alphabet which covers many languages.
      */
     public static Comparator<Word> comparatorByPrimary(){
-        return (w1, w2) -> w1.word[0].compareTo(w2.word[0]);
+        return (w1, w2) -> ruleBasedCollator.compare(w1.word[0], w2.word[0]);
     }
 
     /**
      * Returns comparator that sorts by translated words. Null values are placed to the end.
+     * Internally it uses a {@link RuleBasedCollator} with a custom alphabet which covers many languages.
      */
     public static Comparator<Word> comparatorByTranslated(){
         return (w1, w2) -> {
@@ -341,11 +365,12 @@ public class Word {
                 return 1;
             if (w2.translatedWord == null)
                 return -1;
-            return w1.translatedWord[0].compareTo(w2.translatedWord[0]);
+            return ruleBasedCollator.compare(w1.translatedWord[0], w2.translatedWord[0]);
         };
     }
     /**
      * Returns comparator that sorts by translated descriptions. Null values are placed to the end.
+     * Internally it uses a {@link RuleBasedCollator} with a custom alphabet which covers many languages.
      */
     public static Comparator<Word> comparatorByDescription(){
         return (w1, w2) -> {
@@ -355,7 +380,7 @@ public class Word {
                 return 1;
             if (w2.description == null)
                 return -1;
-            return w1.description.compareTo(w2.description);
+            return ruleBasedCollator.compare(w1.description, w2.description);
         };
     }
 }

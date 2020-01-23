@@ -26,6 +26,8 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+/** Controls dialog in which categories are list and can be selected. It also allows searching and adding.
+ */
 public class SelectableListDialog {
     private Context context;
     private List<SelectableData> data;
@@ -128,6 +130,10 @@ public class SelectableListDialog {
 
             @Override
             public void afterTextChanged(Editable editable) {
+                // filter
+                adapter.getFilter().filter(editable.toString());
+
+                // check if it can be added
                 if(editable.toString().matches("\\s*") ||
                         data.stream().map(SelectableData::getText).anyMatch(cat -> cat.equalsIgnoreCase(editable.toString().trim()))){
                     addIcon.setColorFilter(blackAndWhiteColorFilter);
