@@ -23,4 +23,20 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="entry_missing"><![CDATA[<empty>]]></string>
+
+    <string name="explanator_intro">Each entry must contain one english word and one translated word or description.
+        It can contain both. If you want to add synonyms to a word, use comma to separate them.</string>
+    <string name="explanator_accepted_synonyms">Accepted synonyms represent words which you are not targeting to learn,
+        but they are still accepted as a correct answer. They will never appear as a part of question.</string>
+    <string name="explanator_note">Note is displayed in quiz next to a word in a question. It is used
+        to resolve any ambiguity in its meaning.\nFor example using \"light\" is not enough, so we can
+        add note like \"weight\" or remove possibility of other meaning \"not bright\".</string>
+    <string name="explanator_demand">Demand is used to decrease amount of correct answers.
+        When there are multiple correct answers due to synonyms, we can hint which one are we
+        looking for.\nFor example we have to guess what is \"A young person with exceptional
+        qualities or abilities\". Word \"genius\" matches the description, but it is too easy, and not what we are looking for.
+        So we can add demand \"not genius\" or a little more suggestive \"on p\" to get \"prodigy\".</string>
+    <string name="explanator_categories">With categories you can group words that belong together.
+        They can be separate words by grammatical features, profession… \nFor example word \"constellation\"
+        could have categories: \"noun\", \"science\", \"astronomy\".</string>
 </resources>

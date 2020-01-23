@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -317,6 +319,35 @@ public class WordAdder extends AppCompatActivity {
                 });
             }
         }
+    }
+
+
+    // Menu icons are inflated just as they were with actionbar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.info_toolbar, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.button_info:
+                LayoutInflater layoutInflaterAndroid = LayoutInflater.from(context);
+                View mView = layoutInflaterAndroid.inflate(R.layout.dialog_term_explanator, null);
+                AlertDialog.Builder dialogExplanator = new AlertDialog.Builder(context);
+                dialogExplanator.setView(mView);
+                dialogExplanator
+                        .setPositiveButton("Done",
+                                (dialogBox, id) -> dialogBox.cancel());
+                dialogExplanator.show();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
     }
 
     /**

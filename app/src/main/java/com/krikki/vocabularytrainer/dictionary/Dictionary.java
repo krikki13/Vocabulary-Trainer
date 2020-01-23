@@ -110,7 +110,7 @@ public class Dictionary extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.options_menu_dictionary, menu);
-        getMenuInflater().inflate(R.menu.search_menu, menu);
+        getMenuInflater().inflate(R.menu.search_toolbar, menu);
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
