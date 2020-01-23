@@ -16,10 +16,10 @@ import java.util.List;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class CategoriesListAdapter extends RecyclerView.Adapter<CategoriesListAdapter.ViewHolder> implements Filterable {
-    private List<SelectableData> categories;
-    private List<SelectableData> filteredCategories;
+    private List<SelectableData<String>> categories;
+    private List<SelectableData<String>> filteredCategories;
 
-    public CategoriesListAdapter(List<SelectableData> categories) {
+    public CategoriesListAdapter(List<SelectableData<String>> categories) {
         this.categories = categories;
         this.filteredCategories = categories;
     }
@@ -33,15 +33,15 @@ public class CategoriesListAdapter extends RecyclerView.Adapter<CategoriesListAd
 
     @Override
     public void onBindViewHolder(CategoriesListAdapter.ViewHolder holder, int position) {
-        SelectableData category = filteredCategories.get(position);
-        holder.categoryText.setText(category.getText());
+        SelectableData<String> category = filteredCategories.get(position);
+        holder.categoryText.setText(category.getData());
         holder.categoryText.setChecked(filteredCategories.get(position).isSelected());
         holder.categoryText.setCheckMarkDrawable(category.isSelected() ? android.R.drawable.checkbox_on_background : android.R.drawable.checkbox_off_background);
 
         holder.categoryText.setTag(position);
         holder.categoryText.setOnClickListener(v -> {
             Integer pos = (Integer) holder.categoryText.getTag();
-            SelectableData category1 = filteredCategories.get(pos);
+            SelectableData<String> category1 = filteredCategories.get(pos);
             category1.setSelected(!category1.isSelected());
             holder.categoryText.setCheckMarkDrawable(category1.isSelected() ? android.R.drawable.checkbox_on_background : android.R.drawable.checkbox_off_background);
         });
@@ -62,12 +62,12 @@ public class CategoriesListAdapter extends RecyclerView.Adapter<CategoriesListAd
                 if (charString.isEmpty()) {
                     filteredCategories = categories;
                 } else {
-                    ArrayList<SelectableData> tempFilteredList = new ArrayList<>();
-                    for (SelectableData data : categories) {
+                    ArrayList<SelectableData<String>> tempFilteredList = new ArrayList<>();
+                    for (SelectableData<String> data : categories) {
 
                         // name match condition. this might differ depending on your requirement
                         // here we are looking for name or phone number match
-                        if (data.getText().toLowerCase().contains(charString.toLowerCase())) {
+                        if (data.getData().toLowerCase().contains(charString.toLowerCase())) {
                             tempFilteredList.add(data);
                         }
                     }
@@ -81,7 +81,7 @@ public class CategoriesListAdapter extends RecyclerView.Adapter<CategoriesListAd
 
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                filteredCategories = (ArrayList<SelectableData>) filterResults.values;
+                filteredCategories = (ArrayList<SelectableData<String>>) filterResults.values;
                 notifyDataSetChanged();
             }
         };

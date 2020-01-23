@@ -38,7 +38,7 @@ public class WordAdder extends AppCompatActivity {
     private final Context context = this;
     private DataStorageManager storageManager;
 
-    private List<SelectableData> allCategories;
+    private List<SelectableData<String>> allCategories;
     private EditingCell describedWordCell, categoriesCell;
     private WordEditingCell wordCell, translatedWordCell;
     private TextView buttonSaveAndReturn, buttonSaveAndAnother;
@@ -149,6 +149,10 @@ public class WordAdder extends AppCompatActivity {
         initializeValues();
     }
 
+    /**
+     * Creates dialogs for entering word information like description. Note that word and translated
+     * word use class WordInputDialog instead.
+     */
     private void createInputDialog(String title, String defaultText, Predicate<String> saveWord){
         LayoutInflater layoutInflaterAndroid = LayoutInflater.from(context);
         View mView = layoutInflaterAndroid.inflate(R.layout.dialog_input, null);
@@ -183,9 +187,7 @@ public class WordAdder extends AppCompatActivity {
     }
 
     private void createListDialog(TextView buttonTextView){
-        new SelectableListDialog(context, allCategories, categories -> {
-            buttonTextView.setText(categories);
-        }).show();
+        new SelectableListDialog(context, allCategories, buttonTextView::setText).show();
     }
 
     private void removeWordFromStorage() throws Word.DuplicatedIdException, Word.UnsuccessfulWordCreationException {
@@ -229,7 +231,7 @@ public class WordAdder extends AppCompatActivity {
         wordObject.setTranslatedNote(translatedWordCell.getNote());
         wordObject.setSynonym(wordCell.getSynonym());
         wordObject.setTranslatedSynonym(translatedWordCell.getSynonym());
-        wordObject.setCategories(allCategories.stream().filter(SelectableData::isSelected).map(SelectableData::getText).toArray(String[]::new));
+        wordObject.setCategories(allCategories.stream().filter(SelectableData::isSelected).map(SelectableData::getData).toArray(String[]::new));
 
         ArrayList<Word> words;
         try {
@@ -297,7 +299,7 @@ public class WordAdder extends AppCompatActivity {
             Toast.makeText(this, "Duplicated ID found in storage file!", Toast.LENGTH_LONG).show();
         }
         allCategories = words.stream().filter(word -> word.getCategories() != null).map(Word::getCategories).flatMap(Arrays::stream).distinct()
-                .map(string -> new SelectableData(string, false)).collect(Collectors.toList());
+                .map(string -> new SelectableData<>(string, false)).collect(Collectors.toList());
         if(idOfEditedWord != null){
             Optional<Word> currentWord = words.stream().filter(word -> word.getId().equals(idOfEditedWord)).findFirst();
             if(currentWord.isPresent()){
@@ -309,16 +311,17 @@ public class WordAdder extends AppCompatActivity {
 
                 allCategories.forEach(cat -> {
                     if(word.getCategories() != null && word.getCategories().length > 0 &&
-                            Arrays.stream(word.getCategories()).anyMatch(wordCat -> wordCat.equalsIgnoreCase(cat.getText()))){
+                            Arrays.stream(word.getCategories()).anyMatch(wordCat -> wordCat.equalsIgnoreCase(cat.getData()))){
                         cat.setSelected(true);
                     }
                 });
             }
         }
     }
-    // TODO implement saving logic and do a quick sanity check
 
-
+    /**
+     * Controls layouts for primary and translated word.
+     */
     private class WordEditingCell{
         private LinearLayout layout;
         private TextView wordText, synonymText, noteText, demandText;
@@ -402,6 +405,9 @@ public class WordAdder extends AppCompatActivity {
         }
     }
 
+    /**
+     * Controls layout for description.
+     */
     private class EditingCell{
         private LinearLayout layout;
         private TextView textView;

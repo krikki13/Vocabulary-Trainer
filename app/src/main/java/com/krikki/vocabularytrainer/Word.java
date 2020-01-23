@@ -23,7 +23,7 @@ public class Word {
      * , case difference
      * = equal
      */
-    private static final String COLLATION_RULES = "< a,A < ä,Ä < b,B < ß,ß < c,C < č,Č < ć,Ć < đ,Đ < d,D < e,E" +
+    private static final String COLLATION_RULES = "& a,A < ä,Ä < b,B < ß,ß < c,C < č,Č < ć,Ć < đ,Đ < d,D < e,E" +
             " ; é,É < ë,Ë < f,F < g,G < h,H < i,I < j,J < k,K < l,L < m,M < n,N < o,O ; ó,Ó < ö,Ö < p,P < q,Q <" +
             " r,R < s,S < š,Š < t,T < u,U < ü,Ü < v,V < w,W < x,X < y,Y < z,Z < ž,Ž";
     private static RuleBasedCollator ruleBasedCollator;
@@ -350,6 +350,7 @@ public class Word {
      * with a custom alphabet which covers many languages.
      */
     public static Comparator<Word> comparatorByPrimary(){
+        initializeRuleBasedCollator();
         return (w1, w2) -> ruleBasedCollator.compare(w1.word[0], w2.word[0]);
     }
 
@@ -358,6 +359,7 @@ public class Word {
      * Internally it uses a {@link RuleBasedCollator} with a custom alphabet which covers many languages.
      */
     public static Comparator<Word> comparatorByTranslated(){
+        initializeRuleBasedCollator();
         return (w1, w2) -> {
             if (w1.translatedWord == null && w2.translatedWord == null)
                 return 0;
@@ -373,6 +375,7 @@ public class Word {
      * Internally it uses a {@link RuleBasedCollator} with a custom alphabet which covers many languages.
      */
     public static Comparator<Word> comparatorByDescription(){
+        initializeRuleBasedCollator();
         return (w1, w2) -> {
             if (w1.description == null && w2.description == null)
                 return 0;

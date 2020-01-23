@@ -172,8 +172,9 @@ public class Dictionary extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK && requestCode == IMPORT_RESULT_CODE && data != null){
-            // TODO make this safer
+            // TODO make this safer and some merging feature or something
             try {
+                // when user imports external dictionary
                 Uri returnUri = data.getData();
                 String text = readTextFromUri(returnUri);
 
