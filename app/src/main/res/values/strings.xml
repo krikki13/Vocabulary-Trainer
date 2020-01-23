@@ -37,6 +37,8 @@
         qualities or abilities\". Word \"genius\" matches the description, but it is too easy, and not what we are looking for.
         So we can add demand \"not genius\" or a little more suggestive \"on p\" to get \"prodigy\".</string>
     <string name="explanator_categories">With categories you can group words that belong together.
-        They can be separate words by grammatical features, profession… \nFor example word \"constellation\"
-        could have categories: \"noun\", \"science\", \"astronomy\".</string>
+        They can be separate words by grammatical features, profession… In fact it is recommended
+        to use categories that specify grammatical type like: \"noun\", \"adjective\", \"verb\", \"adverb\",
+        because game generators can use this information to create better quizzes.
+        \nFor example word \"constellation\" could have categories: \"noun\", \"science\", \"astronomy\".</string>
 </resources>

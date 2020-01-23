@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="8dp"
+        android:text="GAMES"
+        android:textColor="#33b5e5"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/rounded_game_layout"
+        android:orientation="vertical"
+        android:layout_margin="15dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
+            android:layout_marginTop="12dp"
+            android:text="Quiz"
+            android:textColor="#364AB6"
+            android:textSize="21sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/button_primary_translated"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="220dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:background="@android:color/transparent"
+            android:text="English \u2192 Slovene"
+            android:textColor="#03A9F4" />
+
+        <Button
+            android:id="@+id/button_primary_desc"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="220dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:background="@android:color/transparent"
+            android:text="English \u2192 Description"
+            android:textColor="#03A9F4" />
+
+        <Button
+            android:id="@+id/button_translated_primary"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="220dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:background="@android:color/transparent"
+            android:text="Slovene \u2192 English"
+            android:textColor="#03A9F4" />
+
+        <Button
+            android:id="@+id/button_desc_primary"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="220dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="18dp"
+            android:background="@android:color/transparent"
+            android:text="Description \u2192 English"
+            android:textColor="#03A9F4" />
+
+    </LinearLayout>
+</LinearLayout>
