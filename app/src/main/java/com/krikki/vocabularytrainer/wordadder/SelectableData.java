@@ -1,15 +1,19 @@
 package com.krikki.vocabularytrainer.wordadder;
 
-public class SelectableData {
-    private String text;
+/**
+ * Wrapper for object T. It is meant to be used in {@link SelectableListDialog}, because it holds
+ * additional information whether this object was selected.
+ */
+public class SelectableData<T> {
+    private T data;
     private boolean isSelected;
 
-    public SelectableData(String text, boolean isSelected) {
-        this.text = text;
+    public SelectableData(T data, boolean isSelected) {
+        this.data = data;
         this.isSelected = isSelected;
     }
-    public String getText() {
-        return text;
+    public T getData() {
+        return data;
     }
     public boolean isSelected() {
         return isSelected;

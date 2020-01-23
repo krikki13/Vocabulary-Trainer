@@ -26,9 +26,11 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+/** Controls dialog in which categories are list and can be selected. It also allows searching and adding.
+ */
 public class SelectableListDialog {
     private Context context;
-    private List<SelectableData> data;
+    private List<SelectableData<String>> data;
     private final EditText editTextWithAdd;
     private final RecyclerView recyclerView;
     private final CategoriesListAdapter adapter;
@@ -45,7 +47,7 @@ public class SelectableListDialog {
             0, 0, 0, 1, 0    //alpha
     };
 
-    protected SelectableListDialog(Context context, List<SelectableData> data, Consumer<String> onPositiveButtonClicked) {
+    public SelectableListDialog(Context context, List<SelectableData<String>> data, Consumer<String> onPositiveButtonClicked) {
         this.context = context;
         this.data = data;
         this.onPositiveButtonClicked = onPositiveButtonClicked;
@@ -68,7 +70,7 @@ public class SelectableListDialog {
         alertDialogBuilderUserInput
                 .setCancelable(false)
                 .setPositiveButton("Done", (dialogBox,id) -> {
-                    onPositiveButtonClicked.accept(data.stream().filter(SelectableData::isSelected).map(SelectableData::getText).collect(Collectors.joining( ", " )));
+                    onPositiveButtonClicked.accept(data.stream().filter(SelectableData::isSelected).map(SelectableData::getData).collect(Collectors.joining( ", " )));
                 })
                 .setNegativeButton("Cancel",
                         (dialogBox, id) -> dialogBox.cancel());
@@ -88,7 +90,7 @@ public class SelectableListDialog {
             editTextWithAdd.setOnTouchListener((v, event) -> {
                 if(event.getAction() == MotionEvent.ACTION_UP) {
                     if(entryCanBeAdded && event.getX() <= editTextWithAdd.getTotalPaddingLeft()) {
-                        data.add(new SelectableData(editTextWithAdd.getText().toString(), true));
+                        data.add(new SelectableData<>(editTextWithAdd.getText().toString(), true));
                         addIcon.setColorFilter(blackAndWhiteColorFilter);
                         editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(addIcon,null,null,null);
                         adapter.notifyItemInserted(data.size() - 1);
@@ -128,8 +130,12 @@ public class SelectableListDialog {
 
             @Override
             public void afterTextChanged(Editable editable) {
+                // filter
+                adapter.getFilter().filter(editable.toString());
+
+                // check if it can be added
                 if(editable.toString().matches("\\s*") ||
-                        data.stream().map(SelectableData::getText).anyMatch(cat -> cat.equalsIgnoreCase(editable.toString().trim()))){
+                        data.stream().map(SelectableData::getData).anyMatch(cat -> cat.equalsIgnoreCase(editable.toString().trim()))){
                     addIcon.setColorFilter(blackAndWhiteColorFilter);
                     entryCanBeAdded = false;
                 }else{

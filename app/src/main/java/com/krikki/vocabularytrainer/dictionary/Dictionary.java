@@ -1,5 +1,6 @@
 package com.krikki.vocabularytrainer.dictionary;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -31,6 +32,7 @@ import java.util.Objects;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -44,7 +46,8 @@ import androidx.recyclerview.widget.RecyclerView;
 public class Dictionary extends AppCompatActivity {
     private static final int IMPORT_RESULT_CODE = 44157;
 
-    RecyclerView recyclerView;
+    private RecyclerView recyclerView;
+    private WordListAdapter adapter;
     private final ArrayList<Word> words = new ArrayList<>();
     private DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
@@ -52,6 +55,7 @@ public class Dictionary extends AppCompatActivity {
     private Toolbar toolbar;
     private Context context = this;
     private boolean refreshAfterResume = false;
+    private SearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +64,7 @@ public class Dictionary extends AppCompatActivity {
         readWordsFromStorage();
 
         recyclerView = findViewById(R.id.recyclerView);
-        WordListAdapter adapter = new WordListAdapter(this, words, this::startWordAdderActivity);
+        adapter = new WordListAdapter(this, words, this::startWordAdderActivity);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -106,6 +110,30 @@ public class Dictionary extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.options_menu_dictionary, menu);
+        getMenuInflater().inflate(R.menu.search_menu, menu);
+
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+
+        // listening to search query text change
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // filter recycler view when query submitted
+                adapter.getFilter().filter(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                // filter recycler view when text is changed
+                adapter.getFilter().filter(query);
+                return false;
+            }
+        });
         return true;
     }
 
@@ -139,12 +167,14 @@ public class Dictionary extends AppCompatActivity {
         return true;
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK && requestCode == IMPORT_RESULT_CODE && data != null){
-            // TODO make this safer
+            // TODO make this safer and some merging feature or something
             try {
+                // when user imports external dictionary
                 Uri returnUri = data.getData();
                 String text = readTextFromUri(returnUri);
 
@@ -172,7 +202,7 @@ public class Dictionary extends AppCompatActivity {
                 ArrayList<Word> list = storageManager.convertToListOfWords(text);
                 words.clear();
                 words.addAll(list);
-                recyclerView.getAdapter().notifyDataSetChanged();
+                adapter.notifyDataSetChanged();
 
                 Toast.makeText(Dictionary.this, "You are previewing the imported file, " +
                         "which has not yet been saved. To do that click save button in the upper right corner", Toast.LENGTH_LONG).show();
@@ -256,7 +286,7 @@ public class Dictionary extends AppCompatActivity {
             Toast.makeText(this, "Resumed", Toast.LENGTH_SHORT).show();
             readWordsFromStorage();
             // TODO could be done more efficiently
-            recyclerView.getAdapter().notifyDataSetChanged();
+            adapter.notifyDataSetChanged();
             refreshAfterResume = false;
         }
     }

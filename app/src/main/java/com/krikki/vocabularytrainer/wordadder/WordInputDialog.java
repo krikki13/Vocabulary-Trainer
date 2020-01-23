@@ -15,6 +15,10 @@ import com.krikki.vocabularytrainer.util.TriConsumer;
 
 import androidx.appcompat.app.AlertDialog;
 
+/**
+ * Controls dialog that appears when users is entering primary or translated word and can also
+ * enter some other information about the word.
+ */
 public abstract class WordInputDialog {
     private final Context context;
     private final AlertDialog alertDialog;
