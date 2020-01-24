@@ -68,7 +68,7 @@ public class DataStorageManager {
      * @return arrayList of words composed from received JSON string
      * @throws JSONException
      */
-    public ArrayList<Word> convertToListOfWords(String jsonText) throws JSONException, Word.DuplicatedIdException {
+    public ArrayList<Word> convertToListOfWords(String jsonText) throws JSONException, Word.DuplicatedIdException, Word.UnsuccessfulWordCreationException {
         if(jsonText == null || jsonText.isEmpty()){
             return new ArrayList<>();
         }

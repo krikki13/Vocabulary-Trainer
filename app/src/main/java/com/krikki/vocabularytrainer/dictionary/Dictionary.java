@@ -251,7 +251,10 @@ public class Dictionary extends AppCompatActivity {
             Toast.makeText(this, "Exception thrown when reading: "+e.getMessage(), Toast.LENGTH_LONG).show();
             words = new ArrayList<>();
         }catch (Word.DuplicatedIdException e){
-            Toast.makeText(this, "Word ID was duplicated in the data file", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Word ID is duplicated in the data file", Toast.LENGTH_LONG).show();
+            words = new ArrayList<>();
+        }catch (Word.UnsuccessfulWordCreationException e){
+            Toast.makeText(this, "Data file is incorrectly formatted", Toast.LENGTH_LONG).show();
             words = new ArrayList<>();
         }
         this.words.clear();

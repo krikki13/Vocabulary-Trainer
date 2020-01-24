@@ -59,8 +59,6 @@ public class WordAdder extends AppCompatActivity {
         if(bundle != null) {
             idOfEditedWord = bundle.getString("idOfEditedWord");
         }
-        // TODO
-        Toast.makeText(this, idOfEditedWord == null ? "Word is being added" : "idOfEditedWord = "+idOfEditedWord, Toast.LENGTH_SHORT).show();
         if(idOfEditedWord != null) {
             this.setTitle(R.string.title_activity_word_adder_edit);
         }
@@ -100,7 +98,7 @@ public class WordAdder extends AppCompatActivity {
                     Toast.makeText(context, "Saving successful", Toast.LENGTH_LONG).show();
                     recreate();
                 } catch (Word.UnsuccessfulWordCreationException | Word.DuplicatedIdException e) {
-                    Toast.makeText(context, "Saving word failed", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -111,7 +109,7 @@ public class WordAdder extends AppCompatActivity {
                 Toast.makeText(context, "Saving successful", Toast.LENGTH_LONG).show();
                 finish();
             } catch (Word.UnsuccessfulWordCreationException | Word.DuplicatedIdException e) {
-                Toast.makeText(context, "Saving word failed", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -299,6 +297,9 @@ public class WordAdder extends AppCompatActivity {
         }catch (Word.DuplicatedIdException e){
             words = new ArrayList<>();
             Toast.makeText(this, "Duplicated ID found in storage file!", Toast.LENGTH_LONG).show();
+        }catch (Word.UnsuccessfulWordCreationException e){
+            Toast.makeText(this, "Data file is incorrectly formatted", Toast.LENGTH_LONG).show();
+            words = new ArrayList<>();
         }
         allCategories = words.stream().filter(word -> word.getCategories() != null).map(Word::getCategories).flatMap(Arrays::stream).distinct()
                 .map(string -> new SelectableData<>(string, false)).collect(Collectors.toList());

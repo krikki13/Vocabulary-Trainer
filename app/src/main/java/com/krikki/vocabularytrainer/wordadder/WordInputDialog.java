@@ -94,7 +94,7 @@ public abstract class WordInputDialog {
                 Editable word = mainInput.getText();
                 if(word == null) return;
 
-                if(onPositiveResponse(word.toString().trim(), getSynonym(), getNote(), getDemand())){
+                if(onPositiveResponse(removeRedundantSpacing(word.toString()), getSynonym(), getNote(), getDemand())){
                     alertDialog.dismiss();
                 }
 
@@ -111,7 +111,7 @@ public abstract class WordInputDialog {
     private String getSynonym(){
         if(synonymInputLayout.getVisibility() == View.VISIBLE){
             Editable editable = synonymInput.getText();
-            return editable != null ?  editable.toString().trim() : null;
+            return editable != null ?  removeRedundantSpacing(editable.toString()) : null;
         }
         return null;
     }
@@ -119,7 +119,7 @@ public abstract class WordInputDialog {
     private String getNote(){
         if(noteInputLayout.getVisibility() == View.VISIBLE){
             Editable editable = noteInput.getText();
-            return editable != null ?  editable.toString().trim() : null;
+            return editable != null ?  removeRedundantSpacing(editable.toString()) : null;
         }
         return null;
     }
@@ -127,9 +127,13 @@ public abstract class WordInputDialog {
     private String getDemand(){
         if(demandInputLayout.getVisibility() == View.VISIBLE){
             Editable editable = demandInput.getText();
-            return editable != null ?  editable.toString().trim() : null;
+            return editable != null ?  removeRedundantSpacing(editable.toString()) : null;
         }
         return null;
+    }
+
+    private String removeRedundantSpacing(String word){
+        return word.trim().replaceAll("\\s{2,}", " ");
     }
 
     /**

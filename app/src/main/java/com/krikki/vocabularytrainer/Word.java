@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.text.RuleBasedCollator;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
  */
 
 public class Word {
-    public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"'()/<>:;?";
+    public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"()/<>:;?'";
     /* Collation rules specify sorting order using RuleBasedCollator
      * < letter difference
      * ; accent difference
@@ -67,37 +68,43 @@ public class Word {
     }
 
     public void setWord(String word) throws UnsuccessfulWordCreationException {
+        word = word == null ? null : word.trim();
         if(!verifyWord(word) || word.length() == 0){
             throw new UnsuccessfulWordCreationException("Word contains words of zero length");
         }
+        checkForForbiddenCharacters(word, "Word");
+        word = removeRedundantSpaces(word);
         this.word = word.split(",+");
     }
     public void setSynonym(String synonym) throws UnsuccessfulWordCreationException {
-        if(synonym == null || synonym.length() == 0) {
-            synonyms = null;
-            return;
-        }else if(!verifyWord(synonym)){
-            throw new UnsuccessfulWordCreationException("Synonym contains words of zero length");
-        }
-        this.synonyms = synonym.split(",+");
+        this.synonyms = prepareWordAttribute(synonym, "Synonym");
     }
     public void setTranslatedWord(String word) throws UnsuccessfulWordCreationException {
-        if(word == null || word.length() == 0) { // translated word is allowed to be removed. But when saving it or description will have to exist
-            translatedWord = null;
-            return;
-        }else if (!verifyWord(word)) {
-            throw new UnsuccessfulWordCreationException("Translated word contains words of zero length");
-        }
-        this.translatedWord = word.split(",+");
+        // translated word is allowed to be removed. But when saving it or description will have to exist
+        this.translatedWord = prepareWordAttribute(word, "Translated word");
     }
     public void setTranslatedSynonym(String synonym) throws UnsuccessfulWordCreationException {
-        if(synonym == null || synonym.length() == 0) {
-            translatedSynonyms = null;
-            return;
-        }else if (!verifyWord(synonym)) {
-            throw new UnsuccessfulWordCreationException("Translated synonym contains words of zero length");
+        this.translatedSynonyms = prepareWordAttribute(synonym, "Translated synonym");
+    }
+
+    /**
+     * Method for setting fields in which field is allowed to be null. It is also set to be null if
+     * wordToSet in empty after trimming. Otherwise word is verified using {@link #verifyWord(String)}
+     * and {@link #checkForForbiddenCharacters(String, String)}. Finally redundant spaces are removed
+     * and word is split by commas and returned.
+     * @param wordToSet word to be verified, prepared
+     * @param attributeDescription name of the attribute to be displayed in exception message
+     * @throws UnsuccessfulWordCreationException if a word after splitting is of zero length or it contains forbidden characters
+     */
+    private String[] prepareWordAttribute(String wordToSet, String attributeDescription) throws UnsuccessfulWordCreationException {
+        wordToSet = wordToSet == null ? null : wordToSet.trim();
+        if(wordToSet == null || wordToSet.length() == 0) {
+            return null;
+        }else if (!verifyWord(wordToSet)) {
+            throw new UnsuccessfulWordCreationException(attributeDescription + " contains words of zero length");
         }
-        this.translatedSynonyms = synonym.split(",+");
+        checkForForbiddenCharacters(wordToSet, attributeDescription);
+        return removeRedundantSpaces(wordToSet).split(",+");
     }
 
     private void setTranslatedWord(String[] word){
@@ -111,6 +118,7 @@ public class Word {
     }
 
     public void setDescription(String description){
+        description = description == null ? null : description.trim();
         if(description == null || description.length() == 0) { // description is allowed to be removed. But when saving it or translated word will have to exist
             this.description = null;
             return;
@@ -119,6 +127,7 @@ public class Word {
     }
 
     public void setDemand(String demand){
+        demand = demand == null ? null : demand.trim();
         if(demand == null || demand.length() == 0) {
             this.demand = null;
             return;
@@ -126,15 +135,17 @@ public class Word {
         this.demand = demand;
     }
 
-    public void setTranslatedDemand(String demands){
-        if(demands == null || demands.length() == 0) {
+    public void setTranslatedDemand(String demand){
+        demand = demand == null ? null : demand.trim();
+        if(demand == null || demand.length() == 0) {
             this.translatedDemand = null;
             return;
         }
-        this.translatedDemand = demands;
+        this.translatedDemand = demand;
     }
 
     public void setNote(String note){
+        note = note == null ? null : note.trim();
         if(note == null || note.length() == 0) {
             this.note = null;
             return;
@@ -143,6 +154,7 @@ public class Word {
     }
 
     public void setTranslatedNote(String note){
+        note = note == null ? null : note.trim();
         if(note == null || note.length() == 0) {
             this.translatedNote = null;
             return;
@@ -151,12 +163,30 @@ public class Word {
     }
 
     public void setCategories(String categories) throws UnsuccessfulWordCreationException {
-        if(categories.length() == 0 || categories.startsWith(",")  || categories.endsWith(",") || categories.contains(",,")) {
+        if(categories == null || categories.trim().isEmpty()){
+            this.categories = null;
+            return;
+        }
+        categories = categories.trim();
+        if(categories.startsWith(",")  || categories.endsWith(",") || categories.contains(",,")) {
             throw new UnsuccessfulWordCreationException("Some categories have zero length");
         }
         this.categories = categories.split(",+");
     }
-    public void setCategories(String[] categories) {
+
+    /**
+     * Sets categories. If given categories are null or of zero length, it is set as null. Otherwise
+     * every item in array is checked to be non-empty.
+     * @throws UnsuccessfulWordCreationException if an item is null or empty
+     */
+    public void setCategories(String[] categories) throws UnsuccessfulWordCreationException {
+        if(categories == null || categories.length == 0){
+            this.categories = null;
+            return;
+        }
+        if(Arrays.stream(categories).anyMatch(cat -> cat == null || cat.trim().isEmpty())){
+            throw new UnsuccessfulWordCreationException("Some categories have zero length");
+        }
         this.categories = categories;
     }
 
@@ -205,6 +235,25 @@ public class Word {
      */
     public static boolean verifyWord(String word){
         return word != null && !word.startsWith(",") && !word.endsWith(",") && !word.contains(",,");
+    }
+
+    /**
+     * Check if given word contains a character specified in {@link #FORBIDDEN_SIGNS_FOR_WORDS}.
+     * If it does it throws {@link UnsuccessfulWordCreationException}.
+     * @param textDescription is used in exception message to explain where it occurred
+     */
+    private static void checkForForbiddenCharacters(String text, String textDescription) throws UnsuccessfulWordCreationException {
+        if(text.matches(".*["+FORBIDDEN_SIGNS_FOR_WORDS+"].*")){
+            throw new UnsuccessfulWordCreationException(textDescription + " contains invalid characters! Those are " + FORBIDDEN_SIGNS_FOR_WORDS);
+        }
+    }
+
+    /**
+     * Removes double or multiple spaces and replaces them with single one. It also removes spaces
+     * around commas.
+     */
+    private static String removeRedundantSpaces(String text) {
+        return text.replaceAll("\\s{2,}", " ").replaceAll(" ?, ?", ",");
     }
 
     public static class UnsuccessfulWordCreationException extends Exception{
@@ -280,7 +329,7 @@ public class Word {
         return array;
     }
 
-    public static Word getWordFromJson(JSONObject obj) throws JSONException{
+    public static Word getWordFromJson(JSONObject obj) throws JSONException, UnsuccessfulWordCreationException {
         Word word;
 
         JSONArray array = obj.getJSONArray("word");
