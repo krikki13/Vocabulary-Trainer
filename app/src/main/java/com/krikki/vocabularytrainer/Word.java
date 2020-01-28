@@ -6,10 +6,10 @@ import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.RuleBasedCollator;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Data object. It contains at least String word (in primary language) and one of: description (in primary language)
@@ -29,6 +29,9 @@ public class Word {
             " r,R < s,S < š,Š < t,T < u,U < ü,Ü < v,V < w,W < x,X < y,Y < z,Z < ž,Ž";
     private static RuleBasedCollator ruleBasedCollator;
 
+    private static final int MAX_SCORE = 10;
+    private static final int MIN_SCORE = 0;
+
     private String mainLanguage, supportingLanguage;
     private String id;
 
@@ -44,8 +47,7 @@ public class Word {
     private String translatedDemand;
     private String translatedNote;
 
-    private int[] successNumbers;
-    private LocalDateTime lastDate;
+    private int[] scores;
 
     private String[] categories;
 
@@ -230,6 +232,21 @@ public class Word {
     }
 
     /**
+     * If setting scores fails due to NumberFormatException, they will be set to null.
+     * @throws UnsuccessfulWordCreationException if score is out of bounds
+     */
+    private void setScores(String scores) throws UnsuccessfulWordCreationException {
+        try {
+            int[] sc = Arrays.stream(scores.split(",")).mapToInt(Integer::parseInt).toArray();
+            if(Arrays.stream(sc).anyMatch(i -> i > MAX_SCORE || i < MIN_SCORE)){
+                throw new UnsuccessfulWordCreationException("Invalid score number");
+            }
+        }catch (NumberFormatException e){
+            scores = null;
+        }
+    }
+
+    /**
      * Checks that word is not null, that it does not start or end with comma and it does not have two commas consecutively.
      * It does not check word's length, because some words are allowed to be empty.
      */
@@ -268,7 +285,8 @@ public class Word {
     }
 
     /**
-     * Returns word data in a form of JSON.
+     * Returns word data in a form of JSON. At this point ID must be set.
+     * @throws UnsuccessfulWordCreationException if ID is not set or both translated word and description are missing
      */
     public JSONObject getJson() throws JSONException, UnsuccessfulWordCreationException {
         if(this.description == null && this.translatedWord == null ){
@@ -310,10 +328,16 @@ public class Word {
         if(this.categories != null){
             obj.put("categories", fromArrayToJsonArray(this.categories));
         }
+        if(this.scores != null){
+            obj.put("scores", Arrays.stream(this.scores).mapToObj(String::valueOf).collect(Collectors.joining()));
+        }
 
         return obj;
     }
 
+    /**
+     * Converts String array to {@link JSONArray}.
+     */
     private static JSONArray fromArrayToJsonArray(String[] array){
         JSONArray jsonArray = new JSONArray();
         for (String s : array) {
@@ -321,6 +345,10 @@ public class Word {
         }
         return jsonArray;
     }
+
+    /**
+     * Converts {@link JSONArray} to String array.
+     */
     private static String[] fromJsonArrayToArray(JSONArray jsonArray) throws JSONException {
         String[] array = new String[jsonArray.length()];
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -329,13 +357,18 @@ public class Word {
         return array;
     }
 
+    /**
+     * Reads JSON object and creates word from it. If word does not have ID in JSON object, word will be created without it.
+     */
     public static Word getWordFromJson(JSONObject obj) throws JSONException, UnsuccessfulWordCreationException {
         Word word;
 
         JSONArray array = obj.getJSONArray("word");
         word = new Word(fromJsonArrayToArray(array));
-        word.setId(obj.getString("id"));
 
+        if(obj.has("id")){
+            word.setId(obj.getString("id"));
+        }
         if(obj.has("description")){
             word.setDescription(obj.getString("description"));
         }
@@ -363,6 +396,9 @@ public class Word {
         if(obj.has("categories")){
             word.setCategories(fromJsonArrayToArray(obj.getJSONArray("categories")));
         }
+        if(obj.has("scores")){
+            word.setScores(obj.getString("scores"));
+        }
 
         return word;
     }
@@ -374,7 +410,7 @@ public class Word {
         String time = String.valueOf(System.currentTimeMillis());
         String base = time;
         //+ String.format("%03d", idCounter++));
-        long x = words.stream().map(Word::getId).filter(id -> id.startsWith(base)).mapToLong(Long::parseLong).sorted().reduce(Long.parseLong(base) * 1000, (a, b) -> {
+        long x = words.stream().map(Word::getId).filter(id -> id!=null && id.startsWith(base)).mapToLong(Long::parseLong).sorted().reduce(Long.parseLong(base) * 1000, (a, b) -> {
             if (a == b) {
                 return a + 1;
             }

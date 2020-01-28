@@ -6,4 +6,8 @@
     <dimen name="adder_section_header_text_size">13sp</dimen>
     <dimen name="compound_drawable_size">18sp</dimen>
     <dimen name="compound_drawable_size_small">15sp</dimen>
+    <dimen name="quiz_answer_button_text_size">16sp</dimen>
+    <dimen name="quiz_answer_button_margin_hor">15dp</dimen>
+    <dimen name="quiz_answer_button_vertical_spacing">20dp</dimen>
+    <dimen name="quiz_answer_button_vertical_padding">7dp</dimen>
 </resources>

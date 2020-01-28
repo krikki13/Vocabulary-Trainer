@@ -1,5 +1,6 @@
 package com.krikki.vocabularytrainer.games;
 
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
@@ -7,6 +8,9 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.krikki.vocabularytrainer.R;
+import com.krikki.vocabularytrainer.Word;
+
+import java.util.ArrayList;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,6 +21,7 @@ public class Quiz extends AppCompatActivity {
     private TextView question;
     private Button[] buttonAnswers;
     private Button buttonNext;
+    private ArrayList<Word> words;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +43,19 @@ public class Quiz extends AppCompatActivity {
         buttonAnswers[1].setText("perseverance");
         buttonAnswers[2].setText("shudder");
         buttonAnswers[3].setText("insurgence");
+
+        buttonAnswers[0].setOnClickListener(view -> {
+            question.setTypeface(null, Typeface.BOLD);
+        });
+        buttonAnswers[1].setOnClickListener(view -> {
+            question.setTypeface(null, Typeface.ITALIC);
+        });
+        buttonAnswers[2].setOnClickListener(view -> {
+            question.setTypeface(null, Typeface.BOLD_ITALIC);
+        });
+        buttonAnswers[3].setOnClickListener(view -> {
+            question.setTypeface(null, Typeface.NORMAL);
+        });
 
     }
 }

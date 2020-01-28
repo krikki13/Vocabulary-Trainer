@@ -79,6 +79,13 @@ public class DataStorageManager {
         for (int i = 0; i < jsonArray.length(); i++) {
             list.add(Word.getWordFromJson(jsonArray.getJSONObject(i)));
         }
+
+        // add IDs to those that do not have them
+        for (Word word : list) {
+            if(word.getId() == null){
+                word.setIdAndAvoidDuplication(list);
+            }
+        }
         if(list.stream().map(Word::getId).distinct().count() != list.size()){
             throw new Word.DuplicatedIdException("Duplicated Word ID");
         }

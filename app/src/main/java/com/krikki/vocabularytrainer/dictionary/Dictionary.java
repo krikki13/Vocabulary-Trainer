@@ -149,8 +149,10 @@ public class Dictionary extends AppCompatActivity {
                     Intent sendIntent = new Intent();
                     sendIntent.setAction(Intent.ACTION_SEND);
                     sendIntent.putExtra(Intent.EXTRA_TITLE, "words.json");
-                    sendIntent.putExtra(Intent.EXTRA_TEXT, storageManager.readFromStorage(DataStorageManager.WORDS_FILE));
-                    sendIntent.setType("text/json");
+                    String fileContents = storageManager.readFromStorage(DataStorageManager.WORDS_FILE);
+                    fileContents = fileContents.replace("{\"word\":", "\n{\"word\":");
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, fileContents);
+                    sendIntent.setType("application/octet-stream");
 
                     Intent shareIntent = Intent.createChooser(sendIntent, null);
                     startActivity(shareIntent);
@@ -160,7 +162,7 @@ public class Dictionary extends AppCompatActivity {
                 break;
             case R.id.import_:
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("text/plain");
+                intent.setType("application/octet-stream");
                 startActivityForResult(Intent.createChooser(intent, "Select words file"), IMPORT_RESULT_CODE);
                 break;
         }
@@ -174,7 +176,7 @@ public class Dictionary extends AppCompatActivity {
         if(resultCode == RESULT_OK && requestCode == IMPORT_RESULT_CODE && data != null){
             // TODO make this safer and some merging feature or something
             try {
-                // when user imports external dictionary
+                // IMPORT WORDS
                 Uri returnUri = data.getData();
                 String text = readTextFromUri(returnUri);
 
@@ -221,6 +223,7 @@ public class Dictionary extends AppCompatActivity {
 
             }catch (Exception e){
                 Toast.makeText(this, "Imported file is not correctly formatted", Toast.LENGTH_LONG).show();
+                recreate();
             }
         }
     }
