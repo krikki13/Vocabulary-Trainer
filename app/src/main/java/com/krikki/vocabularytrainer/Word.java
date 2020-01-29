@@ -29,8 +29,10 @@ public class Word {
             " r,R < s,S < š,Š < t,T < u,U < ü,Ü < v,V < w,W < x,X < y,Y < z,Z < ž,Ž";
     private static RuleBasedCollator ruleBasedCollator;
 
-    private static final int MAX_SCORE = 10;
-    private static final int MIN_SCORE = 0;
+    public static final int MAX_TOTAL_SCORE = 100;
+    public static final int MIN_TOTAL_SCORE = 0;
+    public static final int MAX_INDIVIDUAL_SCORE = 10;
+    public static final int MIN_INDIVIDUAL_SCORE = 0;
 
     private String mainLanguage, supportingLanguage;
     private String id;
@@ -48,6 +50,7 @@ public class Word {
     private String translatedNote;
 
     private int[] scores;
+    private int score = -1;
 
     private String[] categories;
 
@@ -222,6 +225,9 @@ public class Word {
     public String getId(){
         return id;
     }
+    public int getScore(){
+        return score;
+    }
 
     public String[] getCategories() {
         return categories;
@@ -238,14 +244,27 @@ public class Word {
     private void setScores(String scores) throws UnsuccessfulWordCreationException {
         try {
             int[] sc = Arrays.stream(scores.split(",")).mapToInt(Integer::parseInt).toArray();
-            if(Arrays.stream(sc).anyMatch(i -> i > MAX_SCORE || i < MIN_SCORE)){
+            if(Arrays.stream(sc).anyMatch(i -> i > MAX_INDIVIDUAL_SCORE || i < MIN_INDIVIDUAL_SCORE)){
                 throw new UnsuccessfulWordCreationException("Invalid score number");
             }
+            this.scores = sc;
+            this.score = calculateScore(sc);
         }catch (NumberFormatException e){
-            scores = null;
+            this.scores = null;
+            this.score = -1;
         }
     }
 
+    private static int calculateScore(int[] scores){
+        double s = 1.83;
+        double t = 0.21;
+        double score = Math.pow(scores[0], s);
+        score += Math.pow(scores[1], s-0.3*t);
+        score += Math.pow(scores[2], s-0.6*t);
+        score += Math.pow(scores[3], s-1.3*t);
+        score += Math.pow(scores[4], s-2.0*t);
+        return Math.min(Math.max((int) score, MIN_TOTAL_SCORE), MAX_TOTAL_SCORE);
+    }
     /**
      * Checks that word is not null, that it does not start or end with comma and it does not have two commas consecutively.
      * It does not check word's length, because some words are allowed to be empty.
@@ -469,6 +488,21 @@ public class Word {
             if (w2.description == null)
                 return -1;
             return ruleBasedCollator.compare(w1.description, w2.description);
+        };
+    }
+
+    /**
+     * Returns comparator that sorts by score. Null values are placed to the front.
+     */
+    public static Comparator<Word> comparatorByScore(){
+        return (w1, w2) -> {
+            if (w1.score == -1 && w2.score == -1)
+                return 0;
+            if (w1.score == -1)
+                return -1;
+            if (w2.score == -1)
+                return 1;
+            return w1.score - w2.score;
         };
     }
 }

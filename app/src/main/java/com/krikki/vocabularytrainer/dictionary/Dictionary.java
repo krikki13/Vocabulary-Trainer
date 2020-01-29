@@ -177,8 +177,8 @@ public class Dictionary extends AppCompatActivity {
             // TODO make this safer and some merging feature or something
             try {
                 // IMPORT WORDS
-                Uri returnUri = data.getData();
-                String text = readTextFromUri(returnUri);
+                final Uri returnUri = data.getData();
+                final String importedData = readTextFromUri(returnUri);
 
                 toolbar.removeAllViews();
                 toolbar.setTitle("Preview");
@@ -200,8 +200,11 @@ public class Dictionary extends AppCompatActivity {
                 buttonRevert.setLayoutParams(params2);
                 toolbar.addView(buttonRevert);
 
-                DataStorageManager storageManager = new DataStorageManager(this);
-                ArrayList<Word> list = storageManager.convertToListOfWords(text);
+                final DataStorageManager storageManager = new DataStorageManager(this);
+                final ArrayList<Word> list = storageManager.convertToListOfWords(importedData);
+                // you must convert text to words and then back to String, because IDs may not exist in initial test
+                final String dataToSave = storageManager.convertToJson(list);
+
                 words.clear();
                 words.addAll(list);
                 adapter.notifyDataSetChanged();
@@ -212,7 +215,7 @@ public class Dictionary extends AppCompatActivity {
                 buttonSave.setOnClickListener(view -> {
                     toolbar.removeView(buttonSave);
                     try {
-                        storageManager.writeToStorage(DataStorageManager.WORDS_FILE, text);
+                        storageManager.writeToStorage(DataStorageManager.WORDS_FILE, dataToSave);
                     } catch (IOException e) {
                         Toast.makeText(Dictionary.this, "Exception when writing file to storage", Toast.LENGTH_LONG).show();
                     }

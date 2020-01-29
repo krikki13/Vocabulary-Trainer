@@ -6,11 +6,19 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.krikki.vocabularytrainer.DataStorageManager;
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
+import java.util.TreeSet;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,6 +30,7 @@ public class Quiz extends AppCompatActivity {
     private Button[] buttonAnswers;
     private Button buttonNext;
     private ArrayList<Word> words;
+    private ArrayList<Word> questions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,5 +66,82 @@ public class Quiz extends AppCompatActivity {
             question.setTypeface(null, Typeface.NORMAL);
         });
 
+    }
+
+    /**
+     * Selects 10 words from word list as questions and adds them to questions field. Words are picked
+     * according to their score. List is divided to 10 sections which are valued by average score of
+     * contained words. This represents the probability for words to be selected from that section.
+     * At least 30 words are required, otherwise activity is finished.
+     */
+    private void pickQuestions(){
+        if(words.size() < 30){
+            Toast.makeText(this, "There are too few words to generate a quiz. Have at least 30 words", Toast.LENGTH_LONG).show();
+            finish();
+        }
+        final ArrayList<Word> list = new ArrayList<>(words);
+        list.sort(Word.comparatorByScore());
+
+        // find distribution of scores in words (result is array of avg values for each tenth of the word score list)
+        // length 10
+        final int[] distribution = new int[10];
+        int i = 0;
+        int dec = 1;
+        final int size = list.size();
+        int sum = 0;
+        int count = 0;
+        for(Word word : list){
+            if(i == dec*size/10){
+                distribution[dec-1] = sum/count;
+                dec++;
+                sum = 0;
+                count = 0;
+            }
+            count++;
+            sum += word.getScore();
+            i++;
+        }
+        distribution[9] = sum/count;
+
+        // generate probability arraylist where values represent tenths of word array from which question will be picked
+        // length >10, values: 0-9
+        final ArrayList<Integer> probabilities = new ArrayList<>();
+        final int divideBy = Word.MAX_TOTAL_SCORE / 10;
+        for (int j = 0; j < distribution.length; j++) {
+            int numOfCopies = (Word.MAX_TOTAL_SCORE - distribution[j])/divideBy;
+            numOfCopies = Math.max(numOfCopies, 1);
+            probabilities.addAll(Collections.nCopies(numOfCopies, j));
+        }
+
+        final Random random = new Random();
+        final TreeSet<Integer> wordNumbers = new TreeSet<>();
+        final int tenthLength = list.size()/10;
+        for (int k = 0; k < 10; k++) {
+            int tenth = probabilities.get(random.nextInt(probabilities.size()));
+            int wordInTenth = random.nextInt(tenthLength);
+            if(!wordNumbers.add(tenth * tenthLength + wordInTenth)){
+                k--;
+            }
+        }
+
+        wordNumbers.forEach(wordNumber -> questions.add(words.get(wordNumber)));
+    }
+
+    /**
+     * Read words from storage and put them in List. If any exception occurs when reading or parsing,
+     * Toast error message is displayed and activity finishes.
+     */
+    private void readListOfWordsFromStorage(){
+        DataStorageManager storageManager = new DataStorageManager(getApplicationContext());
+        try {
+            String wordsText = storageManager.readFromStorage(DataStorageManager.WORDS_FILE);
+            words = storageManager.convertToListOfWords(wordsText);
+        } catch (IOException | JSONException e) {
+            Toast.makeText(this, "Exception thrown when reading: "+e.getMessage(), Toast.LENGTH_LONG).show();
+            finish();
+        } catch (Word.DuplicatedIdException | Word.UnsuccessfulWordCreationException e1){
+            Toast.makeText(this, "Data file is incorrectly formatted", Toast.LENGTH_LONG).show();
+            finish();
+        }
     }
 }
