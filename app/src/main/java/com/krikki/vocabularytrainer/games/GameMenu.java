@@ -7,6 +7,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 
 import com.krikki.vocabularytrainer.R;
+import com.krikki.vocabularytrainer.games.quiz.Quiz;
 
 import java.util.function.Consumer;
 

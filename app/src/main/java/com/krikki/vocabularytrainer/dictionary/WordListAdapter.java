@@ -72,9 +72,9 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Word theWord = filteredWords.get(position);
-        holder.wordText.setText(theWord.getWords());
+        holder.wordText.setText(theWord.getWordsJoined());
         holder.describedWord.setText(theWord.getDescription());
-        holder.translatedWord.setText(theWord.getTranslatedWords());
+        holder.translatedWord.setText(theWord.getTranslatedWordsJoined());
     }
 
     @Override
@@ -96,9 +96,9 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
                         // name match condition. this might differ depending on your requirement
                         // here we are looking for name or phone number match
-                        if (String.join("|", word.getWords().toLowerCase()).contains(charString.toLowerCase()) ||
-                                word.getTranslatedWords() != null &&
-                                        String.join("|", word.getTranslatedWords().toLowerCase()).contains(charString.toLowerCase()) ||
+                        if (String.join("|", word.getWordsJoined().toLowerCase()).contains(charString.toLowerCase()) ||
+                                word.getTranslatedWordsJoined() != null &&
+                                        String.join("|", word.getTranslatedWordsJoined().toLowerCase()).contains(charString.toLowerCase()) ||
                                 word.getDescription() != null &&
                                         String.join("|", word.getDescription().toLowerCase()).contains(charString.toLowerCase())) {
                             tempFilteredList.add(word);
@@ -165,7 +165,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 noteText.setVisibility(View.GONE);
                 translatedNoteText.setVisibility(View.GONE);
 
-                wordText.setText(filteredWords.get(getAdapterPosition()).getWords());
+                wordText.setText(filteredWords.get(getAdapterPosition()).getWordsJoined());
             }else {
                 isExpanded = true;
                 layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;

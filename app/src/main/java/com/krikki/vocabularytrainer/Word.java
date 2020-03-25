@@ -62,14 +62,27 @@ public class Word {
         word = array;
     }
 
-    public String getWords(){
+    public String getWordsJoined(){
         return String.join(", ", word);
     }
     public String getDescription(){
         return description != null ? description : "";
     }
-    public String getTranslatedWords(){
+    public String getTranslatedWordsJoined(){
         return translatedWord != null ? String.join(", ", translatedWord) : "";
+    }
+    public String[] getWords() {
+        return word;
+    }
+    public String[] getTranslatedWords() {
+        return translatedWord;
+    }
+
+    public boolean hasTranslatedWords(){
+        return translatedWord != null;
+    }
+    public boolean hasDescription(){
+        return description != null;
     }
 
     public void setWord(String word) throws UnsuccessfulWordCreationException {

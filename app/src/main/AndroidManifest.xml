@@ -56,7 +56,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".games.Quiz"
+            android:name=".games.quiz.Quiz"
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="com.krikki.vocabularytrainer.games.Quiz" />

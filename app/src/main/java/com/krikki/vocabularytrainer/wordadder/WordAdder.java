@@ -307,8 +307,8 @@ public class WordAdder extends AppCompatActivity {
             Optional<Word> currentWord = words.stream().filter(word -> word.getId().equals(idOfEditedWord)).findFirst();
             if(currentWord.isPresent()){
                 Word word = currentWord.get();
-                wordCell.setAll(word.getWords(), word.getSynonymsJoined(), word.getNote(), word.getDemand());
-                translatedWordCell.setAll(word.getTranslatedWords(), word.getTranslatedSynonymsJoined(), word.getTranslatedNote(), word.getTranslatedDemand());
+                wordCell.setAll(word.getWordsJoined(), word.getSynonymsJoined(), word.getNote(), word.getDemand());
+                translatedWordCell.setAll(word.getTranslatedWordsJoined(), word.getTranslatedSynonymsJoined(), word.getTranslatedNote(), word.getTranslatedDemand());
                 describedWordCell.setText(word.getDescription());
                 categoriesCell.setText(word.getCategoriesJoined());
 
