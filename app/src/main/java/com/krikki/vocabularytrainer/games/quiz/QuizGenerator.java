@@ -4,9 +4,13 @@ import com.krikki.vocabularytrainer.Word;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Random;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
 
 public class QuizGenerator {
@@ -63,12 +67,6 @@ public class QuizGenerator {
         this.words.sort(Word.comparatorByScore());
     }
 
-    /**
-     * Selects 10 words from word list as questions and adds them to questions field. Words are picked
-     * according to their score. List is divided to 10 sections which are valued by average score of
-     * contained words. This represents the probability for words to be selected from that section.
-     * At least 30 words are required, otherwise activity is finished.
-     */
     private void pickQuestions() {
         // find distribution of scores in words (result is array of avg values for each tenth of the word score list)
         // length 10
@@ -113,6 +111,74 @@ public class QuizGenerator {
         }
 
         wordNumbers.forEach(wordNumber -> questions.add(words.get(wordNumber)));
+    }
+
+    /**
+     * Returns n picked words from list. Probability to pick a word grows, when its score decreases.
+     * Word score must be an int with values 0-100 or -1 which indicates undefined score (it is even more likely to be picked).
+     *
+     * Words are picked from sorted list. Traversing list is weighted according to words score.
+     * When scores are low, weights are also low and it is easy to traverse. Weights are obtained by using mapping function
+     * on word scores. To pick n random words from list, 10 numbers are picked between 0 and total sum of weights.
+     * Whenever accumulated sum of weights (when traversing) passes randomly picked number, current word is picked.
+     * Using this algorithm it may happen that 2 numbers point to last word in the list. In that case remaining words
+     * are the ones with lowest scores in the list (that have not been picked yet).
+     * @param words list of words
+     */
+    private void pickQuestions(List<Word> words) {
+        final int numberOfQuestions = 10;
+        final IntUnaryOperator scoreToWeight = score -> {
+            int s = 110 - score;
+            if(score == -1)
+                s += 15;
+            if(score < 25)
+                s += 10;
+            if(score < 50)
+                s += 10;
+            if(score > 90)
+                s -= 5;
+            return s;
+        };
+        // generate random numbers in range 0-(sumOfAll)
+        int sumOfAll = words.stream().mapToInt(word -> scoreToWeight.applyAsInt(word.getScore())).sum();
+        ArrayList<Word> pickedWords = new ArrayList<>(numberOfQuestions);
+        TreeSet<Integer> weightSelectors = new TreeSet<>();
+        for (int i = 0; i < numberOfQuestions; i++) {
+            if(!weightSelectors.add((int)(Math.random() * sumOfAll))) {
+                i--;
+            }
+        }
+
+        // traverse the list and pick words from it
+        Iterator<Integer> weightSelectorIterator = weightSelectors.iterator();
+        ListIterator<Word> wordIterator = words.listIterator();
+        int totalAccumulatedWeight = 0;
+        while (weightSelectorIterator.hasNext() && wordIterator.hasNext()) {
+            final int nextAccumulatedWeight = weightSelectorIterator.next();
+            while (true) {
+                final Word currentWord = wordIterator.next();
+                totalAccumulatedWeight += scoreToWeight.applyAsInt(currentWord.getScore());
+                if (totalAccumulatedWeight >= nextAccumulatedWeight) {
+                    pickedWords.add(currentWord);
+                    break;
+                }
+            }
+        }
+        // if two or more random numbers point to last word, wordIterator will be done, but randomNumberIterator wont
+        // in that case just pick first n words from words list (which were not yet picked)
+        wordIterator = words.listIterator();
+        while (weightSelectorIterator.hasNext()) {
+            weightSelectorIterator.next();
+            while (wordIterator.hasPrevious()) {
+                final Word currentWord = wordIterator.previous();
+                if (!pickedWords.contains(currentWord)) {
+                    pickedWords.add(currentWord);
+                    break;
+                }
+            }
+        }
+
+        questions.addAll(pickedWords);
     }
 
     private static String oneOf(String... array) {
