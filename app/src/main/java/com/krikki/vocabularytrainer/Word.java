@@ -13,10 +13,32 @@ import java.util.stream.Collectors;
 
 /**
  * Data object. It contains at least String word (in primary language) and one of: description (in primary language)
- * or translated word.
+ * or translated word. Every public get method that returns String returns the actual value or empty string (never null),
+ * except getId() method.
  */
 
 public class Word {
+    public enum WordType {
+        ADJECTIVE,
+        NOUN,
+        VERB,
+        ADVERB,
+        INTERJECTION;
+
+        /**
+         * Returns an array of strings representing word types.
+         * All words are lower case.
+         */
+        public static String[] stringValues(){
+            WordType[] typeArray = values();
+            String[] array = new String[typeArray.length];
+            for (int i = 0; i < typeArray.length; i++) {
+                array[i] = typeArray[i].toString().toLowerCase();
+            }
+            return array;
+        }
+    }
+
     public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"()/<>:;?'";
     /* Collation rules specify sorting order using RuleBasedCollator
      * < letter difference
@@ -52,6 +74,7 @@ public class Word {
     private int[] scores;
     private int score = -1;
 
+    private WordType wordType;
     private String[] categories;
 
     public Word(String word) throws UnsuccessfulWordCreationException {
@@ -249,6 +272,27 @@ public class Word {
         if(categories == null) return "";
         return String.join(", ",categories);
     }
+    public void setWordType(WordType wordType) {
+        this.wordType = wordType;
+    }
+
+    /**
+     * Sets wordType. If given parameter is null or empty, word type is set to null.
+     * @param wordType
+     */
+    public void setWordType(String wordType) {
+        if(wordType == null || wordType.equals("")){
+            this.wordType = null;
+            return;
+        }
+        this.wordType = WordType.valueOf(wordType.toUpperCase());
+    }
+    public String getWordTypeString() {
+        return wordType == null ? "" : wordType.toString().toLowerCase();
+    }
+    public WordType getWordType() {
+        return wordType;
+    }
 
     /**
      * If setting scores fails due to NumberFormatException, they will be set to null.
@@ -363,6 +407,9 @@ public class Word {
         if(this.scores != null){
             obj.put("scores", Arrays.stream(this.scores).mapToObj(String::valueOf).collect(Collectors.joining()));
         }
+        if(this.wordType != null){
+            obj.put("wordType", this.wordType);
+        }
 
         return obj;
     }
@@ -430,6 +477,9 @@ public class Word {
         }
         if(obj.has("scores")){
             word.setScores(obj.getString("scores"));
+        }
+        if(obj.has("wordType")){
+            word.setWordType(WordType.valueOf(obj.getString("wordType").toUpperCase()));
         }
 
         return word;

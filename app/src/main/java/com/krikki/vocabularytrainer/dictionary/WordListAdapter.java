@@ -170,7 +170,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 isExpanded = true;
                 layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 
-                // remove line limits for textviewa
+                // remove line limits for textview
                 wordText.setMaxLines(Integer.MAX_VALUE);
                 describedWord.setMaxLines(Integer.MAX_VALUE);
                 translatedWord.setMaxLines(Integer.MAX_VALUE);
@@ -194,7 +194,14 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 setWordFields.accept(word.getTranslatedDemand(), translatedDemandText, exclamationMarkIcon);
                 setWordFields.accept(word.getNote(), noteText, infoIcon);
                 setWordFields.accept(word.getTranslatedNote(), translatedNoteText, infoIcon);
-                setWordFields.accept(word.getCategoriesJoined(), categoriesText, categoryIcon);
+
+                String wordType = word.getWordTypeString();
+                String categoriesJoined = word.getCategoriesJoined();
+                String delimiter = "";
+                if(!wordType.isEmpty() && !categoriesJoined.isEmpty()) {
+                    delimiter = ", ";
+                }
+                setWordFields.accept(wordType + delimiter + categoriesJoined, categoriesText, categoryIcon);
             }
         }
 

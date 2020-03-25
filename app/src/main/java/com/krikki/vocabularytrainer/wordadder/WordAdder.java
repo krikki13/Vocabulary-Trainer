@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -41,7 +42,7 @@ public class WordAdder extends AppCompatActivity {
     private DataStorageManager storageManager;
 
     private List<SelectableData<String>> allCategories;
-    private EditingCell describedWordCell, categoriesCell;
+    private EditingCell describedWordCell, wordTypeCell, categoriesCell;
     private WordEditingCell wordCell, translatedWordCell;
     private TextView buttonSaveAndReturn, buttonSaveAndAnother;
     private Drawable infoIcon, exclamationMarkIcon;
@@ -77,6 +78,7 @@ public class WordAdder extends AppCompatActivity {
         wordCell = new WordEditingCell(R.id.wordLayout, R.id.wordText, R.id.synonymText, R.id.noteText, R.id.demandText);
         translatedWordCell = new WordEditingCell(R.id.translatedWordLayout, R.id.translatedWordText, R.id.translatedSynonymText, R.id.translatedNoteText, R.id.translatedDemandText);
         describedWordCell = new EditingCell(R.id.descriptionLayout, R.id.descriptionText);
+        wordTypeCell = new EditingCell(R.id.wordTypeLayout, R.id.wordTypeText);
         categoriesCell = new EditingCell(R.id.categoriesLayout, R.id.categoriesText);
 
         buttonSaveAndReturn = findViewById(R.id.buttonSaveAndReturn);
@@ -139,7 +141,8 @@ public class WordAdder extends AppCompatActivity {
         describedWordCell.setOnClickListener((view) -> createInputDialog("Described word", describedWordCell.getText(), newWord -> {
             describedWordCell.setText(newWord); return true;
         }));
-        categoriesCell.setOnClickListener((view) -> createListDialog(categoriesCell.textView));
+        wordTypeCell.setOnClickListener((view) -> createListDialog("Set word type", wordType -> wordTypeCell.setText(wordType)));
+        categoriesCell.setOnClickListener((view) -> createSelectableListDialog(categoriesCell.textView));
 
         if(idOfEditedWord != null){
             buttonSaveAndAnother.setText("Delete");
@@ -186,7 +189,26 @@ public class WordAdder extends AppCompatActivity {
         alertDialog.show();
     }
 
-    private void createListDialog(TextView buttonTextView){
+    /**
+     * Creates dialogs for selecting a single item from a short list.
+     */
+    private void createListDialog(String title, Consumer<String> onClick){
+        // setup the alert builder
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title);
+
+        final String[] wordTypes = Word.WordType.stringValues();
+        builder.setItems(wordTypes, (dialog, which) -> onClick.accept(wordTypes[which]));
+
+        // create and show the alert dialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    /**
+     * Creates a complex list dialog in which multiple items can be selected.
+     */
+    private void createSelectableListDialog(TextView buttonTextView){
         new SelectableListDialog(context, allCategories, buttonTextView::setText).show();
     }
 
@@ -231,6 +253,7 @@ public class WordAdder extends AppCompatActivity {
         wordObject.setTranslatedNote(translatedWordCell.getNote());
         wordObject.setSynonym(wordCell.getSynonym());
         wordObject.setTranslatedSynonym(translatedWordCell.getSynonym());
+        wordObject.setWordType(wordTypeCell.getText());
         wordObject.setCategories(allCategories.stream().filter(SelectableData::isSelected).map(SelectableData::getData).toArray(String[]::new));
 
         ArrayList<Word> words;

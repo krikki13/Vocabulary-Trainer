@@ -242,7 +242,42 @@
             </LinearLayout>
 
             <View
-                android:id="@+id/divider2"
+                android:id="@+id/divider4"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:id="@+id/headerWordType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                android:text="Word Type"
+                android:textColor="@color/adder_section_header_color"
+                android:textSize="@dimen/adder_section_header_text_size" />
+            <LinearLayout
+                android:id="@+id/wordTypeLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:padding="8dp"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/wordTypeText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/entry_missing"
+                    android:textColor="@color/adder_primary_text_color"
+                    android:textSize="@dimen/adder_primary_text_size" />
+            </LinearLayout>
+
+            <View
+                android:id="@+id/divider5"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginTop="10dp"
