@@ -9,21 +9,17 @@ import android.widget.Button;
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.games.quiz.Quiz;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import static com.krikki.vocabularytrainer.games.quiz.QuizGenerator.QuizType;
 
 /**
  * Controls game menu activity.
  */
 public class GameMenu extends AppCompatActivity {
     private Button buttonPrimaryTranslated, buttonPrimaryDesc, buttonTranslatedPrimary, buttonDescPrimary;
-    public enum QuizType{
-        PRIMARY_TRANSLATED,
-        PRIMARY_DESC,
-        TRANSLATED_PRIMARY,
-        DESC_PRIMARY
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,14 +33,15 @@ public class GameMenu extends AppCompatActivity {
         buttonTranslatedPrimary = findViewById(R.id.button_translated_primary);
         buttonDescPrimary = findViewById(R.id.button_desc_primary);
 
-        Consumer<QuizType> quizLauncher = quizType -> {
+        BiConsumer<QuizType, QuizType> quizLauncher = (quizQuestionType, quizAnswerType) -> {
             Intent intent = new Intent(this, Quiz.class);
-            intent.putExtra("quizType", quizType);
+            intent.putExtra("quizQuestionType", quizQuestionType.toString());
+            intent.putExtra("quizAnswerType", quizAnswerType.toString());
             startActivity(intent);
         };
-        buttonPrimaryTranslated.setOnClickListener(view -> quizLauncher.accept(QuizType.PRIMARY_TRANSLATED));
-        buttonPrimaryDesc.setOnClickListener(view -> quizLauncher.accept(QuizType.PRIMARY_DESC));
-        buttonTranslatedPrimary.setOnClickListener(view -> quizLauncher.accept(QuizType.TRANSLATED_PRIMARY));
-        buttonDescPrimary.setOnClickListener(view -> quizLauncher.accept(QuizType.DESC_PRIMARY));
+        buttonPrimaryTranslated.setOnClickListener(view -> quizLauncher.accept(QuizType.PRIMARY_LANG, QuizType.SECONDARY_LANG));
+        buttonPrimaryDesc.setOnClickListener(view -> quizLauncher.accept(QuizType.PRIMARY_LANG, QuizType.DESCRIPTION));
+        buttonTranslatedPrimary.setOnClickListener(view -> quizLauncher.accept(QuizType.SECONDARY_LANG, QuizType.PRIMARY_LANG));
+        buttonDescPrimary.setOnClickListener(view -> quizLauncher.accept(QuizType.DESCRIPTION, QuizType.PRIMARY_LANG));
     }
 }

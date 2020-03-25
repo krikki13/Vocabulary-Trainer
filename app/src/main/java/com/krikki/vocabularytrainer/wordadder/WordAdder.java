@@ -86,13 +86,7 @@ public class WordAdder extends AppCompatActivity {
 
         buttonSaveAndAnother.setOnClickListener(view -> {
             if(idOfEditedWord != null){ // remove word
-                try {
-                    removeWordFromStorage();
-                    Toast.makeText(context, "Removing successful", Toast.LENGTH_LONG).show();
-                    finish();
-                } catch (Word.UnsuccessfulWordCreationException | Word.DuplicatedIdException e) {
-                    Toast.makeText(context, "Removing word failed", Toast.LENGTH_LONG).show();
-                }
+                onDeleteClicked();
             }else { // add or edit word
                 if (!verifyWordData()) return;
                 try {
@@ -333,6 +327,7 @@ public class WordAdder extends AppCompatActivity {
                 wordCell.setAll(word.getWordsJoined(), word.getSynonymsJoined(), word.getNote(), word.getDemand());
                 translatedWordCell.setAll(word.getTranslatedWordsJoined(), word.getTranslatedSynonymsJoined(), word.getTranslatedNote(), word.getTranslatedDemand());
                 describedWordCell.setText(word.getDescription());
+                wordTypeCell.setText(word.getWordTypeString());
                 categoriesCell.setText(word.getCategoriesJoined());
 
                 allCategories.forEach(cat -> {
@@ -345,6 +340,25 @@ public class WordAdder extends AppCompatActivity {
         }
     }
 
+    private void onDeleteClicked(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Delete word");
+
+        //Setting message manually and performing action on button click
+        builder.setMessage("Do you really want to delete this word? It will be gone forever (a very long time)!")
+                .setPositiveButton("Yes", (dialog, id) -> {
+                    try {
+                        removeWordFromStorage();
+                        Toast.makeText(context, "Removing successful", Toast.LENGTH_LONG).show();
+                        finish();
+                    } catch (Word.UnsuccessfulWordCreationException | Word.DuplicatedIdException e) {
+                        Toast.makeText(context, "Removing word failed", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .setNegativeButton("No", (dialog, id) -> dialog.cancel());
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
 
     // Menu icons are inflated just as they were with actionbar
     @Override

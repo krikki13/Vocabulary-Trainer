@@ -3,24 +3,36 @@ package com.krikki.vocabularytrainer.games.quiz;
 import com.krikki.vocabularytrainer.Word;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Random;
+import java.util.NoSuchElementException;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
+import java.util.function.ToIntBiFunction;
+import java.util.stream.Collectors;
 
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * Quiz generator selects words to be used as question and answers. For picking questions it uses
+ * an algorithm that prioritizes words with lower scores (and even more undefined scores).
+ * When picking false answers to appear in a question, it picks words that are similar to the
+ * correct one.
+ */
 public class QuizGenerator {
+    private final static int NUMBER_OF_QUESTIONS = 10;
     /**
      * Specifies which data of word will be used as a question or answer.
      */
-    public enum WordType {
-        PRIMARY_LANG(word -> true, word -> oneOf(word.getWords())),
-        SECONDARY_LANG(Word::hasTranslatedWords, word -> oneOf(word.getTranslatedWords())),
-        DESCRIPTION(Word::hasDescription, Word::getDescription);
+    public enum QuizType {
+        PRIMARY_LANG(word -> true, Word::getWords),
+        SECONDARY_LANG(Word::hasTranslatedWords, Word::getTranslatedWords),
+        DESCRIPTION(Word::hasDescription, word -> new String[]{word.getDescription()});
 
         /**
          * Predicate that returns true when word contains needed data for given question or answer type.
@@ -31,86 +43,112 @@ public class QuizGenerator {
         /**
          * Function that gets one word from primary or translated word or the description
          */
-        private Function<Word, String> getOne;
+        private Function<Word, String[]> get;
 
-        WordType(Predicate<Word> existsInWord, Function<Word, String> getOne) {
+        QuizType(Predicate<Word> existsInWord, Function<Word, String[]> get) {
             this.existsInWord = existsInWord;
-            this.getOne = getOne;
+            this.get = get;
         }
     }
 
-    private ArrayList<Word> words; // list of all words from which only the ones with nulls at required places are removed
-    private ArrayList<Word> questions; // list of 10 questions
-    private ArrayList<ArrayList<Word>> falseAnswers; // list of 10x3 incorrect answers (correct answers are contained in questions)
+    private List<Word> words; // list of all words from which only the ones with nulls at required places are removed
+    private List<AnswerWord> questions; // list of 10 questions
+    private List<List<AnswerWord>> falseAnswers; // list of 10x3 incorrect answers (correct answers are contained in questions)
 
-    private ArrayList<String> literalQuestions; // actual text that is displayed TODO or is it?
+    private QuizType questionType;
+    private QuizType answerType;
 
-    private WordType questionType;
-    private WordType answerType;
+    private int questionNumber = 0;
+    private int correctAnswerIndex = -1;
 
-    public QuizGenerator(ArrayList<Word> words, WordType questionType, WordType answerType) throws QuizGenerationException {
+    /**
+     * Initiates quiz generator. To get data for first question, use instance methods. To continue to
+     * next question call next().
+     * @param words list of all words
+     * @param questionType type of word that appears in question
+     * @param answerType type of word that appears in answer
+     * @throws QuizGenerationException if questionType matches answerType or there are insufficient words (less than 20)
+     */
+    public QuizGenerator(ArrayList<Word> words, QuizType questionType, QuizType answerType) throws QuizGenerationException {
         if (questionType == answerType) {
             throw new QuizGenerationException("Question type must not match answer type");
-        } else if (words.size() < 30) {
-            throw new QuizGenerationException("There are too few words to generate a quiz. Have at least 30 words");
+        } else if (words.size() < 2*NUMBER_OF_QUESTIONS) {
+            throw new QuizGenerationException("There are too few words to generate a quiz. Have at least " + (2*NUMBER_OF_QUESTIONS) + " words");
         }
         this.questionType = questionType;
         this.answerType = answerType;
 
         this.words = new ArrayList<>(words);
-        if (questionType != WordType.PRIMARY_LANG) {
+        // remove words from words list if words needed fo questions and answers do not exist
+        if (questionType != QuizType.PRIMARY_LANG) {
             this.words.removeIf(questionType.existsInWord.negate());
         }
-        if (answerType != WordType.PRIMARY_LANG) {
+        if (answerType != QuizType.PRIMARY_LANG) {
             this.words.removeIf(answerType.existsInWord.negate());
         }
         this.words.sort(Word.comparatorByScore());
+
+        questions = new ArrayList<>(NUMBER_OF_QUESTIONS);
+        falseAnswers = new ArrayList<>(NUMBER_OF_QUESTIONS);
+
+        pickQuestions();
+        pickAnswers();
     }
 
-    private void pickQuestions() {
-        // find distribution of scores in words (result is array of avg values for each tenth of the word score list)
-        // length 10
-        final int[] distribution = new int[10];
-        int i = 0;
-        int dec = 1;
-        final int size = words.size();
-        int sum = 0;
-        int count = 0;
-        for (Word word : words) {
-            if (i == dec * size / 10) {
-                distribution[dec - 1] = sum / count;
-                dec++;
-                sum = 0;
-                count = 0;
-            }
-            count++;
-            sum += word.getScore();
-            i++;
-        }
-        distribution[9] = sum / count;
+    /**
+     * Get question string.
+     */
+    public String getQuestion(){
+        return oneOf(questionType.get.apply(questions.get(questionNumber).word));
+    }
 
-        // generate probability arraylist where values represent tenths of word array from which question will be picked
-        // length >10, values: 0-9
-        final ArrayList<Integer> probabilities = new ArrayList<>();
-        final int divideBy = Word.MAX_TOTAL_SCORE / 10;
-        for (int j = 0; j < distribution.length; j++) {
-            int numOfCopies = (Word.MAX_TOTAL_SCORE - distribution[j]) / divideBy;
-            numOfCopies = Math.max(numOfCopies, 1);
-            probabilities.addAll(Collections.nCopies(numOfCopies, j));
-        }
+    /**
+     * Get list of all answers. The correct one is placed randomly in the array. Its index can be
+     * obtained using {@link #getCorrectAnswerIndex()}.
+     * @return list of all answers
+     */
+    public List<String> getAllAnswers(){
+        List<String> answers = new ArrayList<>(4);
+        falseAnswers.get(questionNumber).forEach(falseAnswer -> answers.add(falseAnswer.literalAnswer));
+        correctAnswerIndex = (int) (Math.random() * 4);
+        answers.add(correctAnswerIndex, questions.get(questionNumber).literalAnswer);
+        return answers;
+    }
 
-        final Random random = new Random();
-        final TreeSet<Integer> wordNumbers = new TreeSet<>();
-        final int tenthLength = words.size() / 10;
-        for (int k = 0; k < 10; k++) {
-            int tenth = probabilities.get(random.nextInt(probabilities.size()));
-            int wordInTenth = random.nextInt(tenthLength);
-            if (!wordNumbers.add(tenth * tenthLength + wordInTenth)) {
-                k--;
-            }
-        }
+    /**
+     * Get number of current question.
+     */
+    public int getQuestionNumber(){
+        return questionNumber;
+    }
 
-        wordNumbers.forEach(wordNumber -> questions.add(words.get(wordNumber)));
+    /**
+     * Index of correct answer in the array given by {@link #getAllAnswers()}.
+     * This number is set to -1 before calling {@link #getAllAnswers()}.
+     */
+    public int getCorrectAnswerIndex(){
+        return correctAnswerIndex;
+    }
+
+    /**
+     * Go to next question. To check if there are any more use {@link #hasNext()}.
+     * @throws NoSuchElementException if there are no more questions
+     */
+    public void next() {
+        if(questionNumber == NUMBER_OF_QUESTIONS){
+            throw new NoSuchElementException("No more questions available");
+        }else{
+            questionNumber++;
+            correctAnswerIndex = -1;
+        }
+    }
+
+    /**
+     * Returns true if there are any questions left.
+     * @return
+     */
+    public boolean hasNext() {
+        return questionNumber + 1 < NUMBER_OF_QUESTIONS;
     }
 
     /**
@@ -123,9 +161,8 @@ public class QuizGenerator {
      * Whenever accumulated sum of weights (when traversing) passes randomly picked number, current word is picked.
      * Using this algorithm it may happen that 2 numbers point to last word in the list. In that case remaining words
      * are the ones with lowest scores in the list (that have not been picked yet).
-     * @param words list of words
      */
-    private void pickQuestions(List<Word> words) {
+    private void pickQuestions() {
         final int numberOfQuestions = 10;
         final IntUnaryOperator scoreToWeight = score -> {
             int s = 110 - score;
@@ -178,16 +215,116 @@ public class QuizGenerator {
             }
         }
 
-        questions.addAll(pickedWords);
+        questions = pickedWords.stream().map(AnswerWord::new).collect(Collectors.toList());
+        questions.forEach(question -> question.setLiteralAnswer(oneOf(answerType.get.apply(question.word))));
+    }
+
+    private void pickAnswers() {
+        List<AnswerWord> answerList = words.stream()
+                .map(AnswerWord::new).collect(Collectors.toList());
+        for (int i = 0; i < questions.size(); i++) {
+            final Word.WordType answerWordType = questions.get(i).word.getWordType();
+            final String correctAnswer = questions.get(i).getLiteralAnswer();
+
+            // this function compares words in various categories to decide which one looks more
+            // like the question
+            ToIntBiFunction<String, String> wordComparator = (a, b) -> {
+                // compare by first letter
+                if(a.charAt(0) == correctAnswer.charAt(0) && b.charAt(0) != correctAnswer.charAt(0)){
+                    return 1;
+                }else if(a.charAt(0) != correctAnswer.charAt(0) && b.charAt(0) == correctAnswer.charAt(0)){
+                    return -1;
+                }
+                // compare by length
+                if(correctAnswer.length() >= 8){
+                    // long words
+                    if(a.length() >= 6 && b.length() < 6){
+                        return 1;
+                    }else if(a.length() < 6 && b.length() >= 6){
+                        return -1;
+                    }
+                }else{
+                    // short or middle words
+                    int allowedDifference;
+                    if(correctAnswer.length() <= 5){
+                        allowedDifference = 2;
+                    }else{
+                        allowedDifference = 3;
+                    }
+                    if(Math.abs(a.length()-correctAnswer.length()) <= allowedDifference && Math.abs(b.length()-correctAnswer.length()) > allowedDifference){
+                        return 1;
+                    }else if(Math.abs(a.length()-correctAnswer.length()) > allowedDifference && Math.abs(b.length()-correctAnswer.length()) <= allowedDifference){
+                        return -1;
+                    }
+                }
+                int counterA = 0;
+                int counterB = 0;
+                int counterAback = 0;
+                int counterBback = 0;
+                for (int j = 1; j < 4 && j < a.length() && j < b.length(); j++) {
+                    if(a.charAt(j) == correctAnswer.charAt(j)) counterA++;
+                    if(b.charAt(j) == correctAnswer.charAt(j)) counterB++;
+                    if(a.charAt(a.length()-j) == correctAnswer.charAt(correctAnswer.length()-j)) counterAback++;
+                    if(b.charAt(b.length()-j) == correctAnswer.charAt(correctAnswer.length()-j)) counterBback++;
+                }
+                if(counterA >= 2 && counterB < 2){
+                    return 1;
+                }else if(counterA < 2 && counterB >= 2){
+                    return -1;
+                }
+                if(counterAback >= 2 && counterBback < 2){
+                    return 1;
+                }else if(counterAback < 2 && counterBback >= 2){
+                    return -1;
+                }
+                return a.compareTo(b);
+            };
+
+            answerList.forEach(answerWord ->
+                answerWord.setLiteralAnswer(Arrays.stream(answerType.get.apply(answerWord.word)).min(wordComparator::applyAsInt).get()
+            ));
+
+            answerList.sort((a, b) -> {
+                // first category: word type
+                Word.WordType wordTypeA = a.word.getWordType();
+                Word.WordType wordTypeB = b.word.getWordType();
+                if(answerWordType.equals(wordTypeA) && !answerWordType.equals(wordTypeB)){
+                    return 1;
+                }else if(!answerWordType.equals(wordTypeA) && answerWordType.equals(wordTypeB)){
+                    return -1;
+                }
+                return wordComparator.applyAsInt(a.getLiteralAnswer(), b.getLiteralAnswer());
+            });
+
+            int answersPicked = 0;
+            List<AnswerWord> finalFalseAnswers = new ArrayList<>(3);
+            while(answersPicked < 3){
+                int limit = Math.max(answerList.size(), Math.min(Math.max(5, answerList.size() / 3), 45));
+                int randomIndex = (int) (Math.random() * limit);
+                AnswerWord answerWord = answerList.get(randomIndex);
+                if(!finalFalseAnswers.contains(answerWord) && !answerWord.getLiteralAnswer().equals(correctAnswer)){
+                    finalFalseAnswers.add(answerWord);
+                    answersPicked++;
+                }
+            }
+            falseAnswers.add(finalFalseAnswers);
+        }
     }
 
     private static String oneOf(String... array) {
         return array[(int) (Math.random() * array.length)];
     }
 
-    private void pickAnswers() {
-        throw new UnsupportedOperationException();
-        // TODO
-    }
+    class AnswerWord {
+        private Word word;
+        @Getter @Setter
+        private String literalAnswer;
 
+        private AnswerWord(Word word){
+            this.word = word;
+        }
+        public Word getWord(){
+            return word;
+        }
+    };
 }

@@ -1,7 +1,9 @@
 package com.krikki.vocabularytrainer.games.quiz;
 
-import android.graphics.Typeface;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -16,18 +18,28 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import static com.krikki.vocabularytrainer.games.quiz.QuizGenerator.QuizType;
 
 /**
  * Controls quiz activity.
  */
 public class Quiz extends AppCompatActivity {
+    private static final int CORRECT_COLOR = Color.parseColor("#66ff99");
+    private static final int INCORRECT_COLOR = Color.parseColor("#ff3300");
+    private static final int DEFAULT_COLOR = Color.parseColor("#ffffff");
+
     private TextView question;
-    private Button[] buttonAnswers;
+    private List<Button> buttonAnswers;
     private Button buttonNext;
     private ArrayList<Word> words;
     private ArrayList<Word> questions;
+    private QuizGenerator quizGenerator;
+    private int questionNumber = 0;
+    private int numOfCorrectAnswers = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,43 +49,64 @@ public class Quiz extends AppCompatActivity {
         setContentView(R.layout.layout_quiz);
 
         question = findViewById(R.id.tvQuestion);
-        buttonAnswers = new Button[4];
-        buttonAnswers[0] = findViewById(R.id.bAnswer1);
-        buttonAnswers[1] = findViewById(R.id.bAnswer2);
-        buttonAnswers[2] = findViewById(R.id.bAnswer3);
-        buttonAnswers[3] = findViewById(R.id.bAnswer4);
+        buttonAnswers = new ArrayList<>();
+        buttonAnswers.add(findViewById(R.id.bAnswer1));
+        buttonAnswers.add(findViewById(R.id.bAnswer2));
+        buttonAnswers.add(findViewById(R.id.bAnswer3));
+        buttonAnswers.add(findViewById(R.id.bAnswer4));
         buttonNext = findViewById(R.id.buttonNext);
 
-        question.setText("Shake slightly and uncontrollably as a result of being cold, frightened, or excited");
-        buttonAnswers[0].setText("revenant");
-        buttonAnswers[1].setText("perseverance");
-        buttonAnswers[2].setText("shudder");
-        buttonAnswers[3].setText("insurgence");
+        buttonAnswers.get(0).setOnClickListener(view -> onAnswerClick(0));
+        buttonAnswers.get(1).setOnClickListener(view -> onAnswerClick(1));
+        buttonAnswers.get(2).setOnClickListener(view -> onAnswerClick(2));
+        buttonAnswers.get(3).setOnClickListener(view -> onAnswerClick(3));
+        buttonNext.setOnClickListener(view -> {
+            if(quizGenerator.hasNext()) {
+                buttonAnswers.forEach(button -> {
+                    button.setEnabled(true);
+                    button.setBackgroundColor(DEFAULT_COLOR);
+                });
+                buttonNext.setVisibility(View.GONE);
+                quizGenerator.next();
+                showQuestion();
+            }else{
+                Toast.makeText(Quiz.this, "You scored "+numOfCorrectAnswers, Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
 
-        buttonAnswers[0].setOnClickListener(view -> {
-            question.setTypeface(null, Typeface.BOLD);
-        });
-        buttonAnswers[1].setOnClickListener(view -> {
-            question.setTypeface(null, Typeface.ITALIC);
-        });
-        buttonAnswers[2].setOnClickListener(view -> {
-            question.setTypeface(null, Typeface.BOLD_ITALIC);
-        });
-        buttonAnswers[3].setOnClickListener(view -> {
-            question.setTypeface(null, Typeface.NORMAL);
-        });
-
+        readListOfWordsFromStorage();
         try {
-            QuizGenerator quizGenerator = new QuizGenerator(words, QuizGenerator.WordType.PRIMARY_LANG, QuizGenerator.WordType.SECONDARY_LANG);
-
+            Intent intent = getIntent();
+            QuizType questionType = QuizType.valueOf(intent.getStringExtra("quizQuestionType"));
+            QuizType answerType = QuizType.valueOf(intent.getStringExtra("quizAnswerType"));
+            quizGenerator = new QuizGenerator(words, questionType, answerType);
+            showQuestion();
         } catch (QuizGenerationException e) {
-            Toast.makeText(this, "There are too few words to generate a quiz. Have at least 30 words", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
             finish();
         }
     }
 
+    private void showQuestion(){
+        question.setText(quizGenerator.getQuestion());
+        final List<String> answers = quizGenerator.getAllAnswers();
+        for (int i = 0; i < 4; i++) {
+            buttonAnswers.get(i).setText(answers.get(i));
+        }
+    }
 
-
+    private void onAnswerClick(int buttonIndex){
+        if (buttonIndex == quizGenerator.getCorrectAnswerIndex()) {
+            buttonAnswers.get(buttonIndex).setBackgroundColor(CORRECT_COLOR);
+            numOfCorrectAnswers++;
+        }else{
+            buttonAnswers.get(buttonIndex).setBackgroundColor(INCORRECT_COLOR);
+            buttonAnswers.get(quizGenerator.getCorrectAnswerIndex()).setBackgroundColor(CORRECT_COLOR);
+        }
+        buttonAnswers.forEach(button -> button.setEnabled(false));
+        buttonNext.setVisibility(View.VISIBLE);
+    }
 
 
     /**

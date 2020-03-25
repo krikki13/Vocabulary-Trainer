@@ -25,7 +25,8 @@
     <string name="entry_missing"><![CDATA[<empty>]]></string>
 
     <string name="explanator_intro">Each entry must contain one english word and one translated word or description.
-        It can contain both. If you want to add synonyms to a word, use comma to separate them.</string>
+        It can contain both. If you want to add synonyms to a word, use comma to separate them. It is also
+        recommended to add grammatical word type, because it is used in quiz generation.</string>
     <string name="explanator_accepted_synonyms">Accepted synonyms represent words which you are not targeting to learn,
         but they are still accepted as a correct answer. They will never appear as a part of question.</string>
     <string name="explanator_note">Note is displayed in quiz next to a word in a question. It is used
@@ -37,8 +38,6 @@
         qualities or abilities\". Word \"genius\" matches the description, but it is too easy, and not what we are looking for.
         So we can add demand \"not genius\" or a little more suggestive \"on p\" to get \"prodigy\".</string>
     <string name="explanator_categories">With categories you can group words that belong together.
-        They can be separate words by grammatical features, profession… In fact it is recommended
-        to use categories that specify grammatical type like: \"noun\", \"adjective\", \"verb\", \"adverb\",
-        because game generators can use this information to create better quizzes.
-        \nFor example word \"constellation\" could have categories: \"noun\", \"science\", \"astronomy\".</string>
+        They can be separate words by grammatical features, profession…
+        \nFor example word \"constellation\" could have categories: \"science\", \"astronomy\".</string>
 </resources>
