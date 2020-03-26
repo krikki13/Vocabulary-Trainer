@@ -1,7 +1,10 @@
 package com.krikki.vocabularytrainer.games.quiz;
 
 import android.content.Intent;
-import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -21,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import static com.krikki.vocabularytrainer.games.quiz.QuizGenerator.QuizType;
 
@@ -28,18 +32,13 @@ import static com.krikki.vocabularytrainer.games.quiz.QuizGenerator.QuizType;
  * Controls quiz activity.
  */
 public class Quiz extends AppCompatActivity {
-    private static final int CORRECT_COLOR = Color.parseColor("#66ff99");
-    private static final int INCORRECT_COLOR = Color.parseColor("#ff3300");
-    private static final int DEFAULT_COLOR = Color.parseColor("#ffffff");
-
     private TextView question;
     private List<Button> buttonAnswers;
     private Button buttonNext;
     private ArrayList<Word> words;
-    private ArrayList<Word> questions;
     private QuizGenerator quizGenerator;
-    private int questionNumber = 0;
     private int numOfCorrectAnswers = 0;
+    private boolean buttonsDisabled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,10 +61,8 @@ public class Quiz extends AppCompatActivity {
         buttonAnswers.get(3).setOnClickListener(view -> onAnswerClick(3));
         buttonNext.setOnClickListener(view -> {
             if(quizGenerator.hasNext()) {
-                buttonAnswers.forEach(button -> {
-                    button.setEnabled(true);
-                    button.setBackgroundColor(DEFAULT_COLOR);
-                });
+                buttonsDisabled = false;
+                buttonAnswers.forEach(button -> setButtonBackgroundColor(button, R.color.defaultButtonBackgroundColor));
                 buttonNext.setVisibility(View.GONE);
                 quizGenerator.next();
                 showQuestion();
@@ -96,16 +93,38 @@ public class Quiz extends AppCompatActivity {
         }
     }
 
-    private void onAnswerClick(int buttonIndex){
-        if (buttonIndex == quizGenerator.getCorrectAnswerIndex()) {
-            buttonAnswers.get(buttonIndex).setBackgroundColor(CORRECT_COLOR);
-            numOfCorrectAnswers++;
-        }else{
-            buttonAnswers.get(buttonIndex).setBackgroundColor(INCORRECT_COLOR);
-            buttonAnswers.get(quizGenerator.getCorrectAnswerIndex()).setBackgroundColor(CORRECT_COLOR);
+    private void setButtonBackgroundColor(Button button, int color){
+        Drawable background = button.getBackground();
+        if (background instanceof ShapeDrawable) {
+            ((ShapeDrawable)background).getPaint().setColor(ContextCompat.getColor(this, color));
+        } else if (background instanceof GradientDrawable) {
+            ((GradientDrawable)background).setColor(ContextCompat.getColor(this, color));
+        } else if (background instanceof ColorDrawable) {
+            ((ColorDrawable)background).setColor(ContextCompat.getColor(this, color));
         }
-        buttonAnswers.forEach(button -> button.setEnabled(false));
-        buttonNext.setVisibility(View.VISIBLE);
+    }
+
+    private void onAnswerClick(int buttonIndex){
+        if(!buttonsDisabled){
+            if (buttonIndex == quizGenerator.getCorrectAnswerIndex()) {
+                setButtonBackgroundColor(buttonAnswers.get(buttonIndex), R.color.correctBackgroundColor);
+                numOfCorrectAnswers++;
+            } else {
+                setButtonBackgroundColor(buttonAnswers.get(buttonIndex), R.color.incorrectBackgroundColor);
+                setButtonBackgroundColor(buttonAnswers.get(quizGenerator.getCorrectAnswerIndex()), R.color.correctBackgroundColor);
+            }
+            buttonNext.setVisibility(View.VISIBLE);
+            buttonsDisabled = true;
+
+            int i = 0;
+            String delimiter = " = ";
+            if(quizGenerator.getQuestionType() == QuizType.DESCRIPTION || quizGenerator.getAnswerType() == QuizType.DESCRIPTION){
+                delimiter = "\n=\n";
+            }
+            for (String correctTranslationForAnswer : quizGenerator.getAnswersTranslated()) {
+                buttonAnswers.get(i++).append(delimiter + correctTranslationForAnswer);
+            }
+        }
     }
 
 

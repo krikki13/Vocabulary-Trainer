@@ -55,7 +55,9 @@ public class QuizGenerator {
     private List<AnswerWord> questions; // list of 10 questions
     private List<List<AnswerWord>> falseAnswers; // list of 10x3 incorrect answers (correct answers are contained in questions)
 
+    @Getter
     private QuizType questionType;
+    @Getter
     private QuizType answerType;
 
     private int questionNumber = 0;
@@ -110,8 +112,23 @@ public class QuizGenerator {
     public List<String> getAllAnswers(){
         List<String> answers = new ArrayList<>(4);
         falseAnswers.get(questionNumber).forEach(falseAnswer -> answers.add(falseAnswer.literalAnswer));
-        correctAnswerIndex = (int) (Math.random() * 4);
+        if(correctAnswerIndex == -1)
+            correctAnswerIndex = (int) (Math.random() * 4);
         answers.add(correctAnswerIndex, questions.get(questionNumber).literalAnswer);
+        return answers;
+    }
+
+    /**
+     * Get list of answers translated. These are the correct matches for each answer obtained by
+     * {@link #getAllAnswers()}.
+     * @return list of answers translated
+     */
+    public List<String> getAnswersTranslated(){
+        List<String> answers = new ArrayList<>(4);
+        falseAnswers.get(questionNumber).forEach(falseAnswer -> answers.add(arrayToPrettyString(questionType.get.apply(falseAnswer.word))));
+        if(correctAnswerIndex == -1)
+            correctAnswerIndex = (int) (Math.random() * 4);
+        answers.add(correctAnswerIndex, arrayToPrettyString(questionType.get.apply(questions.get(questionNumber).word)));
         return answers;
     }
 
@@ -313,6 +330,10 @@ public class QuizGenerator {
 
     private static String oneOf(String... array) {
         return array[(int) (Math.random() * array.length)];
+    }
+
+    private static String arrayToPrettyString(String[] array){
+        return String.join(", ", array);
     }
 
     class AnswerWord {

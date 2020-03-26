@@ -3,6 +3,9 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#2196F3</color>
+    <color name="correctBackgroundColor">#66ff99</color>
+    <color name="incorrectBackgroundColor">#ff5c33</color>
+    <color name="defaultButtonBackgroundColor">#ffffff</color>
 
     <color name="overlay">#66FFFFFF</color>
     <color name="adder_primary_text_color">#111111</color>
