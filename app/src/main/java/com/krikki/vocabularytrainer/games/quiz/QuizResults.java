@@ -37,18 +37,24 @@ public class QuizResults extends Fragment {
 
         if(score >= 9) {
             congratsText.setText("Congratulations");
-            Glide.with(getActivity())
-                    .load(gifUrl)
-                    .into(imageView);
+            if(gifUrl.isEmpty()){
+                imageView.setBackgroundResource(R.drawable.well_done_backup);
+            }else {
+                Glide.with(getActivity())
+                        .load(gifUrl)
+                        .into(imageView);
+            }
         }else if(score >= 7){
             congratsText.setText("Good job");
         }else if(score >= 5){
             congratsText.setText("Well enough");
         }else{
             congratsText.setText("You should try harder next time");
-            Glide.with(getActivity())
-                    .load(gifUrl)
-                    .into(imageView);
+            if(!gifUrl.isEmpty()) {
+                Glide.with(getActivity())
+                        .load(gifUrl)
+                        .into(imageView);
+            }
         }
 
         messageText.setText("Your score: " + score);

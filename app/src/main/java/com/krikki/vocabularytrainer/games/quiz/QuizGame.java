@@ -30,7 +30,7 @@ import androidx.fragment.app.Fragment;
 import static com.krikki.vocabularytrainer.games.quiz.QuizGenerator.QuizType;
 
 /**
- * Controls quiz activity.
+ * Controls quiz game.
  */
 public class QuizGame extends Fragment {
     private QuizEventListener quizEventListener;
@@ -160,7 +160,7 @@ public class QuizGame extends Fragment {
             Toast.makeText(getActivity(), "Exception thrown when reading: "+e.getMessage(), Toast.LENGTH_LONG).show();
             getActivity().finish();
         } catch (Word.DuplicatedIdException | Word.UnsuccessfulWordCreationException e1){
-            Toast.makeText(getActivity(), "Data file is incorrectly formatted", Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), "Data file is incorrectly formatted. Please go to dictionary for more options", Toast.LENGTH_LONG).show();
             getActivity().finish();
         }
     }

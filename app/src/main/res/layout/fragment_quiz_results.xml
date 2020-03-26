@@ -9,8 +9,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:paddingHorizontal="8sp"
-        android:paddingVertical="6sp"
+        android:layout_marginBottom="5dp"
+        android:paddingHorizontal="25sp"
+        android:paddingVertical="13sp"
         android:text="Return"
         android:textSize="18sp" />
 
@@ -27,21 +28,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="85dp"
+            android:layout_marginTop="65dp"
+            android:gravity="center"
+            android:paddingHorizontal="20dp"
             android:text="Congratulations"
+            android:textAlignment="center"
             android:textColor="@color/adder_primary_text_color"
-            android:textSize="30sp" />
+            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/messageText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="30dp"
             android:gravity="center_horizontal"
             android:text="Your score:\n8"
             android:textColor="@color/adder_primary_text_color"
-            android:textSize="24sp" />
+            android:textSize="20sp" />
 
         <ImageView
             android:id="@+id/imageView"

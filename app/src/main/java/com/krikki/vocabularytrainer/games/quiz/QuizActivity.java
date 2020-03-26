@@ -10,7 +10,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-
+/**
+ * Main activity for quiz game. When created it loads {@link QuizGame} that controls the actual game.
+ * When QuizGame finishes, {@link QuizResults} is loaded.
+ */
 public class QuizActivity extends AppCompatActivity implements QuizGame.QuizEventListener {
     private QuizGame quizGame;
     private QuizResults quizResults;
@@ -24,8 +27,13 @@ public class QuizActivity extends AppCompatActivity implements QuizGame.QuizEven
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.fragment_layout_quiz);
 
-        quizGame = new QuizGame();
-        loadFragment(quizGame, "quizGame");
+        //quizGame = new QuizGame();
+        quizResults = new QuizResults();
+        Bundle bundle = new Bundle();
+        bundle.putInt("score", 9);
+        bundle.putString("gifUrl", gifUrl);
+        quizResults.setArguments(bundle);
+        loadFragment(quizResults, "quizGame");
     }
 
     private void loadFragment(Fragment frag, String tag){
