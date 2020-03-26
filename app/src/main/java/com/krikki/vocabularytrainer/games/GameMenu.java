@@ -7,7 +7,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 
 import com.krikki.vocabularytrainer.R;
-import com.krikki.vocabularytrainer.games.quiz.Quiz;
+import com.krikki.vocabularytrainer.games.quiz.QuizActivity;
 
 import java.util.function.BiConsumer;
 
@@ -34,7 +34,7 @@ public class GameMenu extends AppCompatActivity {
         buttonDescPrimary = findViewById(R.id.button_desc_primary);
 
         BiConsumer<QuizType, QuizType> quizLauncher = (quizQuestionType, quizAnswerType) -> {
-            Intent intent = new Intent(this, Quiz.class);
+            Intent intent = new Intent(this, QuizActivity.class);
             intent.putExtra("quizQuestionType", quizQuestionType.toString());
             intent.putExtra("quizAnswerType", quizAnswerType.toString());
             startActivity(intent);

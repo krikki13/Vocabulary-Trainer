@@ -19,7 +19,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Quiz generator selects words to be used as question and answers. For picking questions it uses
+ * QuizGame generator selects words to be used as question and answers. For picking questions it uses
  * an algorithm that prioritizes words with lower scores (and even more undefined scores).
  * When picking false answers to appear in a question, it picks words that are similar to the
  * correct one.
@@ -98,9 +98,9 @@ public class QuizGenerator {
     }
 
     /**
-     * Get question string.
+     * Get question string. If question contains multiple words, only one will be returned.
      */
-    public String getQuestion(){
+    public String getLiteralQuestion(){
         return oneOf(questionType.get.apply(questions.get(questionNumber).word));
     }
 
@@ -130,6 +130,13 @@ public class QuizGenerator {
             correctAnswerIndex = (int) (Math.random() * 4);
         answers.add(correctAnswerIndex, arrayToPrettyString(questionType.get.apply(questions.get(questionNumber).word)));
         return answers;
+    }
+
+    /**
+     * Returns word object that is currently a question.
+     */
+    public Word getQuestionWord(){
+        return questions.get(questionNumber).word;
     }
 
     /**

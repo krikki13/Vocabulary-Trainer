@@ -31,6 +31,7 @@ import java.util.Objects;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -46,6 +47,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public class Dictionary extends AppCompatActivity {
     private static final int IMPORT_RESULT_CODE = 44157;
 
+    private DataStorageManager storageManager;
     private RecyclerView recyclerView;
     private WordListAdapter adapter;
     private final ArrayList<Word> words = new ArrayList<>();
@@ -61,6 +63,7 @@ public class Dictionary extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_dictionary);
+        storageManager = new DataStorageManager(context);
         readWordsFromStorage();
 
         recyclerView = findViewById(R.id.recyclerView);
@@ -139,34 +142,41 @@ public class Dictionary extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        DataStorageManager storageManager = new DataStorageManager(context);
         switch (item.getItemId()) {
             case R.id.addWords: // Add words
                 this.startWordAdderActivity(null);
                 break;
             case R.id.export:
-                try {
-                    Intent sendIntent = new Intent();
-                    sendIntent.setAction(Intent.ACTION_SEND);
-                    sendIntent.putExtra(Intent.EXTRA_TITLE, "words.json");
-                    String fileContents = storageManager.readFromStorage(DataStorageManager.WORDS_FILE);
-                    fileContents = fileContents.replace("{\"word\":", "\n{\"word\":");
-                    sendIntent.putExtra(Intent.EXTRA_TEXT, fileContents);
-                    sendIntent.setType("application/octet-stream");
-
-                    Intent shareIntent = Intent.createChooser(sendIntent, null);
-                    startActivity(shareIntent);
-                } catch(IOException e) {
-                    Toast.makeText(this, "Exception thrown when reading: "+e.getMessage(), Toast.LENGTH_LONG).show();
-                }
+                exportDataFile();
                 break;
             case R.id.import_:
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("application/octet-stream");
-                startActivityForResult(Intent.createChooser(intent, "Select words file"), IMPORT_RESULT_CODE);
+                importDataFile();
                 break;
         }
         return true;
+    }
+
+    private void exportDataFile(){
+        try {
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TITLE, "words.json");
+            String fileContents = storageManager.readFromStorage(DataStorageManager.WORDS_FILE);
+            fileContents = fileContents.replace("{\"word\":", "\n{\"word\":");
+            sendIntent.putExtra(Intent.EXTRA_TEXT, fileContents);
+            sendIntent.setType("text/plain");
+
+            Intent shareIntent = Intent.createChooser(sendIntent, null);
+            startActivity(shareIntent);
+        } catch(IOException e) {
+            Toast.makeText(this, "Exception thrown when reading: "+e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void importDataFile(){
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("text/plain");
+        startActivityForResult(Intent.createChooser(intent, "Select words file"), IMPORT_RESULT_CODE);
     }
 
 
@@ -246,7 +256,6 @@ public class Dictionary extends AppCompatActivity {
     }
 
     private void readWordsFromStorage(){
-        DataStorageManager storageManager = new DataStorageManager(this);
         ArrayList<Word> words;
         try {
             String wordsRawText = storageManager.readFromStorage(DataStorageManager.WORDS_FILE);
@@ -259,12 +268,35 @@ public class Dictionary extends AppCompatActivity {
         }catch (Word.DuplicatedIdException e){
             Toast.makeText(this, "Word ID is duplicated in the data file", Toast.LENGTH_LONG).show();
             words = new ArrayList<>();
+            showSalvationDialog(e.getMessage());
         }catch (Word.UnsuccessfulWordCreationException e){
-            Toast.makeText(this, "Data file is incorrectly formatted", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Data file is incorrectly formatted. Error message: "+e.getMessage(), Toast.LENGTH_LONG).show();
             words = new ArrayList<>();
+            showSalvationDialog(e.getMessage());
         }
         this.words.clear();
         this.words.addAll(words);
+    }
+
+    /**
+     * This dialog appears when exception is thrown when reading due to corrupted data file.
+     * It offers user to save what can be saved.
+     */
+    private void showSalvationDialog(String reason){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Error occurred when reading data file!");
+        builder.setMessage("To salvage data, you can export file to fix, or import new one to overwrite it." +
+            "\nError details: " + reason);
+        builder.setPositiveButton("Export",
+                (dialog, id) -> exportDataFile());
+
+        builder.setNegativeButton("Import",
+                (dialog, id) -> importDataFile());
+
+        builder.setNeutralButton("Ignore", (dialog, id) -> {
+                    dialog.cancel();
+                });
+        builder.create().show();
     }
 
     /**

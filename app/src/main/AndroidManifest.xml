@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.krikki.vocabularytrainer">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -56,10 +58,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".games.quiz.Quiz"
+            android:name=".games.quiz.QuizActivity"
             android:screenOrientation="portrait" >
             <intent-filter>
-                <action android:name="com.krikki.vocabularytrainer.games.Quiz" />
+                <action android:name="com.krikki.vocabularytrainer.games.QuizActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

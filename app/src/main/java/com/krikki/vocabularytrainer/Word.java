@@ -8,6 +8,8 @@ import java.text.ParseException;
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,6 +58,8 @@ public class Word {
     public static final int MAX_INDIVIDUAL_SCORE = 10;
     public static final int MIN_INDIVIDUAL_SCORE = 0;
 
+    private static final int SCORES_LENGTH = 5;
+
     private String mainLanguage, supportingLanguage;
     private String id;
 
@@ -71,7 +75,9 @@ public class Word {
     private String translatedDemand;
     private String translatedNote;
 
-    private int[] scores;
+    // scores is history of scores. Its maximum length is SCORES_LENGTH (5). When new score is
+    // added it is prepended to list.
+    private List<Integer> scores = new LinkedList<>();
     private int score = -1;
 
     private WordType wordType;
@@ -300,28 +306,46 @@ public class Word {
      */
     private void setScores(String scores) throws UnsuccessfulWordCreationException {
         try {
-            int[] sc = Arrays.stream(scores.split(",")).mapToInt(Integer::parseInt).toArray();
-            if(Arrays.stream(sc).anyMatch(i -> i > MAX_INDIVIDUAL_SCORE || i < MIN_INDIVIDUAL_SCORE)){
+            List<Integer> sc = Arrays.stream(scores.split(",")).map(Integer::parseInt).collect(Collectors.toList());
+            if(sc.stream().anyMatch(i -> i > MAX_INDIVIDUAL_SCORE || i < MIN_INDIVIDUAL_SCORE)){
                 throw new UnsuccessfulWordCreationException("Invalid score number");
             }
             this.scores = sc;
             this.score = calculateScore(sc);
         }catch (NumberFormatException e){
-            this.scores = null;
+            this.scores = new LinkedList<>();
             this.score = -1;
         }
     }
 
-    private static int calculateScore(int[] scores){
+    private static int calculateScore(List<Integer> scores){
+        if(scores.size() < 3){
+            return -1;
+        }
         double s = 1.83;
         double t = 0.21;
-        double score = Math.pow(scores[0], s);
-        score += Math.pow(scores[1], s-0.3*t);
-        score += Math.pow(scores[2], s-0.6*t);
-        score += Math.pow(scores[3], s-1.3*t);
-        score += Math.pow(scores[4], s-2.0*t);
+        Iterator<Integer> iter = scores.iterator();
+        double score = 0;
+        try {
+            score = Math.pow(iter.next(), s);
+            score += Math.pow(iter.next(), s - 0.3 * t);
+            score += Math.pow(iter.next(), s - 0.6 * t);
+            score += Math.pow(iter.next(), s - 1.3 * t);
+            score += Math.pow(iter.next(), s - 2.0 * t);
+        }catch(Exception e){}
         return Math.min(Math.max((int) score, MIN_TOTAL_SCORE), MAX_TOTAL_SCORE);
     }
+    public void addNewScore(int newScore) {
+        if(newScore > MAX_INDIVIDUAL_SCORE || newScore < MIN_INDIVIDUAL_SCORE){
+            throw new IllegalArgumentException("Word score must be between MIN_INDIVIDUAL_SCORE and MAX_INDIVIDUAL_SCORE");
+        }
+        if(scores.size() == SCORES_LENGTH) {
+            scores.remove(scores.size() - 1);
+        }
+        scores.add(0, newScore);
+        this.score = calculateScore(scores);
+    }
+
     /**
      * Checks that word is not null, that it does not start or end with comma and it does not have two commas consecutively.
      * It does not check word's length, because some words are allowed to be empty.
@@ -405,7 +429,7 @@ public class Word {
             obj.put("categories", fromArrayToJsonArray(this.categories));
         }
         if(this.scores != null){
-            obj.put("scores", Arrays.stream(this.scores).mapToObj(String::valueOf).collect(Collectors.joining()));
+            obj.put("scores", this.scores.stream().map(String::valueOf).collect(Collectors.joining(",")));
         }
         if(this.wordType != null){
             obj.put("wordType", this.wordType);
