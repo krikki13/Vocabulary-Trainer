@@ -6,6 +6,8 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -25,7 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 /**
  * This class controls main recycler view in dictionary.
  */
-public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHolder> {
+public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHolder> implements Filterable {
     private List<SelectableData<Word>> words; // words is the full size list, which is used to refill filteredList
     private List<SelectableData<Word>> filteredWords; // filtered words is list of words that is being displayed
     private Context context;
@@ -80,68 +82,17 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         final SelectableData<Word> selectableData = filteredWords.get(position);
-        final Word theWord = selectableData.getData();
-        holder.wordText.setText(theWord.getWordsJoined());
-        holder.describedWord.setText(theWord.getDescription());
-        holder.translatedWord.setText(theWord.getTranslatedWordsJoined());
+
+        holder.bind(selectableData);
 
         holder.itemView.setOnClickListener(v -> {
-            if (selectableData.isSelected()) {
-                selectableData.setSelected(false);
-                //layout.getLayoutParams().height = textSize;
-                holder.layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            selectableData.invertSelection();
+            notifyItemChanged(position);
+        });
 
-                holder.wordText.setMaxLines(1);
-                holder.describedWord.setMaxLines(1);
-                holder.translatedWord.setMaxLines(1);
-                holder.wordText.setEllipsize(TextUtils.TruncateAt.END);
-                holder.describedWord.setEllipsize(TextUtils.TruncateAt.END);
-                holder.translatedWord.setEllipsize(TextUtils.TruncateAt.END);
-
-                holder.demandText.setVisibility(View.GONE);
-                holder.translatedDemandText.setVisibility(View.GONE);
-                holder.categoriesText.setVisibility(View.GONE);
-                holder.noteText.setVisibility(View.GONE);
-                holder.translatedNoteText.setVisibility(View.GONE);
-
-                holder.wordText.setText(selectableData.getData().getWordsJoined());
-            } else {
-                selectableData.setSelected(true);
-                holder.layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
-
-                // remove line limits for textview
-                holder.wordText.setMaxLines(Integer.MAX_VALUE);
-                holder.describedWord.setMaxLines(Integer.MAX_VALUE);
-                holder.translatedWord.setMaxLines(Integer.MAX_VALUE);
-                holder.wordText.setEllipsize(null);
-                holder.describedWord.setEllipsize(null);
-                holder.translatedWord.setEllipsize(null);
-
-                // set text, visibility and icon to word info fields
-                Word word = selectableData.getData();
-                if (!word.getSynonymsJoined().isEmpty()) {
-                    holder.wordText.append(" (" + String.join(", ", word.getSynonyms()) + ")");
-                }
-                final TriConsumer<String, TextView, Drawable> setWordFields = (text, textView, icon) -> {
-                    if (!text.isEmpty()) {
-                        textView.setText(text);
-                        textView.setVisibility(View.VISIBLE);
-                        textView.setCompoundDrawables(icon, null, null, null);
-                    }
-                };
-                setWordFields.accept(word.getDemand(), holder.demandText, exclamationMarkIcon);
-                setWordFields.accept(word.getTranslatedDemand(), holder.translatedDemandText, exclamationMarkIcon);
-                setWordFields.accept(word.getNote(), holder.noteText, infoIcon);
-                setWordFields.accept(word.getTranslatedNote(), holder.translatedNoteText, infoIcon);
-
-                String wordType = word.getWordTypeString();
-                String categoriesJoined = word.getCategoriesJoined();
-                String delimiter = "";
-                if (!wordType.isEmpty() && !categoriesJoined.isEmpty()) {
-                    delimiter = ", ";
-                }
-                setWordFields.accept(wordType + delimiter + categoriesJoined, holder.categoriesText, categoryIcon);
-            }
+        holder.itemView.setOnLongClickListener(v -> {
+            longClickConsumer.accept(selectableData.getData().getId());
+            return true;
         });
     }
 
@@ -150,7 +101,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
         return filteredWords.size();
     }
 
-    /*@Override
+    @Override
     public Filter getFilter() {
         return new Filter() {
             @Override
@@ -159,17 +110,18 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 if (charString.length() < 3) {
                     filteredWords = words;
                 } else {
-                    ArrayList<Word> tempFilteredList = new ArrayList<>();
-                    for (Word word : words) {
+                    ArrayList<SelectableData<Word>> tempFilteredList = new ArrayList<>();
+                    for (SelectableData<Word> selectableData : words) {
+                        final Word word = selectableData.getData();
 
-                        // name match condition. this might differ depending on your requirement
-                        // here we are looking for name or phone number match
+                        // it joins primary words and translated words using |
+                        // then it compares them and description against query
                         if (String.join("|", word.getWordsJoined().toLowerCase()).contains(charString.toLowerCase()) ||
                                 word.getTranslatedWordsJoined() != null &&
                                         String.join("|", word.getTranslatedWordsJoined().toLowerCase()).contains(charString.toLowerCase()) ||
                                 word.getDescription() != null &&
-                                        String.join("|", word.getDescription().toLowerCase()).contains(charString.toLowerCase())) {
-                            tempFilteredList.add(word);
+                                        word.getDescription().toLowerCase().contains(charString.toLowerCase())) {
+                            tempFilteredList.add(selectableData);
                         }
                     }
                     filteredWords = tempFilteredList;
@@ -182,11 +134,11 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                filteredWords = (ArrayList<Word>) filterResults.values;
+                filteredWords = (List<SelectableData<Word>>) filterResults.values;
                 notifyDataSetChanged();
             }
         };
-    }*/
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView wordText, describedWord, translatedWord, demandText, translatedDemandText, categoriesText, noteText, translatedNoteText;
@@ -209,10 +161,67 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
             describedWord.setCompoundDrawables(descriptionIcon,null,null,null);
         }
 
-        /*@Override
-        public boolean onLongClick(View view) {
-            longClickConsumer.accept(filteredWords.get(getAdapterPosition()).getId());
-            return true;
-        }*/
+        /**
+         * Set data for this item.
+         * @param selectableData data object from which data is read
+         */
+        public void bind(SelectableData<Word> selectableData){
+            final Word theWord = selectableData.getData();
+            wordText.setText(theWord.getWordsJoined());
+            describedWord.setText(theWord.getDescription());
+            translatedWord.setText(theWord.getTranslatedWordsJoined());
+
+            if (!selectableData.isSelected()) {
+                layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+
+                wordText.setMaxLines(1);
+                describedWord.setMaxLines(1);
+                translatedWord.setMaxLines(1);
+                wordText.setEllipsize(TextUtils.TruncateAt.END);
+                describedWord.setEllipsize(TextUtils.TruncateAt.END);
+                translatedWord.setEllipsize(TextUtils.TruncateAt.END);
+
+                demandText.setVisibility(View.GONE);
+                translatedDemandText.setVisibility(View.GONE);
+                categoriesText.setVisibility(View.GONE);
+                noteText.setVisibility(View.GONE);
+                translatedNoteText.setVisibility(View.GONE);
+            } else {
+                layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+
+                // remove line limits for textview
+                wordText.setMaxLines(Integer.MAX_VALUE);
+                describedWord.setMaxLines(Integer.MAX_VALUE);
+                translatedWord.setMaxLines(Integer.MAX_VALUE);
+                wordText.setEllipsize(null);
+                describedWord.setEllipsize(null);
+                translatedWord.setEllipsize(null);
+
+                // set text, visibility and icon to word info fields
+                Word word = selectableData.getData();
+                if (!word.getSynonymsJoined().isEmpty()) {
+                    wordText.append(" (" + String.join(", ", word.getSynonyms()) + ")");
+                }
+                final TriConsumer<String, TextView, Drawable> setWordFields = (text, textView, icon) -> {
+                    if (!text.isEmpty()) {
+                        textView.setText(text);
+                        textView.setVisibility(View.VISIBLE);
+                        textView.setCompoundDrawables(icon, null, null, null);
+                    }
+                };
+                setWordFields.accept(word.getDemand(), demandText, exclamationMarkIcon);
+                setWordFields.accept(word.getTranslatedDemand(), translatedDemandText, exclamationMarkIcon);
+                setWordFields.accept(word.getNote(), noteText, infoIcon);
+                setWordFields.accept(word.getTranslatedNote(), translatedNoteText, infoIcon);
+
+                String wordType = word.getWordTypeString();
+                String categoriesJoined = word.getCategoriesJoined();
+                String delimiter = "";
+                if (!wordType.isEmpty() && !categoriesJoined.isEmpty()) {
+                    delimiter = ", ";
+                }
+                setWordFields.accept(wordType + delimiter + categoriesJoined, categoriesText, categoryIcon);
+            }
+        }
     }
 }

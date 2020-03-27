@@ -32,4 +32,8 @@ public class SelectableData<T> {
     public void setSelected(boolean selected) {
         isSelected = selected;
     }
+
+    public void invertSelection(){
+        isSelected = !isSelected;
+    }
 }

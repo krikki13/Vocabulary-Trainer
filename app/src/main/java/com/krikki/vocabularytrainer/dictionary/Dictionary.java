@@ -42,7 +42,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 /**
- * Created by Kristjan on 15/09/2019.
+ * This class controls Dictionary activity. It displays words in recyclerView. It provides sorting
+ * options in navigation drawer and adding, exporting and importing words in options menu.
  */
 public class Dictionary extends AppCompatActivity {
     private static final int IMPORT_RESULT_CODE = 44157;
@@ -121,7 +122,7 @@ public class Dictionary extends AppCompatActivity {
         searchView.setMaxWidth(Integer.MAX_VALUE);
 
         // listening to search query text change
-        /*searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // filter recycler view when query submitted
@@ -135,7 +136,7 @@ public class Dictionary extends AppCompatActivity {
                 adapter.getFilter().filter(query);
                 return false;
             }
-        });*/
+        });
         return true;
     }
 
