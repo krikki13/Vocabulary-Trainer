@@ -19,7 +19,6 @@ import com.krikki.vocabularytrainer.util.TriConsumer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,9 +39,9 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
      * @param words list of words
      * @param longClickConsumer consumer that consumes action when item is long clicked. The string it returns is word ID
      */
-    public WordListAdapter(Context context, ArrayList<Word> words, Consumer<String> longClickConsumer) {
-        this.words = words.stream().map(SelectableData::new).collect(Collectors.toList());
-        this.filteredWords = this.words;
+    public WordListAdapter(Context context, ArrayList<SelectableData<Word>> words, Consumer<String> longClickConsumer) {
+        this.words = words;
+        this.filteredWords = words;
         this.context = context;
         this.longClickConsumer = longClickConsumer != null ? longClickConsumer : s -> {};
 
@@ -82,7 +81,6 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         final SelectableData<Word> selectableData = filteredWords.get(position);
-
         holder.bind(selectableData);
 
         holder.itemView.setOnClickListener(v -> {
@@ -99,6 +97,12 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
     @Override
     public int getItemCount() {
         return filteredWords.size();
+    }
+
+    // overriding this method solves a problem where text would randomly be inserted to empty textview
+    @Override
+    public int getItemViewType(int position) {
+        return position;
     }
 
     @Override
@@ -168,18 +172,33 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
         public void bind(SelectableData<Word> selectableData){
             final Word theWord = selectableData.getData();
             wordText.setText(theWord.getWordsJoined());
-            describedWord.setText(theWord.getDescription());
-            translatedWord.setText(theWord.getTranslatedWordsJoined());
+
+            // translated word and description should be visible when not expanded, but hide them if they do not exist
+            boolean isTranslatedWordPresent = theWord.hasTranslatedWords();
+            boolean isDescriptionPresent = theWord.hasDescription();
+            if(isDescriptionPresent) {
+                describedWord.setText(theWord.getDescription());
+                describedWord.setVisibility(View.VISIBLE);
+            }
+            if(isTranslatedWordPresent){
+                translatedWord.setText(theWord.getTranslatedWordsJoined());
+                translatedWord.setVisibility(View.VISIBLE);
+            }
 
             if (!selectableData.isSelected()) {
+                // Collapsed
                 layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
-
                 wordText.setMaxLines(1);
-                describedWord.setMaxLines(1);
-                translatedWord.setMaxLines(1);
                 wordText.setEllipsize(TextUtils.TruncateAt.END);
-                describedWord.setEllipsize(TextUtils.TruncateAt.END);
-                translatedWord.setEllipsize(TextUtils.TruncateAt.END);
+
+                if(isDescriptionPresent){
+                    describedWord.setMaxLines(1);
+                    describedWord.setEllipsize(TextUtils.TruncateAt.END);
+                }
+                if(isTranslatedWordPresent){
+                    translatedWord.setMaxLines(1);
+                    translatedWord.setEllipsize(TextUtils.TruncateAt.END);
+                }
 
                 demandText.setVisibility(View.GONE);
                 translatedDemandText.setVisibility(View.GONE);
@@ -187,15 +206,21 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 noteText.setVisibility(View.GONE);
                 translatedNoteText.setVisibility(View.GONE);
             } else {
+                // Expanded
                 layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 
                 // remove line limits for textview
                 wordText.setMaxLines(Integer.MAX_VALUE);
-                describedWord.setMaxLines(Integer.MAX_VALUE);
-                translatedWord.setMaxLines(Integer.MAX_VALUE);
                 wordText.setEllipsize(null);
-                describedWord.setEllipsize(null);
-                translatedWord.setEllipsize(null);
+
+                if(isDescriptionPresent){
+                    describedWord.setMaxLines(Integer.MAX_VALUE);
+                    describedWord.setEllipsize(null);
+                }
+                if(isTranslatedWordPresent){
+                    translatedWord.setMaxLines(Integer.MAX_VALUE);
+                    translatedWord.setEllipsize(null);
+                }
 
                 // set text, visibility and icon to word info fields
                 Word word = selectableData.getData();

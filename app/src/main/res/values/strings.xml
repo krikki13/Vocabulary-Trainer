@@ -38,6 +38,5 @@
         qualities or abilities\". Word \"genius\" matches the description, but it is too easy, and not what we are looking for.
         So we can add demand \"not genius\" or a little more suggestive \"on p\" to get \"prodigy\".</string>
     <string name="explanator_categories">With categories you can group words that belong together.
-        They can be separate words by grammatical features, profession…
         \nFor example word \"constellation\" could have categories: \"science\", \"astronomy\".</string>
 </resources>

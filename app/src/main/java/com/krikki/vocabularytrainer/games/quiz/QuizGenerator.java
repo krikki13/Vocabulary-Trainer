@@ -313,12 +313,14 @@ public class QuizGenerator {
 
             answerList.sort((a, b) -> {
                 // first category: word type
-                Word.WordType wordTypeA = a.word.getWordType();
-                Word.WordType wordTypeB = b.word.getWordType();
-                if(answerWordType.equals(wordTypeA) && !answerWordType.equals(wordTypeB)){
-                    return 1;
-                }else if(!answerWordType.equals(wordTypeA) && answerWordType.equals(wordTypeB)){
-                    return -1;
+                if(answerWordType != null) {
+                    Word.WordType wordTypeA = a.word.getWordType();
+                    Word.WordType wordTypeB = b.word.getWordType();
+                    if (answerWordType.equals(wordTypeA) && !answerWordType.equals(wordTypeB)) {
+                        return 1;
+                    } else if (!answerWordType.equals(wordTypeA) && answerWordType.equals(wordTypeB)) {
+                        return -1;
+                    }
                 }
                 return wordComparator.applyAsInt(a.getLiteralAnswer(), b.getLiteralAnswer());
             });

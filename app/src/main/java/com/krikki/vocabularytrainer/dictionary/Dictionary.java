@@ -16,6 +16,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.krikki.vocabularytrainer.DataStorageManager;
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
+import com.krikki.vocabularytrainer.util.SelectableData;
 import com.krikki.vocabularytrainer.wordadder.WordAdder;
 
 import org.json.JSONException;
@@ -27,7 +28,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -51,7 +54,7 @@ public class Dictionary extends AppCompatActivity {
     private DataStorageManager storageManager;
     private RecyclerView recyclerView;
     private WordListAdapter adapter;
-    private final ArrayList<Word> words = new ArrayList<>();
+    private final ArrayList<SelectableData<Word>> words = new ArrayList<>();
     private DrawerLayout drawer;
     private ActionBarDrawerToggle toggle;
     private NavigationView nv;
@@ -90,15 +93,19 @@ public class Dictionary extends AppCompatActivity {
             int id = item.getItemId();
             switch(id){
                 case R.id.sort_by_primary:
-                    words.sort(Word.comparatorByPrimary());
+                    words.sort((a, b) -> Word.comparatorByPrimary().compare(a.getData(), b.getData()));
                     break;
                 case R.id.sort_by_translated:
-                    words.sort(Word.comparatorByTranslated());
+                    words.sort((a, b) -> Word.comparatorByTranslated().compare(a.getData(), b.getData()));
                     break;
                 case R.id.sort_by_desc:
-                    words.sort(Word.comparatorByDescription());
+                    words.sort((a, b) -> Word.comparatorByDescription().compare(a.getData(), b.getData()));
                     break;
             }
+            final Menu menu = toolbar.getMenu();
+            SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+            adapter.getFilter().filter(searchView.getQuery());
+
             adapter.notifyDataSetChanged();
             drawer.closeDrawers();
             return true;
@@ -212,13 +219,12 @@ public class Dictionary extends AppCompatActivity {
                 buttonRevert.setLayoutParams(params2);
                 toolbar.addView(buttonRevert);
 
-                final DataStorageManager storageManager = new DataStorageManager(this);
                 final ArrayList<Word> list = storageManager.convertToListOfWords(importedData);
                 // you must convert text to words and then back to String, because IDs may not exist in initial test
                 final String dataToSave = storageManager.convertToJson(list);
 
                 words.clear();
-                words.addAll(list);
+                words.addAll(list.stream().map(SelectableData::new).collect(Collectors.toList()));
                 adapter.notifyDataSetChanged();
 
                 Toast.makeText(Dictionary.this, "You are previewing the imported file, " +
@@ -258,26 +264,26 @@ public class Dictionary extends AppCompatActivity {
     }
 
     private void readWordsFromStorage(){
-        ArrayList<Word> words;
+        List<SelectableData<Word>> newWords;
         try {
             String wordsRawText = storageManager.readFromStorage(DataStorageManager.WORDS_FILE);
-            words = storageManager.convertToListOfWords(wordsRawText);
+            newWords = storageManager.convertToListOfWords(wordsRawText).stream().map(SelectableData::new).collect(Collectors.toList());
         }catch (FileNotFoundException e1){
-            words = new ArrayList<>();
+            newWords = new ArrayList<>();
         }catch (IOException | JSONException e){
             Toast.makeText(this, "Exception thrown when reading: "+e.getMessage(), Toast.LENGTH_LONG).show();
-            words = new ArrayList<>();
+            newWords = new ArrayList<>();
         }catch (Word.DuplicatedIdException e){
             Toast.makeText(this, "Word ID is duplicated in the data file", Toast.LENGTH_LONG).show();
-            words = new ArrayList<>();
+            newWords = new ArrayList<>();
             showSalvationDialog(e.getMessage());
         }catch (Word.UnsuccessfulWordCreationException e){
             Toast.makeText(this, "Data file is incorrectly formatted. Error message: "+e.getMessage(), Toast.LENGTH_LONG).show();
-            words = new ArrayList<>();
+            newWords = new ArrayList<>();
             showSalvationDialog(e.getMessage());
         }
         this.words.clear();
-        this.words.addAll(words);
+        this.words.addAll(newWords);
     }
 
     /**
@@ -308,7 +314,10 @@ public class Dictionary extends AppCompatActivity {
     private void startWordAdderActivity(String wordId){
         refreshAfterResume = true;
         Intent intent = new Intent(this, WordAdder.class);
-        String[] existingCategories = words.stream().filter(word -> word.getCategories() != null).map(Word::getCategories).flatMap(Arrays::stream).distinct().toArray(String[]::new);
+        String[] existingCategories = words.stream()
+                .filter(data -> data.getData().getCategories() != null)
+                .map(data -> data.getData().getCategories())
+                .flatMap(Arrays::stream).distinct().toArray(String[]::new);
         intent.putExtra("categories", existingCategories);
         intent.putExtra("idOfEditedWord", wordId);
         startActivity(intent);
@@ -326,7 +335,6 @@ public class Dictionary extends AppCompatActivity {
         super.onResume();
 
         if(refreshAfterResume) {
-            Toast.makeText(this, "Resumed", Toast.LENGTH_SHORT).show();
             readWordsFromStorage();
             // TODO could be done more efficiently
             adapter.notifyDataSetChanged();

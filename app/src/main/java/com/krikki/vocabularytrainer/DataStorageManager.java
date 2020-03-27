@@ -21,7 +21,6 @@ import java.util.List;
  */
 public class DataStorageManager {
     public static final String WORDS_FILE = "words_file";
-    private static int idCounter = 0;
 
     private Context context;
 
