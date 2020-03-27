@@ -7,10 +7,10 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.krikki.vocabularytrainer.dictionary.Dictionary;
 import com.krikki.vocabularytrainer.games.GameMenu;
+import com.krikki.vocabularytrainer.settings.SettingsMenu;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -68,7 +68,8 @@ public class MainMenu extends AppCompatActivity {
             startActivity(intent);
         });
         buttonSettings.setOnClickListener(view -> {
-            Toast.makeText(this, "You have no permission to edit settings", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, SettingsMenu.class);
+            startActivity(intent);
         });
     }
 }

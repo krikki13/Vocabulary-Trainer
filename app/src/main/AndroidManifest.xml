@@ -61,7 +61,16 @@
             android:name=".games.quiz.QuizActivity"
             android:screenOrientation="portrait" >
             <intent-filter>
-                <action android:name="com.krikki.vocabularytrainer.games.QuizActivity" />
+                <action android:name="com.krikki.vocabularytrainer.games.quiz.QuizActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".settings.SettingsMenu"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="com.krikki.vocabularytrainer..settings.SettingsMenu" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
