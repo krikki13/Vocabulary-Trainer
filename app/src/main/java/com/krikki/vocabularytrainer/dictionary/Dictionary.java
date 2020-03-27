@@ -42,7 +42,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 /**
- * Created by Kristjan on 15/09/2019.
+ * This class controls Dictionary activity. It displays words in recyclerView. It provides sorting
+ * options in navigation drawer and adding, exporting and importing words in options menu.
  */
 public class Dictionary extends AppCompatActivity {
     private static final int IMPORT_RESULT_CODE = 44157;
@@ -68,7 +69,6 @@ public class Dictionary extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recyclerView);
         adapter = new WordListAdapter(this, words, this::startWordAdderActivity);
-        recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setAdapter(adapter);

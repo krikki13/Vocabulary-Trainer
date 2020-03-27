@@ -9,6 +9,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 
 import com.krikki.vocabularytrainer.R;
+import com.krikki.vocabularytrainer.util.SelectableData;
 
 import java.util.ArrayList;
 import java.util.List;

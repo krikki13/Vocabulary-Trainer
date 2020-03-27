@@ -13,28 +13,38 @@ import android.widget.TextView;
 
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
+import com.krikki.vocabularytrainer.util.SelectableData;
 import com.krikki.vocabularytrainer.util.TriConsumer;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-
+/**
+ * This class controls main recycler view in dictionary.
+ */
 public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHolder> implements Filterable {
-    private ArrayList<Word> words; // words is the full size list, which is used to refill filteredList
-    private ArrayList<Word> filteredWords; // filtered words is list of words that is being displayed
+    private List<SelectableData<Word>> words; // words is the full size list, which is used to refill filteredList
+    private List<SelectableData<Word>> filteredWords; // filtered words is list of words that is being displayed
     private Context context;
     private Drawable infoIcon, exclamationMarkIcon, translationIcon, descriptionIcon, categoryIcon;
     private Consumer<String> longClickConsumer;
 
-    // RecyclerView recyclerView;
+    /**
+     * Initiate the adapter.
+     * @param context app context
+     * @param words list of words
+     * @param longClickConsumer consumer that consumes action when item is long clicked. The string it returns is word ID
+     */
     public WordListAdapter(Context context, ArrayList<Word> words, Consumer<String> longClickConsumer) {
-        this.words = words;
-        this.filteredWords = words;
+        this.words = words.stream().map(SelectableData::new).collect(Collectors.toList());
+        this.filteredWords = this.words;
         this.context = context;
-        this.longClickConsumer = longClickConsumer;
+        this.longClickConsumer = longClickConsumer != null ? longClickConsumer : s -> {};
 
         // int pixelDrawableSize = context.getResources().getDimension()
         int drawableSize = context.getResources().getDimensionPixelSize(R.dimen.compound_drawable_size);
@@ -71,10 +81,19 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Word theWord = filteredWords.get(position);
-        holder.wordText.setText(theWord.getWordsJoined());
-        holder.describedWord.setText(theWord.getDescription());
-        holder.translatedWord.setText(theWord.getTranslatedWordsJoined());
+        final SelectableData<Word> selectableData = filteredWords.get(position);
+
+        holder.bind(selectableData);
+
+        holder.itemView.setOnClickListener(v -> {
+            selectableData.invertSelection();
+            notifyItemChanged(position);
+        });
+
+        holder.itemView.setOnLongClickListener(v -> {
+            longClickConsumer.accept(selectableData.getData().getId());
+            return true;
+        });
     }
 
     @Override
@@ -91,17 +110,18 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 if (charString.length() < 3) {
                     filteredWords = words;
                 } else {
-                    ArrayList<Word> tempFilteredList = new ArrayList<>();
-                    for (Word word : words) {
+                    ArrayList<SelectableData<Word>> tempFilteredList = new ArrayList<>();
+                    for (SelectableData<Word> selectableData : words) {
+                        final Word word = selectableData.getData();
 
-                        // name match condition. this might differ depending on your requirement
-                        // here we are looking for name or phone number match
+                        // it joins primary words and translated words using |
+                        // then it compares them and description against query
                         if (String.join("|", word.getWordsJoined().toLowerCase()).contains(charString.toLowerCase()) ||
                                 word.getTranslatedWordsJoined() != null &&
                                         String.join("|", word.getTranslatedWordsJoined().toLowerCase()).contains(charString.toLowerCase()) ||
                                 word.getDescription() != null &&
-                                        String.join("|", word.getDescription().toLowerCase()).contains(charString.toLowerCase())) {
-                            tempFilteredList.add(word);
+                                        word.getDescription().toLowerCase().contains(charString.toLowerCase())) {
+                            tempFilteredList.add(selectableData);
                         }
                     }
                     filteredWords = tempFilteredList;
@@ -114,21 +134,18 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                filteredWords = (ArrayList<Word>) filterResults.values;
+                filteredWords = (List<SelectableData<Word>>) filterResults.values;
                 notifyDataSetChanged();
             }
         };
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
-        public TextView wordText, describedWord, translatedWord , demandText, translatedDemandText, categoriesText, noteText, translatedNoteText;
-        public LinearLayout layout;
-        public boolean isExpanded;
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        public final TextView wordText, describedWord, translatedWord, demandText, translatedDemandText, categoriesText, noteText, translatedNoteText;
+        public final LinearLayout layout;
 
         ViewHolder(View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
-            itemView.setOnLongClickListener(this);
 
             layout = itemView.findViewById(R.id.itemLayout);
             wordText = itemView.findViewById(R.id.wordText);
@@ -139,17 +156,22 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
             noteText = itemView.findViewById(R.id.noteText);
             translatedNoteText = itemView.findViewById(R.id.translatedNoteText);
             categoriesText = itemView.findViewById(R.id.categoriesText);
-            isExpanded = false;
 
             translatedWord.setCompoundDrawables(translationIcon,null,null,null);
             describedWord.setCompoundDrawables(descriptionIcon,null,null,null);
         }
 
-        @Override
-        public void onClick(View view) {
-            if(isExpanded){
-                isExpanded = false;
-                //layout.getLayoutParams().height = textSize;
+        /**
+         * Set data for this item.
+         * @param selectableData data object from which data is read
+         */
+        public void bind(SelectableData<Word> selectableData){
+            final Word theWord = selectableData.getData();
+            wordText.setText(theWord.getWordsJoined());
+            describedWord.setText(theWord.getDescription());
+            translatedWord.setText(theWord.getTranslatedWordsJoined());
+
+            if (!selectableData.isSelected()) {
                 layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 
                 wordText.setMaxLines(1);
@@ -164,10 +186,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 categoriesText.setVisibility(View.GONE);
                 noteText.setVisibility(View.GONE);
                 translatedNoteText.setVisibility(View.GONE);
-
-                wordText.setText(filteredWords.get(getAdapterPosition()).getWordsJoined());
-            }else {
-                isExpanded = true;
+            } else {
                 layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
 
                 // remove line limits for textview
@@ -179,12 +198,12 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 translatedWord.setEllipsize(null);
 
                 // set text, visibility and icon to word info fields
-                Word word = filteredWords.get(getAdapterPosition());
+                Word word = selectableData.getData();
                 if (!word.getSynonymsJoined().isEmpty()) {
                     wordText.append(" (" + String.join(", ", word.getSynonyms()) + ")");
                 }
-                final TriConsumer<String, TextView, Drawable> setWordFields = (text,textView,icon) -> {
-                    if(!text.isEmpty()) {
+                final TriConsumer<String, TextView, Drawable> setWordFields = (text, textView, icon) -> {
+                    if (!text.isEmpty()) {
                         textView.setText(text);
                         textView.setVisibility(View.VISIBLE);
                         textView.setCompoundDrawables(icon, null, null, null);
@@ -198,17 +217,11 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 String wordType = word.getWordTypeString();
                 String categoriesJoined = word.getCategoriesJoined();
                 String delimiter = "";
-                if(!wordType.isEmpty() && !categoriesJoined.isEmpty()) {
+                if (!wordType.isEmpty() && !categoriesJoined.isEmpty()) {
                     delimiter = ", ";
                 }
                 setWordFields.accept(wordType + delimiter + categoriesJoined, categoriesText, categoryIcon);
             }
-        }
-
-        @Override
-        public boolean onLongClick(View view) {
-            longClickConsumer.accept(filteredWords.get(getAdapterPosition()).getId());
-            return true;
         }
     }
 }
