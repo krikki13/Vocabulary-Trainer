@@ -175,7 +175,9 @@ public class Dictionary extends AppCompatActivity {
 
     private void importDataFile(){
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("text/plain");
+        intent.setType("*/*");
+        String[] mimeTypes = {"text/plain", "application/octet-stream"};
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
         startActivityForResult(Intent.createChooser(intent, "Select words file"), IMPORT_RESULT_CODE);
     }
 

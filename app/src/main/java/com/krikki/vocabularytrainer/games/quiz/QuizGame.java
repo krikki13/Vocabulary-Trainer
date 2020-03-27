@@ -22,6 +22,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import androidx.core.content.ContextCompat;
@@ -39,6 +40,7 @@ public class QuizGame extends Fragment {
     private Button buttonNext;
     private ArrayList<Word> words;
     private QuizGenerator quizGenerator;
+    private List<QuizGenerator.QuestionWord> mistakesList = new LinkedList<>();
     private int score = 0;
     private boolean buttonsDisabled = false;
 
@@ -71,9 +73,6 @@ public class QuizGame extends Fragment {
         buttonNext.setVisibility(View.GONE);
         buttonNext.setOnClickListener(view1 -> {
             if(quizGenerator.hasNext()) {
-                buttonsDisabled = false;
-                buttonAnswers.forEach(button -> setButtonBackgroundColor(button, R.color.defaultButtonBackgroundColor));
-                buttonNext.setVisibility(View.GONE);
                 quizGenerator.next();
                 showQuestion();
 
@@ -83,7 +82,7 @@ public class QuizGame extends Fragment {
                 }
             }else{
                 writeWordsToStorage();
-                quizEventListener.quizFinished(score);
+                quizEventListener.quizFinished(score, mistakesList);
             }
         });
 
@@ -103,6 +102,10 @@ public class QuizGame extends Fragment {
     }
 
     private void showQuestion(){
+        buttonsDisabled = false;
+        buttonAnswers.forEach(button -> setButtonBackgroundColor(button, R.color.defaultButtonBackgroundColor));
+        buttonNext.setVisibility(View.GONE);
+
         question.setText(quizGenerator.getLiteralQuestion());
         final List<String> answers = quizGenerator.getAllAnswers();
         for (int i = 0; i < 4; i++) {
@@ -126,11 +129,13 @@ public class QuizGame extends Fragment {
             if (buttonIndex == quizGenerator.getCorrectAnswerIndex()) {
                 setButtonBackgroundColor(buttonAnswers.get(buttonIndex), R.color.correctBackgroundColor);
                 score++;
-                quizGenerator.getQuestionWord().addNewScore(Word.MAX_INDIVIDUAL_SCORE);
+                quizGenerator.getQuestionWord().getWord().addNewScore(Word.MAX_INDIVIDUAL_SCORE);
             } else {
+                final QuizGenerator.QuestionWord questionWord = quizGenerator.getQuestionWord();
                 setButtonBackgroundColor(buttonAnswers.get(buttonIndex), R.color.incorrectBackgroundColor);
                 setButtonBackgroundColor(buttonAnswers.get(quizGenerator.getCorrectAnswerIndex()), R.color.correctBackgroundColor);
-                quizGenerator.getQuestionWord().addNewScore(Word.MIN_INDIVIDUAL_SCORE);
+                questionWord.getWord().addNewScore(Word.MIN_INDIVIDUAL_SCORE);
+                mistakesList.add(questionWord);
             }
             buttonNext.setVisibility(View.VISIBLE);
             buttonsDisabled = true;
@@ -146,6 +151,9 @@ public class QuizGame extends Fragment {
         }
     }
 
+    public List<QuizGenerator.QuestionWord> getMistakesList(){
+        return mistakesList;
+    }
 
     /**
      * Read words from storage and put them in List. If any exception occurs when reading or parsing,
@@ -175,7 +183,18 @@ public class QuizGame extends Fragment {
     }
 
     interface QuizEventListener {
+        /**
+         * This is called when last question is being shown. It can be used for preparations for
+         * results activity.
+         * @param intermediateScore score to this point (1 more can be gained until the end)
+         */
         void quizNearlyFinished(int intermediateScore);
-        void quizFinished(int totalScore);
+
+        /**
+         * This is called when quiz is finished.
+         * @param totalScore total score from quiz
+         * @param mistakesList list of mistakes (questions and correct answers; not the answers that were clicked)
+         */
+        void quizFinished(int totalScore, List<QuizGenerator.QuestionWord> mistakesList);
     }
 }

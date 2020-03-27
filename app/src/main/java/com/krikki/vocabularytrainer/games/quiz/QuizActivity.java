@@ -6,6 +6,8 @@ import android.view.WindowManager;
 
 import com.krikki.vocabularytrainer.R;
 
+import java.util.List;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -14,7 +16,7 @@ import androidx.fragment.app.FragmentTransaction;
  * Main activity for quiz game. When created it loads {@link QuizGame} that controls the actual game.
  * When QuizGame finishes, {@link QuizResults} is loaded.
  */
-public class QuizActivity extends AppCompatActivity implements QuizGame.QuizEventListener {
+public class QuizActivity extends AppCompatActivity implements QuizGame.QuizEventListener, QuizResults.DataCommunicator {
     private QuizGame quizGame;
     private QuizResults quizResults;
     private GiphyConnector giphyConnector;
@@ -27,13 +29,14 @@ public class QuizActivity extends AppCompatActivity implements QuizGame.QuizEven
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.fragment_layout_quiz);
 
-        //quizGame = new QuizGame();
-        quizResults = new QuizResults();
+        quizGame = new QuizGame();
+        loadFragment(quizGame, "quizGame");
+        /*quizResults = new QuizResults();
         Bundle bundle = new Bundle();
         bundle.putInt("score", 9);
         bundle.putString("gifUrl", gifUrl);
         quizResults.setArguments(bundle);
-        loadFragment(quizResults, "quizGame");
+        loadFragment(quizResults, "quizGame");*/
     }
 
     private void loadFragment(Fragment frag, String tag){
@@ -63,12 +66,18 @@ public class QuizActivity extends AppCompatActivity implements QuizGame.QuizEven
     }
 
     @Override
-    public void quizFinished(int score) {
+    public void quizFinished(int score, List<QuizGenerator.QuestionWord> mistakesList) {
+        // TODO
         quizResults = new QuizResults();
         Bundle bundle = new Bundle();
         bundle.putInt("score", score);
         bundle.putString("gifUrl", gifUrl);
         quizResults.setArguments(bundle);
         loadFragment(quizResults, "quizResults");
+    }
+
+    @Override
+    public List<QuizGenerator.QuestionWord> obtainMistakesList() {
+        return quizGame.getMistakesList();
     }
 }

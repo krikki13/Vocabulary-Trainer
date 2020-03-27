@@ -52,7 +52,7 @@ public class QuizGenerator {
     }
 
     private List<Word> words; // list of all words from which only the ones with nulls at required places are removed
-    private List<AnswerWord> questions; // list of 10 questions
+    private List<QuestionWord> questions; // list of 10 questions
     private List<List<AnswerWord>> falseAnswers; // list of 10x3 incorrect answers (correct answers are contained in questions)
 
     @Getter
@@ -101,7 +101,7 @@ public class QuizGenerator {
      * Get question string. If question contains multiple words, only one will be returned.
      */
     public String getLiteralQuestion(){
-        return oneOf(questionType.get.apply(questions.get(questionNumber).word));
+        return questions.get(questionNumber).getLiteralQuestion();
     }
 
     /**
@@ -114,7 +114,7 @@ public class QuizGenerator {
         falseAnswers.get(questionNumber).forEach(falseAnswer -> answers.add(falseAnswer.literalAnswer));
         if(correctAnswerIndex == -1)
             correctAnswerIndex = (int) (Math.random() * 4);
-        answers.add(correctAnswerIndex, questions.get(questionNumber).literalAnswer);
+        answers.add(correctAnswerIndex, questions.get(questionNumber).getLiteralAnswer());
         return answers;
     }
 
@@ -128,15 +128,15 @@ public class QuizGenerator {
         falseAnswers.get(questionNumber).forEach(falseAnswer -> answers.add(arrayToPrettyString(questionType.get.apply(falseAnswer.word))));
         if(correctAnswerIndex == -1)
             correctAnswerIndex = (int) (Math.random() * 4);
-        answers.add(correctAnswerIndex, arrayToPrettyString(questionType.get.apply(questions.get(questionNumber).word)));
+        answers.add(correctAnswerIndex, arrayToPrettyString(questionType.get.apply(questions.get(questionNumber).getWord())));
         return answers;
     }
 
     /**
-     * Returns word object that is currently a question.
+     * Returns {@link QuestionWord} object that is currently a question.
      */
-    public Word getQuestionWord(){
-        return questions.get(questionNumber).word;
+    public QuestionWord getQuestionWord(){
+        return questions.get(questionNumber);
     }
 
     /**
@@ -239,15 +239,18 @@ public class QuizGenerator {
             }
         }
 
-        questions = pickedWords.stream().map(AnswerWord::new).collect(Collectors.toList());
-        questions.forEach(question -> question.setLiteralAnswer(oneOf(answerType.get.apply(question.word))));
+        questions = pickedWords.stream().map(QuestionWord::new).collect(Collectors.toList());
+        questions.forEach(question -> {
+            question.setLiteralQuestion(oneOf(questionType.get.apply(question.getWord())));
+            question.setLiteralAnswer(oneOf(answerType.get.apply(question.getWord())));
+        });
     }
 
     private void pickAnswers() {
         List<AnswerWord> answerList = words.stream()
                 .map(AnswerWord::new).collect(Collectors.toList());
         for (int i = 0; i < questions.size(); i++) {
-            final Word.WordType answerWordType = questions.get(i).word.getWordType();
+            final Word.WordType answerWordType = questions.get(i).getWord().getWordType();
             final String correctAnswer = questions.get(i).getLiteralAnswer();
 
             // this function compares words in various categories to decide which one looks more
@@ -326,7 +329,9 @@ public class QuizGenerator {
                 int limit = Math.max(answerList.size(), Math.min(Math.max(5, answerList.size() / 3), 45));
                 int randomIndex = (int) (Math.random() * limit);
                 AnswerWord answerWord = answerList.get(randomIndex);
-                if(!finalFalseAnswers.contains(answerWord) && !answerWord.getLiteralAnswer().equals(correctAnswer)){
+                if(!finalFalseAnswers.contains(answerWord) &&
+                        !answerWord.getWord().getId().equals(questions.get(i).getWord().getId()) &&
+                        !answerWord.getLiteralAnswer().equals(correctAnswer)){
                     finalFalseAnswers.add(answerWord);
                     answersPicked++;
                 }
@@ -343,6 +348,10 @@ public class QuizGenerator {
         return String.join(", ", array);
     }
 
+    /**
+     * This class wraps word and adds String that is exact String that appeared in question.
+     * This is needed because Word object can have multiple words and each time only is picked.
+     */
     class AnswerWord {
         private Word word;
         @Getter @Setter
@@ -354,5 +363,17 @@ public class QuizGenerator {
         public Word getWord(){
             return word;
         }
-    };
+    }
+
+    /**
+     * Similar as its parent AnswerWord, except that it also adds field literal question.
+     */
+    class QuestionWord extends AnswerWord{
+        @Getter @Setter
+        private String literalQuestion;
+
+        private QuestionWord(Word word){
+            super(word);
+        }
+    }
 }
