@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.krikki.vocabularytrainer.DataStorageManager;
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
+import com.krikki.vocabularytrainer.util.SelectableData;
 
 import org.json.JSONException;
 

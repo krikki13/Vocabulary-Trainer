@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
+import com.krikki.vocabularytrainer.util.SelectableData;
 
 import java.util.List;
 import java.util.function.Consumer;

@@ -68,7 +68,6 @@ public class Dictionary extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recyclerView);
         adapter = new WordListAdapter(this, words, this::startWordAdderActivity);
-        recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setAdapter(adapter);
@@ -122,7 +121,7 @@ public class Dictionary extends AppCompatActivity {
         searchView.setMaxWidth(Integer.MAX_VALUE);
 
         // listening to search query text change
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        /*searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // filter recycler view when query submitted
@@ -136,7 +135,7 @@ public class Dictionary extends AppCompatActivity {
                 adapter.getFilter().filter(query);
                 return false;
             }
-        });
+        });*/
         return true;
     }
 
