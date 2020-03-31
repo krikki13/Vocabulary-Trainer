@@ -17,6 +17,7 @@ import com.krikki.vocabularytrainer.util.SelectableData;
 import com.krikki.vocabularytrainer.util.TriConsumer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -110,21 +111,26 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
         return new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence charSequence) {
-                String charString = charSequence.toString();
-                if (charString.length() < 3) {
+                String query = charSequence.toString();
+                words.forEach(word -> word.setSelected(false)); // collapse items when filtering
+                if (query.length() == 0) {
                     filteredWords = words;
                 } else {
                     ArrayList<SelectableData<Word>> tempFilteredList = new ArrayList<>();
                     for (SelectableData<Word> selectableData : words) {
                         final Word word = selectableData.getData();
 
-                        // it joins primary words and translated words using |
-                        // then it compares them and description against query
-                        if (String.join("|", word.getWordsJoined().toLowerCase()).contains(charString.toLowerCase()) ||
-                                word.getTranslatedWordsJoined() != null &&
-                                        String.join("|", word.getTranslatedWordsJoined().toLowerCase()).contains(charString.toLowerCase()) ||
-                                word.getDescription() != null &&
-                                        word.getDescription().toLowerCase().contains(charString.toLowerCase())) {
+                        // check if any word begins with query (allow simplification of characters like čšž to csz)
+                        if(Arrays.stream(word.getWords())
+                                .filter(w -> w.length() >= query.length())
+                                .anyMatch(w -> Word.isStringSimplifiedFrom(w, query))){
+                            tempFilteredList.add(selectableData);
+                            continue;
+                        }
+                        // same thing with translated words
+                        if(word.hasTranslatedWords() && Arrays.stream(word.getTranslatedWords())
+                                .filter(w -> w.length() >= query.length())
+                                .anyMatch(w -> Word.isStringSimplifiedFrom(w, query))){
                             tempFilteredList.add(selectableData);
                         }
                     }

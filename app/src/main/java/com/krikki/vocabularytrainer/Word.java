@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -47,11 +48,31 @@ public class Word {
      * ; accent difference
      * , case difference
      * = equal
+     * Strengths:
+     * Primary: differentiates base characters: a < b
+     * Secondary: differentiates accents: a < á
+     * Tertiary: differentiates case (upper, lower)
+     * Quaternary: differentiates punctuation
      */
-    private static final String COLLATION_RULES = "& a,A < ä,Ä < b,B < ß,ß < c,C < č,Č < ć,Ć < đ,Đ < d,D < e,E" +
-            " ; é,É < ë,Ë < f,F < g,G < h,H < i,I < j,J < k,K < l,L < m,M < n,N < o,O ; ó,Ó < ö,Ö < p,P < q,Q <" +
-            " r,R < s,S < š,Š < t,T < u,U < ü,Ü < v,V < w,W < x,X < y,Y < z,Z < ž,Ž";
+    // collation rules are used when sorting
+    private static final String COLLATION_RULES = "& a,A; á,Á; â,Â < ä,Ä < b,B < ß,ß < c,C < č,Č < ć,Ć < d,D < đ,Đ < e,E;" +
+            " é,É; ě,Ě < ë,Ë < f,F < g,G < h,H < i,I; í,Í; î,Î < j,J < k,K < l,L < ł,Ł < m,M < n,N < o,O; ó,Ó; ô,Ô < ö,Ö < p,P < q,Q <" +
+            " r,R < ř,Ř < s,S < š,Š < t,T < u,U; ú,Ú < ü,Ü < v,V < w,W < x,X < y,Y < z,Z < ž,Ž";
     private static RuleBasedCollator ruleBasedCollator;
+    // maps uncommon letters (with accents etc.) to their closest base letters - can be used when searching for words
+    // this code here creates a map that maps from each letter in first string to letter in second string
+    public static Map<Integer, Integer> letterSimplified = Arrays.stream(new String[][]{{"áÁâÂäÄ", "a"}, {"ß", "b"}, {"čČćĆ", "c"}, {"đĐ", "d"}, {"éÉěĚëË", "e"}, {"íÍîÎ", "i"}, {"łŁ", "l"}, {"óÓôÔöÖ", "o"}, {"řŘ", "r"}, {"šŠ", "s"}, {"úÚüÜ", "u"}, {"žŽ", "z"}})
+            .map(s -> {
+                char[] a = s[0].toCharArray();
+                int value = s[1].charAt(0);
+                Integer[][] b = new Integer[a.length][2];
+                for (int i = 0; i < a.length; i++) {
+                    b[i][0] = (int) a[i];
+                    b[i][1] = value;
+                }
+                return b;
+            }).flatMap(Arrays::stream)
+            .collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
     public static final int MAX_TOTAL_SCORE = 100;
     public static final int MIN_TOTAL_SCORE = 0;
@@ -591,6 +612,34 @@ public class Word {
                 return 1;
             return w1.score - w2.score;
         };
+    }
+
+    /**
+     * Returns true if simplifiedString word is a simplified version of baseString or its leading substring (starting from 0).
+     * String is simplified when localized letters (like in baseString) are replaced with the most similar
+     * letters from english alphabet. Therefore this method returns true if cevapi is simplified from čevapi,
+     * but not the other way around. Note that simplifiedString can still contain localized letters.
+     * For mapping localized letters to their closest english letter, {@link #letterSimplified} is used.
+     *
+     * @param baseString base string which needs to be evaluated (must not be shorter than simplifiedString)
+     * @param simplifiedString string which is used for evaluation
+     * @return true if simplifiedString is simplified leading substring of baseString
+     * @throws StringIndexOutOfBoundsException if baseString is shorter than simplifiedString
+     */
+    public static boolean isStringSimplifiedFrom(String baseString, String simplifiedString) {
+        for (int i = 0; i < simplifiedString.length(); i++) {
+            if(baseString.charAt(i) != simplifiedString.charAt(i)) {
+                int baseChar = (int) baseString.charAt(i);
+                if(letterSimplified.containsKey(baseChar)) {
+                    if(letterSimplified.get(baseChar) != simplifiedString.charAt(i)){
+                        return false;
+                    }
+                }else{
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
 

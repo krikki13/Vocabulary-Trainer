@@ -105,6 +105,7 @@ public class Dictionary extends AppCompatActivity {
             final Menu menu = toolbar.getMenu();
             SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
             adapter.getFilter().filter(searchView.getQuery());
+            words.forEach(word -> word.setSelected(false));
 
             adapter.notifyDataSetChanged();
             drawer.closeDrawers();
