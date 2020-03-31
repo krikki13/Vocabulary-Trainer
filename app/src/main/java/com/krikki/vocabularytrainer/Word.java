@@ -26,7 +26,11 @@ public class Word {
         NOUN,
         VERB,
         ADVERB,
-        INTERJECTION;
+        PRONOUN, // she, him, that, something
+        PREPOSITION, // after, in, to, with
+        CONJUNCTION, // and, because, but, for, if, or, when
+        DETERMINER, // a/an, the, every, this, those, many
+        INTERJECTION; // ow
 
         /**
          * Returns an array of strings representing word types.
@@ -230,16 +234,16 @@ public class Word {
         this.translatedNote = note;
     }
 
+    /**
+     * Sets categories.
+     * @throws UnsuccessfulWordCreationException if categories are duplicated or have 0 length
+     */
     public void setCategories(String categories) throws UnsuccessfulWordCreationException {
         if(categories == null || categories.trim().isEmpty()){
             this.categories = null;
             return;
         }
-        categories = categories.trim();
-        if(categories.startsWith(",")  || categories.endsWith(",") || categories.contains(",,")) {
-            throw new UnsuccessfulWordCreationException("Some categories have zero length");
-        }
-        this.categories = categories.split(",+");
+        setCategories(categories.trim().split(","));
     }
 
     /**
@@ -252,8 +256,16 @@ public class Word {
             this.categories = null;
             return;
         }
-        if(Arrays.stream(categories).anyMatch(cat -> cat == null || cat.trim().isEmpty())){
-            throw new UnsuccessfulWordCreationException("Some categories have zero length");
+        for (int i = 0; i < categories.length; i++) {
+            categories[i] = categories[i].trim();
+            if(categories[i].isEmpty()){
+                throw new UnsuccessfulWordCreationException("Some categories have zero length");
+            }else if(!categories[i].matches("[-a-zA-Z_0-9+]+")) {
+                throw new UnsuccessfulWordCreationException("Categories can only contain english letters, numbers and these three signs -_+");
+            }
+        }
+        if(Arrays.stream(categories).distinct().count() != categories.length) {
+            throw new UnsuccessfulWordCreationException("Categories must not be duplicated");
         }
         this.categories = categories;
     }

@@ -204,7 +204,13 @@ public class WordAdder extends AppCompatActivity {
      * Creates a complex list dialog in which multiple items can be selected.
      */
     private void createSelectableListDialog(TextView buttonTextView){
-        new SelectableListDialog(context, allCategories, buttonTextView::setText).show();
+        new SelectableListDialog(context, allCategories, textToDisplay -> {
+            if(textToDisplay.isEmpty()) {
+                buttonTextView.setText(getResources().getString(R.string.entry_missing));
+            }else{
+                buttonTextView.setText(textToDisplay);
+            }
+        }).show();
     }
 
     private void removeWordFromStorage() throws Word.DuplicatedIdException, Word.UnsuccessfulWordCreationException {

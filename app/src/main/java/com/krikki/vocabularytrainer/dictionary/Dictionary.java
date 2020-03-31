@@ -71,7 +71,7 @@ public class Dictionary extends AppCompatActivity {
         readWordsFromStorage();
 
         recyclerView = findViewById(R.id.recyclerView);
-        adapter = new WordListAdapter(this, words, this::startWordAdderActivity);
+        adapter = new WordListAdapter(this, words, this::startWordAdderActivity, pos -> recyclerView.smoothScrollToPosition(pos));
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setAdapter(adapter);

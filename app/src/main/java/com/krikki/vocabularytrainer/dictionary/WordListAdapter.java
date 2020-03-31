@@ -33,18 +33,21 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
     private Context context;
     private Drawable infoIcon, exclamationMarkIcon, translationIcon, descriptionIcon, categoryIcon;
     private Consumer<String> longClickConsumer;
+    private Consumer<Integer> scrollToConsumer;
 
     /**
      * Initiate the adapter.
      * @param context app context
      * @param words list of words
      * @param longClickConsumer consumer that consumes action when item is long clicked. The string it returns is word ID
+     * @param scrollToConsumer is called when recyclerView should scroll to some position
      */
-    public WordListAdapter(Context context, ArrayList<SelectableData<Word>> words, Consumer<String> longClickConsumer) {
+    public WordListAdapter(Context context, ArrayList<SelectableData<Word>> words, Consumer<String> longClickConsumer, Consumer<Integer> scrollToConsumer) {
         this.words = words;
         this.filteredWords = words;
         this.context = context;
         this.longClickConsumer = longClickConsumer != null ? longClickConsumer : s -> {};
+        this.scrollToConsumer = scrollToConsumer != null ? scrollToConsumer : s -> {};
 
         // int pixelDrawableSize = context.getResources().getDimension()
         int drawableSize = context.getResources().getDimensionPixelSize(R.dimen.compound_drawable_size);
@@ -87,6 +90,9 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
         holder.itemView.setOnClickListener(v -> {
             selectableData.invertSelection();
             notifyItemChanged(position);
+            if(position == getItemCount()-1){
+                scrollToConsumer.accept(position);
+            }
         });
 
         holder.itemView.setOnLongClickListener(v -> {
