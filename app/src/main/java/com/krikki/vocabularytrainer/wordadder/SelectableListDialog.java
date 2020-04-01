@@ -9,6 +9,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -69,13 +70,19 @@ public class SelectableListDialog {
         blackAndWhiteColorFilter = new ColorMatrixColorFilter(colorMatrix);
 
         alertDialogBuilderUserInput
-                .setCancelable(false)
+                .setCancelable(true)
                 .setPositiveButton("Done", (dialogBox,id) -> {
                     onPositiveButtonClicked.accept(data.stream().filter(SelectableData::isSelected).map(SelectableData::getData).collect(Collectors.joining( ", " )));
                 })
                 .setNegativeButton(null, null);
 
+        alertDialogBuilderUserInput.setOnCancelListener(dialog -> {
+            onPositiveButtonClicked.accept(data.stream().filter(SelectableData::isSelected).map(SelectableData::getData).collect(Collectors.joining( ", " )));
+        });
+
         alertDialog = alertDialogBuilderUserInput.create();
+        alertDialog.getWindow().setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -120,11 +127,10 @@ public class SelectableListDialog {
                 adapter.getFilter().filter(editable.toString());
 
                 // check if it can be added
-
                 final boolean containsInvalidChars = !editable.toString().trim().matches("[-a-zA-Z_0-9+]+");
                 if(containsInvalidChars ||
                         data.stream().map(SelectableData::getData).anyMatch(cat -> cat.equalsIgnoreCase(editable.toString().trim()))){
-                    if(!warningForInvalidCharWasDisplayed && containsInvalidChars){
+                    if(!warningForInvalidCharWasDisplayed && containsInvalidChars && !editable.toString().trim().isEmpty()){
                         Toast.makeText(context, "Categories can only contain english letters, numbers and these three signs -_+", Toast.LENGTH_LONG).show();
                         warningForInvalidCharWasDisplayed = true;
                     }

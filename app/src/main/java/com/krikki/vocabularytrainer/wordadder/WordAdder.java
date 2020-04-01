@@ -343,6 +343,8 @@ public class WordAdder extends AppCompatActivity {
                         cat.setSelected(true);
                     }
                 });
+            } else {
+                Toast.makeText(this, "Error occurred when locating word to edit (word ID: "+idOfEditedWord+")", Toast.LENGTH_SHORT).show();
             }
         }
     }
