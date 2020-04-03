@@ -22,6 +22,7 @@ import androidx.appcompat.app.AlertDialog;
 public abstract class WordInputDialog {
     private final Context context;
     private final AlertDialog alertDialog;
+    private final String title;
 
     private final TextInputLayout synonymInputLayout, noteInputLayout, demandInputLayout;
     private final TextInputEditText mainInput, synonymInput, noteInput, demandInput;
@@ -29,6 +30,7 @@ public abstract class WordInputDialog {
 
     public WordInputDialog(Context context, String title, String word, String synonyms, String note, String demand) {
         this.context = context;
+        this.title = title;
 
         final LayoutInflater layoutInflaterAndroid = LayoutInflater.from(context);
         final View mView = layoutInflaterAndroid.inflate(R.layout.dialog_word_input, null);
@@ -59,11 +61,11 @@ public abstract class WordInputDialog {
         final TriConsumer<TextView, TextInputLayout, TextInputEditText> expandInputLayout = (button, layout, inputEditText) -> {
             button.setVisibility(View.GONE);
             layout.setVisibility(View.VISIBLE);
-            inputEditText.requestFocus();
-            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null) {
-                imm.showSoftInput(inputEditText, InputMethodManager.SHOW_IMPLICIT);
-            }
+            //inputEditText.requestFocus();
+            //InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            //if (imm != null) {
+            //    imm.showSoftInput(inputEditText, InputMethodManager.SHOW_IMPLICIT);
+            //}
         };
 
         mainInput.setText(word);
@@ -100,9 +102,19 @@ public abstract class WordInputDialog {
 
             });
             mainInput.requestFocus();
+            mainInput.setSelection(mainInput.getText().length());
+
+            // show keyboard - just using showSoftInput once does not always work (when isActive returns false)
             InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null) {
+            if(imm.isActive(mainInput)) {
                 imm.showSoftInput(mainInput, InputMethodManager.SHOW_IMPLICIT);
+            }else{
+                mainInput.post(() -> {
+                    InputMethodManager imm1 = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm1 != null) {
+                        imm1.showSoftInput(mainInput, 0);
+                    }
+                });
             }
         });
         alertDialog.show();

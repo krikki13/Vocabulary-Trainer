@@ -4,11 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -160,6 +162,8 @@ public class WordAdder extends AppCompatActivity {
         final TextView titleText = mView.findViewById(R.id.title);
         titleText.setText(title);
         final EditText userInput = mView.findViewById(R.id.editText);
+        userInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        userInput.setMaxLines(3);
         userInput.setText(defaultText);
         alertDialogBuilderUserInput
                 .setCancelable(false)
@@ -172,7 +176,7 @@ public class WordAdder extends AppCompatActivity {
             Button button = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
             button.setOnClickListener(view -> {
                 final String input = userInput.getText().toString().trim();
-                if(input.matches(".*["+Word.FORBIDDEN_SIGNS_FOR_WORDS +"].*")){
+                if(input.matches(".*["+Word.FORBIDDEN_SIGNS_FOR_WORDS_REGEX +"].*")){
                     Toast.makeText(context, "Do not use following signs "+Word.FORBIDDEN_SIGNS_FOR_WORDS, Toast.LENGTH_LONG).show();
                 }else if(saveWord != null){
                     if(saveWord.test(userInput.getText().toString().trim().replace("\\s{2,}", " "))) {
@@ -180,6 +184,22 @@ public class WordAdder extends AppCompatActivity {
                     }
                 }
             });
+
+            userInput.requestFocus();
+            userInput.setSelection(userInput.getText().length());
+
+            // show keyboard - just using showSoftInput once does not always work (when isActive returns false)
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if(imm.isActive(userInput)) {
+                imm.showSoftInput(userInput, InputMethodManager.SHOW_IMPLICIT);
+            }else{
+                userInput.post(() -> {
+                    InputMethodManager imm1 = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm1 != null) {
+                        imm1.showSoftInput(userInput, 0);
+                    }
+                });
+            }
         });
         alertDialog.show();
     }
@@ -204,7 +224,13 @@ public class WordAdder extends AppCompatActivity {
      * Creates a complex list dialog in which multiple items can be selected.
      */
     private void createSelectableListDialog(TextView buttonTextView){
-        new SelectableListDialog(context, allCategories, buttonTextView::setText).show();
+        new SelectableListDialog(context, allCategories, textToDisplay -> {
+            if(textToDisplay.isEmpty()) {
+                buttonTextView.setText(getResources().getString(R.string.entry_missing));
+            }else{
+                buttonTextView.setText(textToDisplay);
+            }
+        }).show();
     }
 
     private void removeWordFromStorage() throws Word.DuplicatedIdException, Word.UnsuccessfulWordCreationException {
@@ -337,6 +363,8 @@ public class WordAdder extends AppCompatActivity {
                         cat.setSelected(true);
                     }
                 });
+            } else {
+                Toast.makeText(this, "Error occurred when locating word to edit (word ID: "+idOfEditedWord+")", Toast.LENGTH_SHORT).show();
             }
         }
     }

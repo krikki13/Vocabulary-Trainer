@@ -5,16 +5,15 @@ import android.content.Context;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
-import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.krikki.vocabularytrainer.R;
-import com.krikki.vocabularytrainer.Word;
 import com.krikki.vocabularytrainer.util.SelectableData;
 
 import java.util.List;
@@ -47,6 +46,8 @@ public class SelectableListDialog {
             0.33f, 0.33f, 0.33f, 0, 0, //blue
             0, 0, 0, 1, 0    //alpha
     };
+    // so that toast message does not appear to often
+    private boolean warningForInvalidCharWasDisplayed = false;
 
     public SelectableListDialog(Context context, List<SelectableData<String>> data, Consumer<String> onPositiveButtonClicked) {
         this.context = context;
@@ -69,20 +70,24 @@ public class SelectableListDialog {
         blackAndWhiteColorFilter = new ColorMatrixColorFilter(colorMatrix);
 
         alertDialogBuilderUserInput
-                .setCancelable(false)
+                .setCancelable(true)
                 .setPositiveButton("Done", (dialogBox,id) -> {
                     onPositiveButtonClicked.accept(data.stream().filter(SelectableData::isSelected).map(SelectableData::getData).collect(Collectors.joining( ", " )));
                 })
-                .setNegativeButton("Cancel",
-                        (dialogBox, id) -> dialogBox.cancel());
+                .setNegativeButton(null, null);
+
+        alertDialogBuilderUserInput.setOnCancelListener(dialog -> {
+            onPositiveButtonClicked.accept(data.stream().filter(SelectableData::isSelected).map(SelectableData::getData).collect(Collectors.joining( ", " )));
+        });
 
         alertDialog = alertDialogBuilderUserInput.create();
+        alertDialog.getWindow().setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     }
 
     @SuppressLint("ClickableViewAccessibility")
     public void show(){
         alertDialog.setOnShowListener(dialogInterface -> {
-            setInputFilters();
             setTextChangedListener();
 
             addIcon.setColorFilter(blackAndWhiteColorFilter);
@@ -91,10 +96,12 @@ public class SelectableListDialog {
             editTextWithAdd.setOnTouchListener((v, event) -> {
                 if(event.getAction() == MotionEvent.ACTION_UP) {
                     if(entryCanBeAdded && event.getX() <= editTextWithAdd.getTotalPaddingLeft()) {
+                        entryCanBeAdded = false;
                         data.add(new SelectableData<>(editTextWithAdd.getText().toString(), true));
                         addIcon.setColorFilter(blackAndWhiteColorFilter);
+                        adapter.getFilter().filter(editTextWithAdd.getText().toString());
                         editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(addIcon,null,null,null);
-                        adapter.notifyItemInserted(data.size() - 1);
+                        adapter.notifyDataSetChanged();
                         return true;
                     }
                 }
@@ -102,21 +109,6 @@ public class SelectableListDialog {
             });
         });
         alertDialog.show();
-
-        Toast.makeText(context, "Filtering will be added in future release", Toast.LENGTH_LONG).show();
-    }
-
-    private void setInputFilters(){
-        editTextWithAdd.setFilters(new InputFilter[]{
-            (charSequence, i, i1, spanned, i2, i3) -> {
-                String string = spanned.toString();
-                if(string.matches(".*["+ Word.FORBIDDEN_SIGNS_FOR_WORDS +"].*")){
-                    string = string.replace("["+Word.FORBIDDEN_SIGNS_FOR_WORDS +"]+", "");
-                    return string;
-                }
-                return null;
-            }
-        });
     }
 
     private void setTextChangedListener(){
@@ -135,13 +127,19 @@ public class SelectableListDialog {
                 adapter.getFilter().filter(editable.toString());
 
                 // check if it can be added
-                if(editable.toString().matches("\\s*") ||
+                final boolean containsInvalidChars = !editable.toString().trim().matches("[-a-zA-Z_0-9+]+");
+                if(containsInvalidChars ||
                         data.stream().map(SelectableData::getData).anyMatch(cat -> cat.equalsIgnoreCase(editable.toString().trim()))){
+                    if(!warningForInvalidCharWasDisplayed && containsInvalidChars && !editable.toString().trim().isEmpty()){
+                        Toast.makeText(context, "Categories can only contain english letters, numbers and these three signs -_+", Toast.LENGTH_LONG).show();
+                        warningForInvalidCharWasDisplayed = true;
+                    }
                     addIcon.setColorFilter(blackAndWhiteColorFilter);
                     entryCanBeAdded = false;
                 }else{
                     addIcon.clearColorFilter();
                     entryCanBeAdded = true;
+                    warningForInvalidCharWasDisplayed = false;
                 }
                 editTextWithAdd.setCompoundDrawablesWithIntrinsicBounds(addIcon,null,null,null);
             }

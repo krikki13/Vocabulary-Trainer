@@ -74,7 +74,7 @@ public class QuizGenerator {
     public QuizGenerator(ArrayList<Word> words, QuizType questionType, QuizType answerType) throws QuizGenerationException {
         if (questionType == answerType) {
             throw new QuizGenerationException("Question type must not match answer type");
-        } else if (words.size() < 2*NUMBER_OF_QUESTIONS) {
+        } else if (words == null || words.size() < 2*NUMBER_OF_QUESTIONS) {
             throw new QuizGenerationException("There are too few words to generate a quiz. Have at least " + (2*NUMBER_OF_QUESTIONS) + " words");
         }
         this.questionType = questionType;
