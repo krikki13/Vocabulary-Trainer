@@ -176,7 +176,7 @@ public class WordAdder extends AppCompatActivity {
             Button button = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
             button.setOnClickListener(view -> {
                 final String input = userInput.getText().toString().trim();
-                if(input.matches(".*["+Word.FORBIDDEN_SIGNS_FOR_WORDS +"].*")){
+                if(input.matches(".*["+Word.FORBIDDEN_SIGNS_FOR_WORDS_REGEX +"].*")){
                     Toast.makeText(context, "Do not use following signs "+Word.FORBIDDEN_SIGNS_FOR_WORDS, Toast.LENGTH_LONG).show();
                 }else if(saveWord != null){
                     if(saveWord.test(userInput.getText().toString().trim().replace("\\s{2,}", " "))) {
