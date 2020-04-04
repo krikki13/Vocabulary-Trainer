@@ -288,7 +288,7 @@ public class QuizGenerator {
                 int counterB = 0;
                 int counterAback = 0;
                 int counterBback = 0;
-                for (int j = 1; j < 4 && j < a.length() && j < b.length(); j++) {
+                for (int j = 1; j < 4 && j < a.length() && j < b.length() && j < correctAnswer.length(); j++) {
                     if(a.charAt(j) == correctAnswer.charAt(j)) counterA++;
                     if(b.charAt(j) == correctAnswer.charAt(j)) counterB++;
                     if(a.charAt(a.length()-j) == correctAnswer.charAt(correctAnswer.length()-j)) counterAback++;
