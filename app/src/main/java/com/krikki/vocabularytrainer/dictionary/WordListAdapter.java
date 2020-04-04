@@ -188,13 +188,21 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
             // translated word and description should be visible when not expanded, but hide them if they do not exist
             boolean isTranslatedWordPresent = theWord.hasTranslatedWords();
             boolean isDescriptionPresent = theWord.hasDescription();
+            // this two if sentences are very important
+            // recyclerview uses same views for different items to avoid inflating new views
+            // therefore you need to remove or show views every time
             if(isDescriptionPresent) {
                 describedWord.setText(theWord.getDescription());
                 describedWord.setVisibility(View.VISIBLE);
+            }else{
+                describedWord.setVisibility(View.GONE);
             }
             if(isTranslatedWordPresent){
                 translatedWord.setText(theWord.getTranslatedWordsJoined());
                 translatedWord.setVisibility(View.VISIBLE);
+            }else{
+                translatedWord.setText(theWord.getTranslatedWordsJoined());
+                translatedWord.setVisibility(View.GONE);
             }
 
             if (!selectableData.isSelected()) {
