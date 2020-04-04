@@ -6,6 +6,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.games.quiz.QuizActivity;
@@ -20,7 +21,8 @@ import static com.krikki.vocabularytrainer.games.quiz.QuizGenerator.QuizType;
  * Controls game menu activity.
  */
 public class GameMenu extends AppCompatActivity {
-    private Button buttonPrimaryTranslated, buttonPrimaryDesc, buttonTranslatedPrimary, buttonDescPrimary;
+    private Button quizButtonPrimaryTranslated, quizButtonPrimaryDesc, quizButtonTranslatedPrimary, quizButtonDescPrimary;
+    private Button hangmanButtonPlay, writeButton;
     private ImageButton backButton;
 
     @Override
@@ -33,10 +35,13 @@ public class GameMenu extends AppCompatActivity {
         backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(view -> finish());
 
-        buttonPrimaryTranslated = findViewById(R.id.button_primary_translated);
-        buttonPrimaryDesc = findViewById(R.id.button_primary_desc);
-        buttonTranslatedPrimary = findViewById(R.id.button_translated_primary);
-        buttonDescPrimary = findViewById(R.id.button_desc_primary);
+        quizButtonPrimaryTranslated = findViewById(R.id.quiz_button_primary_translated);
+        quizButtonPrimaryDesc = findViewById(R.id.quiz_button_primary_desc);
+        quizButtonTranslatedPrimary = findViewById(R.id.quiz_button_translated_primary);
+        quizButtonDescPrimary = findViewById(R.id.quiz_button_desc_primary);
+
+        hangmanButtonPlay = findViewById(R.id.hangman_play);
+        writeButton = findViewById(R.id.write_play);
 
         BiConsumer<QuizType, QuizType> quizLauncher = (quizQuestionType, quizAnswerType) -> {
             Intent intent = new Intent(this, QuizActivity.class);
@@ -44,9 +49,12 @@ public class GameMenu extends AppCompatActivity {
             intent.putExtra("quizAnswerType", quizAnswerType.toString());
             startActivity(intent);
         };
-        buttonPrimaryTranslated.setOnClickListener(view -> quizLauncher.accept(QuizType.PRIMARY_LANG, QuizType.SECONDARY_LANG));
-        buttonPrimaryDesc.setOnClickListener(view -> quizLauncher.accept(QuizType.PRIMARY_LANG, QuizType.DESCRIPTION));
-        buttonTranslatedPrimary.setOnClickListener(view -> quizLauncher.accept(QuizType.SECONDARY_LANG, QuizType.PRIMARY_LANG));
-        buttonDescPrimary.setOnClickListener(view -> quizLauncher.accept(QuizType.DESCRIPTION, QuizType.PRIMARY_LANG));
+        quizButtonPrimaryTranslated.setOnClickListener(view -> quizLauncher.accept(QuizType.PRIMARY_LANG, QuizType.SECONDARY_LANG));
+        quizButtonPrimaryDesc.setOnClickListener(view -> quizLauncher.accept(QuizType.PRIMARY_LANG, QuizType.DESCRIPTION));
+        quizButtonTranslatedPrimary.setOnClickListener(view -> quizLauncher.accept(QuizType.SECONDARY_LANG, QuizType.PRIMARY_LANG));
+        quizButtonDescPrimary.setOnClickListener(view -> quizLauncher.accept(QuizType.DESCRIPTION, QuizType.PRIMARY_LANG));
+
+        hangmanButtonPlay.setOnClickListener(view -> Toast.makeText(this  , "I said it is coming soon dammit!!", Toast.LENGTH_SHORT).show());
+        writeButton.setOnClickListener(view -> Toast.makeText(this, "I said it is coming soon dammit!!", Toast.LENGTH_SHORT).show());
     }
 }

@@ -20,4 +20,31 @@
     <style name="Button" parent="Widget.AppCompat.Button">
         <item name="android:textAllCaps">false</item>
     </style>
+    <style name="GameMenuGameSection" parent="AppTheme">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:layout_margin">15dp</item>
+        <item name="android:paddingBottom">18dp</item>
+        <item name="android:background">@drawable/rounded_game_layout</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+    <style name="GameMenuTitleText" parent="AppTheme">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">25dp</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:text">Hangman</item>
+        <item name="android:textColor">@color/game_menu_title_text_color</item>
+        <item name="android:textSize">21sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="GameMenuButton" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:layout_width">220dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:textColor">@color/game_menu_button_text_color</item>
+    </style>
 </resources>

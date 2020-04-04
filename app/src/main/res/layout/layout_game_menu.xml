@@ -8,8 +8,8 @@
         android:id="@+id/backButton"
         android:layout_width="43dp"
         android:layout_height="match_parent"
-        android:layout_alignTop="@id/title"
-        android:layout_alignBottom="@id/title"
+        android:layout_alignTop="@id/gameMenuTitle"
+        android:layout_alignBottom="@id/gameMenuTitle"
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="8dp"
         android:adjustViewBounds="true"
@@ -20,7 +20,7 @@
         android:tint="#B1BCBE" />
 
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/gameMenuTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -33,69 +33,65 @@
         android:textSize="24sp"
         android:textStyle="bold" />
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_below="@id/title"
-        android:background="@drawable/rounded_game_layout"
-        android:orientation="vertical"
-        android:layout_margin="15dp">
-
-        <TextView
-            android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:layout_below="@id/gameMenuTitle" >
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
-            android:layout_marginTop="12dp"
-            android:text="Quiz"
-            android:textColor="#364AB6"
-            android:textSize="21sp"
-            android:textStyle="bold" />
+            android:orientation="vertical" >
+            <LinearLayout
+                style="@style/GameMenuGameSection">
 
-        <Button
-            android:id="@+id/button_primary_translated"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="220dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:background="@android:color/transparent"
-            android:text="English \u2192 Slovene"
-            android:textColor="#03A9F4" />
+                <TextView
+                    style="@style/GameMenuTitleText"
+                    android:text="Quiz" />
 
-        <Button
-            android:id="@+id/button_primary_desc"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="220dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:background="@android:color/transparent"
-            android:text="English \u2192 Description"
-            android:textColor="#03A9F4" />
+                <Button
+                    android:id="@+id/quiz_button_primary_translated"
+                    style="@style/GameMenuButton"
+                    android:text="English \u2192 Slovene" />
 
-        <Button
-            android:id="@+id/button_translated_primary"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="220dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:background="@android:color/transparent"
-            android:text="Slovene \u2192 English"
-            android:textColor="#03A9F4" />
+                <Button
+                    android:id="@+id/quiz_button_primary_desc"
+                    style="@style/GameMenuButton"
+                    android:text="English \u2192 Description" />
 
-        <Button
-            android:id="@+id/button_desc_primary"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="220dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="18dp"
-            android:background="@android:color/transparent"
-            android:text="Description \u2192 English"
-            android:textColor="#03A9F4" />
+                <Button
+                    android:id="@+id/quiz_button_translated_primary"
+                    style="@style/GameMenuButton"
+                    android:text="Slovene \u2192 English" />
 
-    </LinearLayout>
+                <Button
+                    android:id="@+id/quiz_button_desc_primary"
+                    style="@style/GameMenuButton"
+                    android:text="Description \u2192 English" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/GameMenuGameSection">
+
+                <TextView
+                    style="@style/GameMenuTitleText"
+                    android:text="Write" />
+                <Button
+                    android:id="@+id/hangman_play"
+                    style="@style/GameMenuButton"
+                    android:text="Coming soon" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/GameMenuGameSection">
+                <TextView
+                    style="@style/GameMenuTitleText"
+                    android:text="Hangman" />
+                <Button
+                    android:id="@+id/write_play"
+                    style="@style/GameMenuButton"
+                    android:text="Coming soon" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 </RelativeLayout>

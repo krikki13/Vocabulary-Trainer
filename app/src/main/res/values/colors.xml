@@ -14,4 +14,6 @@
     <color name="adder_button_text_color">#111111</color>
     <color name="adder_button_bg_color">#ffffff</color>
     <color name="explanation_text_color">#222222</color>
+    <color name="game_menu_button_text_color">#03A9F4</color>
+    <color name="game_menu_title_text_color">#364AB6</color>
 </resources>
