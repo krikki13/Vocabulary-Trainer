@@ -9,27 +9,41 @@
     android:layout_marginBottom="5dp"
     android:orientation="vertical">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
 
-    <TextView
-        android:id="@+id/wordText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="6dp"
-        android:drawablePadding="5dp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:textSize="18sp"
-        android:textColor="#222233"/>
+        <TextView
+            android:id="@+id/scoreText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            android:text="100"
+            android:textSize="18sp" />
 
+        <TextView
+            android:id="@+id/wordText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@id/scoreText"
+            android:layout_marginLeft="6dp"
+            android:drawablePadding="5dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Word"
+            android:textColor="#222233"
+            android:textSize="18sp" />
+    </RelativeLayout>
     <TextView
         android:id="@+id/noteText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:drawablePadding="5dp"
-        android:text="note"
-        android:visibility="gone"
-        />
+        android:text="note" />
 
     <TextView
         android:id="@+id/demandText"
@@ -37,9 +51,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:drawablePadding="5dp"
-        android:text="demand"
-        android:visibility="gone"
-        />
+        android:text="demand" />
 
     <TextView
         android:id="@+id/translatedWordText"
@@ -47,11 +59,11 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:drawablePadding="5dp"
-        android:maxLines="1"
         android:ellipsize="end"
-        android:textSize="16sp"
+        android:maxLines="1"
+        android:text="Translated word"
         android:textColor="#3E3E47"
-        android:visibility="gone"/>
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/translatedNoteText"
@@ -59,9 +71,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:drawablePadding="5dp"
-        android:text="note"
-        android:visibility="gone"
-        />
+        android:text="note" />
 
     <TextView
         android:id="@+id/translatedDemandText"
@@ -69,22 +79,20 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:drawablePadding="5dp"
-        android:text="demand"
-        android:visibility="gone"
-        />
+        android:text="demand" />
 
     <TextView
         android:id="@+id/describedWordText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
         android:layout_marginLeft="6dp"
         android:drawablePadding="5dp"
-        android:maxLines="1"
         android:ellipsize="end"
-        android:textSize="16sp"
+        android:gravity="center_vertical"
+        android:maxLines="1"
+        android:text="Description"
         android:textColor="#3E3E47"
-        android:visibility="gone"/>
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/categoriesText"
@@ -92,7 +100,5 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:drawablePadding="5dp"
-        android:text="categories"
-        android:visibility="gone"
-        />
+        android:text="categories" />
 </LinearLayout>

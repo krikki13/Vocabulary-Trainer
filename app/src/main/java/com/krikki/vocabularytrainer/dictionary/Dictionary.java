@@ -101,6 +101,9 @@ public class Dictionary extends AppCompatActivity {
                 case R.id.sort_by_desc:
                     words.sort((a, b) -> Word.comparatorByDescription().compare(a.getData(), b.getData()));
                     break;
+                case R.id.sort_by_score:
+                    words.sort((a, b) -> Word.comparatorByScore().compare(a.getData(), b.getData()));
+                    break;
             }
             final Menu menu = toolbar.getMenu();
             SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();

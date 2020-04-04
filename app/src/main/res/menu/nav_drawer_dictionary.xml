@@ -7,5 +7,7 @@
         android:title="Sort by Slovene word"/>
     <item android:id="@+id/sort_by_desc"
         android:title="Sort by description"/>
+    <item android:id="@+id/sort_by_score"
+        android:title="Sort by score"/>
 
 </menu>

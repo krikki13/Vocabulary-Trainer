@@ -157,7 +157,8 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public final TextView wordText, describedWord, translatedWord, demandText, translatedDemandText, categoriesText, noteText, translatedNoteText;
+        public final TextView wordText, describedWord, translatedWord, demandText, scoreText,
+                translatedDemandText, categoriesText, noteText, translatedNoteText;
         public final LinearLayout layout;
 
         ViewHolder(View itemView) {
@@ -172,6 +173,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
             noteText = itemView.findViewById(R.id.noteText);
             translatedNoteText = itemView.findViewById(R.id.translatedNoteText);
             categoriesText = itemView.findViewById(R.id.categoriesText);
+            scoreText = itemView.findViewById(R.id.scoreText);
 
             translatedWord.setCompoundDrawables(translationIcon,null,null,null);
             describedWord.setCompoundDrawables(descriptionIcon,null,null,null);
@@ -205,6 +207,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                 translatedWord.setVisibility(View.GONE);
             }
 
+            int score = theWord.getScore();
             if (!selectableData.isSelected()) {
                 // Collapsed
                 layout.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -219,6 +222,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                     translatedWord.setMaxLines(1);
                     translatedWord.setEllipsize(TextUtils.TruncateAt.END);
                 }
+                scoreText.setText(score == -1 ? "??" : (""+(score/10)+"/10"));
 
                 demandText.setVisibility(View.GONE);
                 translatedDemandText.setVisibility(View.GONE);
@@ -241,6 +245,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                     translatedWord.setMaxLines(Integer.MAX_VALUE);
                     translatedWord.setEllipsize(null);
                 }
+                scoreText.setText(score == -1 ? "??" : (""+(score/10)+"/10"));
 
                 // set text, visibility and icon to word info fields
                 Word word = selectableData.getData();
@@ -252,6 +257,8 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                         textView.setText(text);
                         textView.setVisibility(View.VISIBLE);
                         textView.setCompoundDrawables(icon, null, null, null);
+                    }else{
+                        textView.setVisibility(View.GONE);
                     }
                 };
                 setWordFields.accept(word.getDemand(), demandText, exclamationMarkIcon);
