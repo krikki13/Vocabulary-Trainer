@@ -61,7 +61,6 @@ public class QuizActivity extends AppCompatActivity implements QuizGame.QuizEven
 
     @Override
     public void quizFinished(int score, List<QuizGenerator.QuestionWord> mistakesList) {
-        // TODO
         quizResults = new QuizResults();
         Bundle bundle = new Bundle();
         bundle.putInt("score", score);

@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * <p>
  * For filtering words, where you want query 'cev' to find 'čevapi', but not 'člo' to find cloud, you can use
  * map {@link #letterSimplified}. It maps non english letters (those which are also in {@link RuleBasedCollator})
- * to most similar english letters. Method {@link #isStringSimplifiedFrom(String, String)} uses this
+ * to most similar english letters. Method {@link #isSubstringSimplifiedFrom(String, String)} uses this
  * and returns true when String is simplified version of another.
  */
 
@@ -794,7 +794,40 @@ public class Word {
      * @return true if simplifiedString is simplified leading substring of baseString
      * @throws StringIndexOutOfBoundsException if baseString is shorter than simplifiedString
      */
+    public static boolean isSubstringSimplifiedFrom(String baseString, String simplifiedString) {
+        for (int i = 0; i < simplifiedString.length(); i++) {
+            if (baseString.charAt(i) != simplifiedString.charAt(i)) {
+                int baseChar = (int) baseString.charAt(i);
+                if (letterSimplified.containsKey(baseChar)) {
+                    if (letterSimplified.get(baseChar) != simplifiedString.charAt(i)) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns true if simplifiedString word is a simplified version of baseString.
+     * String is simplified when localized letters (like in baseString) are replaced with the most similar
+     * letters from english alphabet. Therefore this method returns true if cevapi is simplified from čevapi,
+     * but not the other way around. Note that simplifiedString can still contain localized letters.
+     * For mapping localized letters to their closest english letter, {@link #letterSimplified} is used.
+     *
+     * If you need to compare substring to a string, use {@link #isSubstringSimplifiedFrom(String, String)}
+     * instead.
+     *
+     * @param baseString       base string which needs to be evaluated
+     * @param simplifiedString string which is used for evaluation
+     * @return true if simplifiedString is simplified string of baseString
+     */
     public static boolean isStringSimplifiedFrom(String baseString, String simplifiedString) {
+        if(baseString.length() != simplifiedString.length()) {
+            return false;
+        }
         for (int i = 0; i < simplifiedString.length(); i++) {
             if (baseString.charAt(i) != simplifiedString.charAt(i)) {
                 int baseChar = (int) baseString.charAt(i);

@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import androidx.fragment.app.Fragment;
+import lombok.Getter;
+import lombok.Setter;
 
 import static com.krikki.vocabularytrainer.games.CommonGameGenerator.oneOf;
 
@@ -36,7 +38,7 @@ public class WriteGame extends Fragment {
     private List<EditText> answersEditTextList = new ArrayList<>(NUMBER_OF_QUESTIONS);
 
     private List<Word> words = new ArrayList<>();
-    private List<Word> questions;
+    List<QuestionAnswerObject> questionsAndAnswers;
 
     @Override
     public void onAttach(Context context) {
@@ -82,33 +84,48 @@ public class WriteGame extends Fragment {
         gameGenerator.removeWordsThatDoNotContainField(questionType);
         gameGenerator.removeWordsThatDoNotContainField(answerType);
         try {
-            questions = gameGenerator.pickQuestions(NUMBER_OF_QUESTIONS);
+            questionsAndAnswers = gameGenerator.pickQuestions(NUMBER_OF_QUESTIONS).stream().map(QuestionAnswerObject::new).collect(Collectors.toList());
         } catch (GameGeneratorException e) {
             Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
             getActivity().finish();
         }
 
         for (int i = 0; i < NUMBER_OF_QUESTIONS; i++) {
-            Word word = questions.get(i);
+            Word word = questionsAndAnswers.get(i).getWord();
             String textToDisplay = oneOf(questionType.get.apply(word));
             String note = questionType.getNote.apply(word);
             if(!note.isEmpty()){
                 textToDisplay += " (" + note + ")";
             }
+            questionsAndAnswers.get(i).setLiteralQuestion(textToDisplay);
             questionsTextViewList.get(i).setText(textToDisplay);
         }
 
-        doneButton.setOnClickListener(view1 -> onGameFinished());
+        doneButton.setOnClickListener(view1 -> {
+            for (int i = 0; i < NUMBER_OF_QUESTIONS; i++) {
+                String text = answersEditTextList.get(i).getText().toString();
+                questionsAndAnswers.get(i).setAnswer(text);
+            }
+            gameControlActivity.onGameFinished(questionsAndAnswers);
+        });
         return view;
-    }
-
-    private void onGameFinished() {
-        List<String> answers = answersEditTextList.stream().map(editText -> editText.getText().toString()).collect(Collectors.toList());
-
     }
 
     interface GameControlActivity {
         List<Word> getWordList();
-        void onGameFinished(List<>);
+        void onGameFinished(List<QuestionAnswerObject> questionsAndAnswers);
+    }
+
+    class QuestionAnswerObject {
+        @Getter
+        private Word word;
+        @Getter @Setter
+        private String literalQuestion;
+        @Getter @Setter
+        private String answer;
+
+        public QuestionAnswerObject(Word word) {
+            this.word = word;
+        }
     }
 }

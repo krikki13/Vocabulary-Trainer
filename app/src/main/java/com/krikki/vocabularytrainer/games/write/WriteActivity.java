@@ -21,10 +21,12 @@ import androidx.fragment.app.FragmentTransaction;
 /**
  * Main activity for write game.
  */
-public class WriteActivity extends AppCompatActivity implements WriteGame.GameControlActivity {
+public class WriteActivity extends AppCompatActivity implements WriteGame.GameControlActivity, WriteGameResults.DataCommunicator {
     private DataStorageManager storageManager;
     private WriteGame writeGame;
+    private WriteGameResults writeGameResults;
     private List<Word> words;
+    private List<WriteGame.QuestionAnswerObject> questionsAndAnswers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,4 +76,22 @@ public class WriteActivity extends AppCompatActivity implements WriteGame.GameCo
     public List<Word> getWordList() {
         return words;
     }
+
+    @Override
+    public void onGameFinished(List<WriteGame.QuestionAnswerObject> questionsAndAnswers) {
+        this.questionsAndAnswers = questionsAndAnswers;
+        writeGameResults = new WriteGameResults();
+        loadFragment(writeGameResults, "writeGameResults");
+    }
+
+    @Override
+    public List<WriteGame.QuestionAnswerObject> obtainQuestionsAnswersList() {
+        return questionsAndAnswers;
+    }
+
+    @Override
+    public List<Word> obtainWords() {
+        return words;
+    }
+
 }

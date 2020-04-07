@@ -129,14 +129,14 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                         // check if any word begins with query (allow simplification of characters like čšž to csz)
                         if(Arrays.stream(word.getWords())
                                 .filter(w -> w.length() >= query.length())
-                                .anyMatch(w -> Word.isStringSimplifiedFrom(w, query))){
+                                .anyMatch(w -> Word.isSubstringSimplifiedFrom(w, query))){
                             tempFilteredList.add(selectableData);
                             continue;
                         }
                         // same thing with translated words
                         if(word.hasTranslatedWords() && Arrays.stream(word.getTranslatedWords())
                                 .filter(w -> w.length() >= query.length())
-                                .anyMatch(w -> Word.isStringSimplifiedFrom(w, query))){
+                                .anyMatch(w -> Word.isSubstringSimplifiedFrom(w, query))){
                             tempFilteredList.add(selectableData);
                         }
                     }

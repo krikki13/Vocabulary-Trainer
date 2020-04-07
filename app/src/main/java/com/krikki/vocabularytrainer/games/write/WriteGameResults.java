@@ -1,6 +1,7 @@
-package com.krikki.vocabularytrainer.games.quiz;
+package com.krikki.vocabularytrainer.games.write;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -19,19 +20,23 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.krikki.vocabularytrainer.R;
+import com.krikki.vocabularytrainer.Word;
+import com.krikki.vocabularytrainer.games.CommonGameGenerator;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import androidx.fragment.app.Fragment;
 
-public class QuizResults extends Fragment {
+public class WriteGameResults extends Fragment {
     private TextView congratsText, messageText, yourMistakesText;
     private Button exitButton;
     private ListView mistakesListView;
     private LinearLayout linearLayout;
+    private List<Word> words;
+    private List<WriteGame.QuestionAnswerObject> questionAnswerObjects;
     private DataCommunicator dataCommunicator;
 
     @Override
@@ -48,14 +53,6 @@ public class QuizResults extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_results, container, false);
 
-        int score = -1;
-        String gifUrl = "";
-        Bundle bundle = this.getArguments();
-        if (bundle != null) {
-            score = bundle.getInt("score", -1);
-            gifUrl = bundle.getString("gifUrl", "");
-        }
-
         congratsText = view.findViewById(R.id.congratsText);
         messageText = view.findViewById(R.id.messageText);
         yourMistakesText = view.findViewById(R.id.yourMistakesText);
@@ -63,11 +60,28 @@ public class QuizResults extends Fragment {
         mistakesListView = view.findViewById(R.id.mistakesList);
         linearLayout = view.findViewById(R.id.linearLayout);
 
+        Intent intent = getActivity().getIntent();
+        CommonGameGenerator.GameType questionType = CommonGameGenerator.GameType.valueOf(intent.getStringExtra("gameQuestionType"));
+        CommonGameGenerator.GameType answerType = CommonGameGenerator.GameType.valueOf(intent.getStringExtra("gameAnswerType"));
+
+        questionAnswerObjects = dataCommunicator.obtainQuestionsAnswersList();
+        words = dataCommunicator.obtainWords();
+
+        List<WriteGame.QuestionAnswerObject> mistakesList = questionAnswerObjects.stream().filter(qa ->
+            Arrays.stream(answerType.get.apply(qa.getWord())).noneMatch(str -> Word.isStringSimplifiedFrom(str, qa.getAnswer()))
+        ).collect(Collectors.toList());
+        int score = questionAnswerObjects.size() - mistakesList.size();
+
         if(score != 10) {
-            final List<QuizGenerator.QuestionWord> mistakesList = dataCommunicator.obtainMistakesList();
             ArrayAdapter arrayAdapter = new ArrayAdapter<>(getContext(),
                     android.R.layout.simple_list_item_1,
-                    mistakesList.stream().map(word -> word.getLiteralQuestion() + " = " + word.getLiteralAnswer()).collect(Collectors.toList()));
+                    mistakesList.stream().map(qa -> {
+                        String textToDisplay = qa.getLiteralQuestion() + " = " + String.join(", ", answerType.get.apply(qa.getWord()));
+                        if(!qa.getAnswer().isEmpty()) {
+                            textToDisplay += " (not " + qa.getAnswer() + ")";
+                        }
+                        return textToDisplay;
+                    }).collect(Collectors.toList()));
             mistakesListView.setAdapter(arrayAdapter);
 
             Drawable background = mistakesListView.getBackground();
@@ -92,13 +106,7 @@ public class QuizResults extends Fragment {
             layoutParams.gravity = Gravity.CENTER;
             linearLayout.addView(imageView, layoutParams);
 
-            if(gifUrl.isEmpty()){
-                imageView.setBackgroundResource(R.drawable.well_done_backup);
-            }else {
-                Glide.with(getActivity())
-                        .load(gifUrl)
-                        .into(imageView);
-            }
+            imageView.setBackgroundResource(R.drawable.well_done_backup);
         }else if(score >= 7){
             congratsText.setText("Good job");
         }else if(score >= 5){
@@ -117,7 +125,9 @@ public class QuizResults extends Fragment {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, getContext().getResources().getDisplayMetrics());
     }
 
+
     interface DataCommunicator {
-        List<QuizGenerator.QuestionWord> obtainMistakesList();
+        List<WriteGame.QuestionAnswerObject> obtainQuestionsAnswersList();
+        List<Word> obtainWords();
     }
 }
