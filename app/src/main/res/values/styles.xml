@@ -54,15 +54,16 @@
     <style name="WriteGameQuestionText" parent="Widget.AppCompat.TextView">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">20sp</item>
+        <item name="android:layout_marginBottom">3dp</item>
+        <item name="android:textSize">18sp</item>
     </style>
     <style name="WriteGameAnswerEditText" parent="Widget.AppCompat.EditText">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_marginTop">0dp</item>
         <item name="android:layout_marginBottom">28dp</item>
         <item name="android:ems">10</item>
-        <item name="android:textColor">#ff0000</item>
-        <item name="android:textSize">18sp</item>
+        <item name="android:textSize">14sp</item>
         <item name="android:inputType">text</item>
     </style>
 </resources>

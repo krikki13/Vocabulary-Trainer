@@ -31,13 +31,22 @@ public class WriteGame extends Fragment {
         mainLayout = view.findViewById(R.id.mainLayout);
         doneButton = view.findViewById(R.id.doneButton);
 
+        // Generate TextViews and EditTexts
         for (int i = 0; i < NUMBER_OF_QUESTIONS; i++) {
-            TextView textView = new TextView(new ContextThemeWrapper(getContext(), R.style.WriteGameQuestionText), null, 0);
-            EditText editText = new EditText(new ContextThemeWrapper(getContext(), R.style.WriteGameAnswerEditText), null, 0);
+            // get styles
+            ContextThemeWrapper textViewThemeWrapper = new ContextThemeWrapper(getContext(), R.style.WriteGameQuestionText);
+            ContextThemeWrapper editTextThemeWrapper = new ContextThemeWrapper(getContext(), R.style.WriteGameAnswerEditText);
+            // extract linear params related styles from ContextThemeWrapper
+            LinearLayout.LayoutParams textViewParams = new LinearLayout.LayoutParams(textViewThemeWrapper, null);
+            LinearLayout.LayoutParams editTextParams = new LinearLayout.LayoutParams(editTextThemeWrapper, null);
+
+            TextView textView = new TextView(textViewThemeWrapper, null, 0);
+            EditText editText = new EditText(editTextThemeWrapper, null, 0);
+
             textView.setText("TextView "+i);
             editText.setText("EditText "+i);
-            mainLayout.addView(textView, 2*i);
-            mainLayout.addView(editText, 2*i+1);
+            mainLayout.addView(textView, 2*i, textViewParams);
+            mainLayout.addView(editText, 2*i+1, editTextParams);
             questionsTextViewList.add(textView);
             answersEditTextList.add(editText);
         }
