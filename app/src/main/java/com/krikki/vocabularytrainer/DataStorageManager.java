@@ -51,7 +51,6 @@ public class DataStorageManager {
     /**
      * Reads words from storage. If file is not found, an empty String is returned.
      * @return list of words or an empty list if data file is not found
-     * @throws IOException
      */
     public List<Word> readWordsFromStorage() throws IOException, Word.UnsuccessfulWordCreationException, JSONException, Word.DuplicatedIdException {
         try {
@@ -65,13 +64,20 @@ public class DataStorageManager {
      * Writes file to internal storage.
      * @param filename name of the file
      * @param content content to be written to the file
-     * @throws IOException
      */
     public void writeToStorage(String filename, String content) throws IOException {
         FileOutputStream fos = context.openFileOutput(filename, Context.MODE_PRIVATE);
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos));
         writer.write(content);
         writer.close();
+    }
+
+    /**
+     * Converts list of words to JSON string and saves it to storage.
+     * @param words list of words to save
+     */
+    public void writeWordsToStorage(List<Word> words) throws JSONException, Word.UnsuccessfulWordCreationException, IOException {
+        writeToStorage(WORDS_FILE, convertToJson(words));
     }
 
     /**
@@ -117,7 +123,6 @@ public class DataStorageManager {
             throw new Word.UnsuccessfulWordCreationException("Missing Word ID");
         }
         if(list.stream().map(Word::getId).distinct().count() != list.size()){
-            // TODO check for this when you are supposed to, not when it is too late to fix
             throw new Word.UnsuccessfulWordCreationException("Duplicated Word ID");
         }
         JSONObject obj = new JSONObject();

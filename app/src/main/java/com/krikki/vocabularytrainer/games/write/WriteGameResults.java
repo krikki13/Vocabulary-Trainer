@@ -18,7 +18,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.krikki.vocabularytrainer.DataStorageManager;
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
 import com.krikki.vocabularytrainer.games.CommonGameGenerator;
@@ -26,11 +28,20 @@ import com.krikki.vocabularytrainer.games.CommonGameGenerator;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import static com.krikki.vocabularytrainer.util.StringManipulator.isStringSimplifiedFrom;
+import static com.krikki.vocabularytrainer.util.StringManipulator.isStringSimplifiedFromWithSingleMistake;
+
+/**
+ * This class receives list of questions and their answers. It then verifies whether they are correct
+ * and displays the results. If word written as answer is incorrect, but it exists in dictionary (under some other word),
+ * this will be displayed in the list with an * and on click it will open info dialog explaining what
+ * that word really means. Info dialog works for every answer, but in other cases it just displays
+ * one word. This class also adds scores to words and saves them.
+ */
 public class WriteGameResults extends Fragment {
     private TextView congratsText, messageText, yourMistakesText;
     private Button exitButton;
@@ -39,6 +50,9 @@ public class WriteGameResults extends Fragment {
     private List<Word> words;
     private List<WriteGame.QuestionAnswerObject> questionAnswerObjects;
     private DataCommunicator dataCommunicator;
+
+    private CommonGameGenerator.GameType questionType;
+    private CommonGameGenerator.GameType answerType;
 
     @Override
     public void onAttach(Context context) {
@@ -62,15 +76,14 @@ public class WriteGameResults extends Fragment {
         linearLayout = view.findViewById(R.id.linearLayout);
 
         Intent intent = getActivity().getIntent();
-        CommonGameGenerator.GameType questionType = CommonGameGenerator.GameType.valueOf(intent.getStringExtra("gameQuestionType"));
-        CommonGameGenerator.GameType answerType = CommonGameGenerator.GameType.valueOf(intent.getStringExtra("gameAnswerType"));
+        questionType = CommonGameGenerator.GameType.valueOf(intent.getStringExtra("gameQuestionType"));
+        answerType = CommonGameGenerator.GameType.valueOf(intent.getStringExtra("gameAnswerType"));
 
         questionAnswerObjects = dataCommunicator.obtainQuestionsAnswersList();
         words = dataCommunicator.obtainWords();
 
-        List<WriteGame.QuestionAnswerObject> mistakesList = questionAnswerObjects.stream().filter(qa ->
-            Arrays.stream(answerType.get.apply(qa.getWord())).noneMatch(str -> Word.isStringSimplifiedFrom(str, qa.getAnswer()))
-        ).collect(Collectors.toList());
+        List<WriteGame.QuestionAnswerObject> mistakesList = findMistakes(questionAnswerObjects);
+        writeWordsToStorage(); // to save updated scores
 
         // in some cases player might have mistaken one word for another
         // this array points to word for which given answer would be correct
@@ -81,7 +94,7 @@ public class WriteGameResults extends Fragment {
                 continue;
             }
             mistakenWords[i] = words.stream().filter(word ->
-                answerType.existsInWord.test(word) && Arrays.stream(answerType.get.apply(word)).anyMatch(str -> Word.isStringSimplifiedFrom(str, answer))
+                answerType.existsInWord.test(word) && Arrays.stream(answerType.get.apply(word)).anyMatch(str -> isStringSimplifiedFrom(str, answer))
             ).findAny().orElse(null);
         }
 
@@ -145,6 +158,58 @@ public class WriteGameResults extends Fragment {
 
         exitButton.setOnClickListener(view1 -> getActivity().finish());
         return view;
+    }
+
+    private void writeWordsToStorage() {
+        DataStorageManager storageManager = new DataStorageManager(getContext());
+        try {
+            storageManager.writeWordsToStorage(words);
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "Exception thrown when writing: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Finds mistakes in given list of questions and their answers. Every answer can contain multiple words
+     * (to show off pretty much), so each word is compared to all correct answers. Word is allowed
+     * to have at most 2 mistakes, where 1 mistake is either swapped letters, missing or extra letter.
+     * If multiple words are in an answer, only can have a mistake.
+     * This method also updates scores in {@link Word}.
+     * @param questionAnswerObjects list of questions and their answers
+     * @return filtered list of questions and their answers that contains only the ones with mistakes
+     */
+    private List<WriteGame.QuestionAnswerObject> findMistakes(List<WriteGame.QuestionAnswerObject> questionAnswerObjects) {
+        List<WriteGame.QuestionAnswerObject> mistakesList = new LinkedList<>();
+        final int tooManyMistakes = 2;
+
+        for(WriteGame.QuestionAnswerObject questionAnswerObject : questionAnswerObjects){
+            int mistakes = -1; // mistakes counts differences between strings (0 is identical, string can still be simplified)
+
+            for(String answer : questionAnswerObject.getAnswer().split(",")) {
+                int minMistakes = Integer.MAX_VALUE;
+                for(String correctAnswer : answerType.get.apply(questionAnswerObject.getWord())){
+                    minMistakes = Math.min(minMistakes, isStringSimplifiedFromWithSingleMistake(correctAnswer, answer));
+                }
+                if(minMistakes < tooManyMistakes && mistakes <= 0){
+                    mistakes = minMistakes;
+                }else{
+                    mistakes = tooManyMistakes;
+                    break;
+                }
+            }
+
+            if(mistakes == 0){
+                questionAnswerObject.getWord().addNewScore(10);
+            }else{
+                mistakesList.add(questionAnswerObject);
+                switch (mistakes) {
+                    case 1: questionAnswerObject.getWord().addNewScore(7);
+                    case 2: questionAnswerObject.getWord().addNewScore(4);
+                    default: questionAnswerObject.getWord().addNewScore(0);
+                }
+            }
+        }
+        return mistakesList;
     }
 
     private int dpToPx(int dpValue){

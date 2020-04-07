@@ -24,6 +24,8 @@ import java.util.function.Consumer;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import static com.krikki.vocabularytrainer.util.StringManipulator.isSubstringSimplifiedFrom;
+
 /**
  * This class controls main recycler view in dictionary.
  */
@@ -129,14 +131,14 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                         // check if any word begins with query (allow simplification of characters like čšž to csz)
                         if(Arrays.stream(word.getWords())
                                 .filter(w -> w.length() >= query.length())
-                                .anyMatch(w -> Word.isSubstringSimplifiedFrom(w, query))){
+                                .anyMatch(w -> isSubstringSimplifiedFrom(w, query))){
                             tempFilteredList.add(selectableData);
                             continue;
                         }
                         // same thing with translated words
                         if(word.hasTranslatedWords() && Arrays.stream(word.getTranslatedWords())
                                 .filter(w -> w.length() >= query.length())
-                                .anyMatch(w -> Word.isSubstringSimplifiedFrom(w, query))){
+                                .anyMatch(w -> isSubstringSimplifiedFrom(w, query))){
                             tempFilteredList.add(selectableData);
                         }
                     }
