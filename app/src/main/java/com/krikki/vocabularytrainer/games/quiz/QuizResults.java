@@ -1,7 +1,6 @@
 package com.krikki.vocabularytrainer.games.quiz;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -25,6 +24,7 @@ import com.krikki.vocabularytrainer.R;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 public class QuizResults extends Fragment {
@@ -72,11 +72,11 @@ public class QuizResults extends Fragment {
 
             Drawable background = mistakesListView.getBackground();
             if (background instanceof ShapeDrawable) {
-                ((ShapeDrawable)background).getPaint().setColor(Color.parseColor("#E0E0E0"));
+                ((ShapeDrawable)background).getPaint().setColor(ContextCompat.getColor(getContext(), R.color.results_list_background_color));
             } else if (background instanceof GradientDrawable) {
-                ((GradientDrawable)background).setColor(Color.parseColor("#E0E0E0"));
+                ((GradientDrawable)background).setColor(ContextCompat.getColor(getContext(), R.color.results_list_background_color));
             } else if (background instanceof ColorDrawable) {
-                ((ColorDrawable)background).setColor(Color.parseColor("#E0E0E0"));
+                ((ColorDrawable)background).setColor(ContextCompat.getColor(getContext(), R.color.results_list_background_color));
             }
         }else{
             mistakesListView.setVisibility(View.GONE);
