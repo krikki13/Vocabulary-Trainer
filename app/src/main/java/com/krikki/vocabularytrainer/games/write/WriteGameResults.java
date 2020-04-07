@@ -107,6 +107,8 @@ public class WriteGameResults extends Fragment {
                     android.R.layout.simple_list_item_1,
                     mistakesToDisplay);
             mistakesListView.setAdapter(arrayAdapter);
+            mistakesListView.setOnItemClickListener((adapterView, view12, position, l) ->
+                    new WordInfoDialog(getContext(), mistakesList.get(position).getWord(), mistakenWords[position]).show());
 
             Drawable background = mistakesListView.getBackground();
             if (background instanceof ShapeDrawable) {
