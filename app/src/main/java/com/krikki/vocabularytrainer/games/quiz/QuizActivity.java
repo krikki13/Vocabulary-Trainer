@@ -27,7 +27,7 @@ public class QuizActivity extends AppCompatActivity implements QuizGame.QuizEven
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.fragment_layout_quiz);
+        setContentView(R.layout.simple_frame_layout);
 
         quizGame = new QuizGame();
         loadFragment(quizGame, "quizGame");

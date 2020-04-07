@@ -29,7 +29,7 @@
         android:layout_marginTop="32dp"
         android:layout_marginEnd="8dp"
         android:text="GAMES"
-        android:textColor="#33b5e5"
+        android:textColor="@color/title_text_color"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -77,7 +77,7 @@
                     style="@style/GameMenuTitleText"
                     android:text="Write" />
                 <Button
-                    android:id="@+id/hangman_play"
+                    android:id="@+id/write_play"
                     style="@style/GameMenuButton"
                     android:text="Coming soon" />
             </LinearLayout>
@@ -88,7 +88,7 @@
                     style="@style/GameMenuTitleText"
                     android:text="Hangman" />
                 <Button
-                    android:id="@+id/write_play"
+                    android:id="@+id/hangman_play"
                     style="@style/GameMenuButton"
                     android:text="Coming soon" />
             </LinearLayout>

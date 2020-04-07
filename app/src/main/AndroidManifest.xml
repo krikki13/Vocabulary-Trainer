@@ -67,6 +67,15 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".games.write.WriteActivity"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="com.krikki.vocabularytrainer.games.write.WriteActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".settings.SettingsMenu"
             android:screenOrientation="portrait" >
             <intent-filter>

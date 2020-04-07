@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.games.quiz.QuizActivity;
+import com.krikki.vocabularytrainer.games.write.WriteActivity;
 
 import java.util.function.BiConsumer;
 
@@ -55,6 +56,9 @@ public class GameMenu extends AppCompatActivity {
         quizButtonDescPrimary.setOnClickListener(view -> quizLauncher.accept(QuizType.DESCRIPTION, QuizType.PRIMARY_LANG));
 
         hangmanButtonPlay.setOnClickListener(view -> Toast.makeText(this  , "I said it is coming soon dammit!!", Toast.LENGTH_SHORT).show());
-        writeButton.setOnClickListener(view -> Toast.makeText(this, "I said it is coming soon dammit!!", Toast.LENGTH_SHORT).show());
+        writeButton.setOnClickListener(view -> {
+            Intent intent = new Intent(this, WriteActivity.class);
+            startActivity(intent);
+        });
     }
 }
