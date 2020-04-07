@@ -202,10 +202,10 @@ public class WriteGameResults extends Fragment {
                 questionAnswerObject.getWord().addNewScore(10);
             }else{
                 mistakesList.add(questionAnswerObject);
-                switch (mistakes) {
-                    case 1: questionAnswerObject.getWord().addNewScore(7);
-                    case 2: questionAnswerObject.getWord().addNewScore(4);
-                    default: questionAnswerObject.getWord().addNewScore(0);
+                if(mistakes == 1) {
+                    questionAnswerObject.getWord().addNewScore(7);
+                }else{
+                    questionAnswerObject.getWord().addNewScore(0);
                 }
             }
         }
