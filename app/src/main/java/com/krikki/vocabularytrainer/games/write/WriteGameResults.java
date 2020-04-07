@@ -24,6 +24,7 @@ import com.krikki.vocabularytrainer.Word;
 import com.krikki.vocabularytrainer.games.CommonGameGenerator;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -70,18 +71,41 @@ public class WriteGameResults extends Fragment {
         List<WriteGame.QuestionAnswerObject> mistakesList = questionAnswerObjects.stream().filter(qa ->
             Arrays.stream(answerType.get.apply(qa.getWord())).noneMatch(str -> Word.isStringSimplifiedFrom(str, qa.getAnswer()))
         ).collect(Collectors.toList());
+
+        // in some cases player might have mistaken one word for another
+        // this array points to word for which given answer would be correct
+        Word[] mistakenWords = new Word[mistakesList.size()];
+        for (int i = 0; i < mistakesList.size(); i++) {
+            final String answer = mistakesList.get(i).getAnswer();
+            if(answer.contains(",")) {
+                continue;
+            }
+            mistakenWords[i] = words.stream().filter(word ->
+                answerType.existsInWord.test(word) && Arrays.stream(answerType.get.apply(word)).anyMatch(str -> Word.isStringSimplifiedFrom(str, answer))
+            ).findAny().orElse(null);
+        }
+
+
         int score = questionAnswerObjects.size() - mistakesList.size();
 
         if(score != 10) {
+            List<String> mistakesToDisplay = new LinkedList<>();
+            for (int i = 0; i < mistakesList.size(); i++) {
+                WriteGame.QuestionAnswerObject qa = mistakesList.get(i);
+                String textToDisplay = qa.getLiteralQuestion() + " = " + String.join(", ", answerType.get.apply(qa.getWord()));
+                if(!qa.getAnswer().isEmpty()) {
+                    if(mistakenWords[i] == null) {
+                        textToDisplay += " (not " + qa.getAnswer() + ")";
+                    }else{
+                        textToDisplay += " (not " + qa.getAnswer() + ")*";
+                    }
+                }
+                mistakesToDisplay.add(textToDisplay);
+            }
+
             ArrayAdapter arrayAdapter = new ArrayAdapter<>(getContext(),
                     android.R.layout.simple_list_item_1,
-                    mistakesList.stream().map(qa -> {
-                        String textToDisplay = qa.getLiteralQuestion() + " = " + String.join(", ", answerType.get.apply(qa.getWord()));
-                        if(!qa.getAnswer().isEmpty()) {
-                            textToDisplay += " (not " + qa.getAnswer() + ")";
-                        }
-                        return textToDisplay;
-                    }).collect(Collectors.toList()));
+                    mistakesToDisplay);
             mistakesListView.setAdapter(arrayAdapter);
 
             Drawable background = mistakesListView.getBackground();

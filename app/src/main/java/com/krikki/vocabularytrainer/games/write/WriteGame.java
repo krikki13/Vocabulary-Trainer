@@ -104,6 +104,7 @@ public class WriteGame extends Fragment {
         doneButton.setOnClickListener(view1 -> {
             for (int i = 0; i < NUMBER_OF_QUESTIONS; i++) {
                 String text = answersEditTextList.get(i).getText().toString();
+                text = text.replaceAll("\\s{2,}", " ").trim().replaceAll(",{2,}", ",").replaceAll("^,|,$", "");
                 questionsAndAnswers.get(i).setAnswer(text);
             }
             gameControlActivity.onGameFinished(questionsAndAnswers);

@@ -73,14 +73,14 @@ public class Word {
      * For that use {@link #FORBIDDEN_SIGNS_FOR_WORDS_REGEX}
      * instead.
      */
-    public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"()/<>:;?'";
+    public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"()/<>:;?'*";
     /**
      * List of forbidden signs for words, translated words, synonyms and translated synonyms.
      * It should only be used in regex because it obeys regex syntax.
      * If you need a simple list of all characters use {@link #FORBIDDEN_SIGNS_FOR_WORDS}
      * instead.
      */
-    public static final String FORBIDDEN_SIGNS_FOR_WORDS_REGEX = "\"\\(\\)/<>:;?'";
+    public static final String FORBIDDEN_SIGNS_FOR_WORDS_REGEX = "\"\\(\\)/<>:;?'*";
 
     /* Collation rules specify sorting order using RuleBasedCollator
      * < letter difference
