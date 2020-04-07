@@ -35,7 +35,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" 
+        android:layout_height="wrap_content"
+        android:layout_marginTop="19dp"
         android:layout_below="@id/gameMenuTitle" >
         <LinearLayout
             android:layout_width="match_parent"
@@ -77,9 +78,17 @@
                     style="@style/GameMenuTitleText"
                     android:text="Write" />
                 <Button
-                    android:id="@+id/write_play"
+                    android:id="@+id/write_button_primary_translated"
                     style="@style/GameMenuButton"
-                    android:text="Coming soon" />
+                    android:text="English \u2192 Slovene" />
+                <Button
+                    android:id="@+id/write_button_translated_primary"
+                    style="@style/GameMenuButton"
+                    android:text="Slovene \u2192 English" />
+                <Button
+                    android:id="@+id/write_button_desc_primary"
+                    style="@style/GameMenuButton"
+                    android:text="Description \u2192 English" />
             </LinearLayout>
 
             <LinearLayout

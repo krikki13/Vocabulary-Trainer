@@ -31,12 +31,6 @@ public class QuizActivity extends AppCompatActivity implements QuizGame.QuizEven
 
         quizGame = new QuizGame();
         loadFragment(quizGame, "quizGame");
-        /*quizResults = new QuizResults();
-        Bundle bundle = new Bundle();
-        bundle.putInt("score", 9);
-        bundle.putString("gifUrl", gifUrl);
-        quizResults.setArguments(bundle);
-        loadFragment(quizResults, "quizGame");*/
     }
 
     private void loadFragment(Fragment frag, String tag){

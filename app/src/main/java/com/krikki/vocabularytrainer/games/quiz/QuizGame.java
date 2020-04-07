@@ -28,7 +28,7 @@ import java.util.List;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import static com.krikki.vocabularytrainer.games.quiz.QuizGenerator.QuizType;
+import static com.krikki.vocabularytrainer.games.CommonGameGenerator.GameType;
 
 /**
  * Controls quiz game.
@@ -89,8 +89,8 @@ public class QuizGame extends Fragment {
         readListOfWordsFromStorage();
         try {
             Intent intent = getActivity().getIntent();
-            QuizType questionType = QuizType.valueOf(intent.getStringExtra("quizQuestionType"));
-            QuizType answerType = QuizType.valueOf(intent.getStringExtra("quizAnswerType"));
+            GameType questionType = GameType.valueOf(intent.getStringExtra("gameQuestionType"));
+            GameType answerType = GameType.valueOf(intent.getStringExtra("gameAnswerType"));
             quizGenerator = new QuizGenerator(words, questionType, answerType);
             showQuestion();
         } catch (QuizGenerationException e) {
@@ -142,7 +142,7 @@ public class QuizGame extends Fragment {
 
             int i = 0;
             String delimiter = " = ";
-            if(quizGenerator.getQuestionType() == QuizType.DESCRIPTION || quizGenerator.getAnswerType() == QuizType.DESCRIPTION){
+            if(quizGenerator.getQuestionType() == GameType.DESCRIPTION || quizGenerator.getAnswerType() == GameType.DESCRIPTION){
                 delimiter = "\n=\n";
             }
             for (String correctTranslationForAnswer : quizGenerator.getAnswersTranslated()) {

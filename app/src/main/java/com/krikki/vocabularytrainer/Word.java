@@ -358,6 +358,10 @@ public class Word {
         return synonyms != null ? String.join(", ", synonyms) : "";
     }
 
+    public String[] getTranslatedSynonyms() {
+        return translatedSynonyms;
+    }
+
     public String getTranslatedSynonymsJoined() {
         return translatedSynonyms != null ? String.join(", ", translatedSynonyms) : "";
     }
