@@ -10,6 +10,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -99,6 +101,8 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
         holder.itemView.setOnLongClickListener(v -> {
             longClickConsumer.accept(selectableData.getData().getId());
+            // TODO
+            Toast.makeText(context, "<DEBUG> Scores: "+selectableData.getData().getScores().stream().map(i -> ""+i).collect(Collectors.joining(", ")), Toast.LENGTH_LONG).show();
             return true;
         });
     }

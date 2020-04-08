@@ -91,7 +91,7 @@ public class WriteGame extends Fragment {
         }
 
         for (int i = 0; i < NUMBER_OF_QUESTIONS; i++) {
-            Word word = questionsAndAnswers.get(i).getWord();
+            Word word = questionsAndAnswers.get(i).getWord(); // FIXME IndexOutOfBoundsException Index: 9, Size: 9
             String textToDisplay = oneOf(questionType.get.apply(word));
             String note = questionType.getNote.apply(word);
             if(!note.isEmpty()){

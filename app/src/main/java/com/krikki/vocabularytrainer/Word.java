@@ -198,6 +198,10 @@ public class Word {
     public void setTranslatedDemand(String translatedDemand) {
         this.translatedDemand = getTrimmedOrNull(translatedDemand);
     }
+    // TODO
+public List<Integer> getScores(){
+        return scores;
+}
 
     public void setNote(String note) {
         this.note = getTrimmedOrNull(note);

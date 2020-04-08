@@ -25,6 +25,7 @@ import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
 import com.krikki.vocabularytrainer.games.CommonGameGenerator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,6 +54,8 @@ public class WriteGameResults extends Fragment {
 
     private CommonGameGenerator.GameType questionType;
     private CommonGameGenerator.GameType answerType;
+
+    private List<Boolean> singleMistakeFound = new ArrayList<Boolean>();
 
     @Override
     public void onAttach(Context context) {
@@ -111,6 +114,10 @@ public class WriteGameResults extends Fragment {
                         textToDisplay += " (not " + qa.getAnswer() + ")";
                     }else{
                         textToDisplay += " (not " + qa.getAnswer() + ")*";
+                    }
+                    // TODO
+                    if(singleMistakeFound.get(i)) {
+                        textToDisplay += " <DEBUG-single_mistake>";
                     }
                 }
                 mistakesToDisplay.add(textToDisplay);
@@ -203,8 +210,10 @@ public class WriteGameResults extends Fragment {
             }else{
                 mistakesList.add(questionAnswerObject);
                 if(mistakes == 1) {
+                    singleMistakeFound.add(true);
                     questionAnswerObject.getWord().addNewScore(7);
                 }else{
+                    singleMistakeFound.add(false);
                     questionAnswerObject.getWord().addNewScore(0);
                 }
             }
