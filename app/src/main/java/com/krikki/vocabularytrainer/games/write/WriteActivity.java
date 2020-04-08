@@ -1,13 +1,12 @@
 package com.krikki.vocabularytrainer.games.write;
 
 import android.os.Bundle;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.krikki.vocabularytrainer.DataStorageManager;
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
+import com.krikki.vocabularytrainer.util.SoftInputAdjustAssist;
 
 import org.json.JSONException;
 
@@ -28,12 +27,13 @@ public class WriteActivity extends AppCompatActivity implements WriteGame.GameCo
     private List<Word> words;
     private List<WriteGame.QuestionAnswerObject> questionsAndAnswers;
 
+    private SoftInputAdjustAssist softInputAdjustAssist;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.simple_frame_layout);
+        softInputAdjustAssist = new SoftInputAdjustAssist(this);
 
         storageManager = new DataStorageManager(this);
         readWordsFromStorage();
@@ -94,4 +94,21 @@ public class WriteActivity extends AppCompatActivity implements WriteGame.GameCo
         return words;
     }
 
+    @Override
+    protected void onResume() {
+        softInputAdjustAssist.onResume();
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        softInputAdjustAssist.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        softInputAdjustAssist.onDestroy();
+        super.onDestroy();
+    }
 }
