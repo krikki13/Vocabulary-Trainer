@@ -492,16 +492,17 @@ public List<Integer> getScores(){
         if (scores.size() < 3) {
             return -1;
         }
-        double s = 1.73;
+        double s = 1.14;
         double t = 0.21;
+        double f = 2.21;
         Iterator<Integer> iter = scores.iterator();
         double score = 0;
         try {
-            score = Math.pow(iter.next(), s);
-            score += Math.pow(iter.next(), s - 0.3 * t);
-            score += Math.pow(iter.next(), s - 0.6 * t);
-            score += Math.pow(iter.next(), s - 1.3 * t);
-            score += Math.pow(iter.next(), s - 2.0 * t);
+            score = Math.pow(iter.next(), s) * f;
+            score += Math.pow(iter.next(), s - 0.3 * t) * f;
+            score += Math.pow(iter.next(), s - 0.6 * t) * f;
+            score += Math.pow(iter.next(), s - 1.3 * t) * f;
+            score += Math.pow(iter.next(), s - 2.0 * t) * f;
         } catch (Exception e) {
         }
         return Math.min(Math.max((int) score, MIN_TOTAL_SCORE), MAX_TOTAL_SCORE);

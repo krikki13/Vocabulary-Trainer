@@ -34,7 +34,8 @@ import static com.krikki.vocabularytrainer.games.CommonGameGenerator.GameType;
  * Controls quiz game.
  */
 public class QuizGame extends Fragment {
-    private final static int NUMBER_OF_POINTS_FOR_CORRECT = 7;
+    private final static int NUMBER_OF_POINTS_FOR_CORRECT_PRIMARY_TRANSLATED = 7;
+    private final static int NUMBER_OF_POINTS_FOR_CORRECT_PRIMARY_DESCRIPTION = 8;
 
     private QuizEventListener quizEventListener;
     private TextView question;
@@ -45,6 +46,9 @@ public class QuizGame extends Fragment {
     private List<QuizGenerator.QuestionWord> mistakesList = new LinkedList<>();
     private int score = 0;
     private boolean buttonsDisabled = false;
+
+    private GameType questionType;
+    private GameType answerType;
 
     @Override
     public void onAttach(Context context) {
@@ -131,7 +135,11 @@ public class QuizGame extends Fragment {
             if (buttonIndex == quizGenerator.getCorrectAnswerIndex()) {
                 setButtonBackgroundColor(buttonAnswers.get(buttonIndex), R.color.correctBackgroundColor);
                 score++;
-                quizGenerator.getQuestionWord().getWord().addNewScore(NUMBER_OF_POINTS_FOR_CORRECT);
+                if(questionType == GameType.DESCRIPTION || answerType == GameType.DESCRIPTION) {
+                    quizGenerator.getQuestionWord().getWord().addNewScore(NUMBER_OF_POINTS_FOR_CORRECT_PRIMARY_DESCRIPTION);
+                }else{
+                    quizGenerator.getQuestionWord().getWord().addNewScore(NUMBER_OF_POINTS_FOR_CORRECT_PRIMARY_TRANSLATED);
+                }
             } else {
                 final QuizGenerator.QuestionWord questionWord = quizGenerator.getQuestionWord();
                 setButtonBackgroundColor(buttonAnswers.get(buttonIndex), R.color.incorrectBackgroundColor);

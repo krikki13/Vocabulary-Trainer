@@ -40,7 +40,7 @@ import static com.krikki.vocabularytrainer.util.StringManipulator.isStringSimpli
  */
 public class WriteGameResults extends Fragment {
     private final static int NUMBER_OF_POINTS_FOR_CORRECT = 10;
-    private final static int NUMBER_OF_POINTS_FOR_SINGLE_MISTAKE = 7;
+    private final static int NUMBER_OF_POINTS_FOR_SINGLE_MISTAKE = 9;
 
     private TextView congratsText, messageText, yourMistakesText;
     private Button exitButton;
