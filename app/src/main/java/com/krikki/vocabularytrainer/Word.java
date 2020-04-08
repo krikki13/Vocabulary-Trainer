@@ -492,7 +492,7 @@ public List<Integer> getScores(){
         if (scores.size() < 3) {
             return -1;
         }
-        double s = 1.83;
+        double s = 1.73;
         double t = 0.21;
         Iterator<Integer> iter = scores.iterator();
         double score = 0;

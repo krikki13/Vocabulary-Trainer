@@ -34,6 +34,8 @@ import static com.krikki.vocabularytrainer.games.CommonGameGenerator.GameType;
  * Controls quiz game.
  */
 public class QuizGame extends Fragment {
+    private final static int NUMBER_OF_POINTS_FOR_CORRECT = 7;
+
     private QuizEventListener quizEventListener;
     private TextView question;
     private List<Button> buttonAnswers;
@@ -129,7 +131,7 @@ public class QuizGame extends Fragment {
             if (buttonIndex == quizGenerator.getCorrectAnswerIndex()) {
                 setButtonBackgroundColor(buttonAnswers.get(buttonIndex), R.color.correctBackgroundColor);
                 score++;
-                quizGenerator.getQuestionWord().getWord().addNewScore(Word.MAX_INDIVIDUAL_SCORE);
+                quizGenerator.getQuestionWord().getWord().addNewScore(NUMBER_OF_POINTS_FOR_CORRECT);
             } else {
                 final QuizGenerator.QuestionWord questionWord = quizGenerator.getQuestionWord();
                 setButtonBackgroundColor(buttonAnswers.get(buttonIndex), R.color.incorrectBackgroundColor);

@@ -39,6 +39,9 @@ import static com.krikki.vocabularytrainer.util.StringManipulator.isStringSimpli
  * one word. This class also adds scores to words and saves them.
  */
 public class WriteGameResults extends Fragment {
+    private final static int NUMBER_OF_POINTS_FOR_CORRECT = 10;
+    private final static int NUMBER_OF_POINTS_FOR_SINGLE_MISTAKE = 7;
+
     private TextView congratsText, messageText, yourMistakesText;
     private Button exitButton;
     private ListView mistakesListView;
@@ -188,7 +191,7 @@ public class WriteGameResults extends Fragment {
                     minMistakes = Math.min(minMistakes, isStringSimplifiedFromWithSingleMistake(correctAnswer, answer));
                     if(minMistakes == 0) break;
                 }
-                if(minMistakes != 0) {
+                if(minMistakes != 0 && answerType.getSynonyms.apply(questionAnswerObject.getWord()) != null) {
                     // if no match was found, check also list of synonyms
                     for (String correctAnswer : answerType.getSynonyms.apply(questionAnswerObject.getWord())) {
                         minMistakes = Math.min(minMistakes, isStringSimplifiedFromWithSingleMistake(correctAnswer, answer));
@@ -204,12 +207,12 @@ public class WriteGameResults extends Fragment {
             }
 
             if(mistakes == 0){
-                questionAnswerObject.getWord().addNewScore(10);
+                questionAnswerObject.getWord().addNewScore(NUMBER_OF_POINTS_FOR_CORRECT);
             }else{
                 mistakesList.add(questionAnswerObject);
                 if(mistakes == 1) {
                     singleMistakeFound.add(true);
-                    questionAnswerObject.getWord().addNewScore(7);
+                    questionAnswerObject.getWord().addNewScore(NUMBER_OF_POINTS_FOR_SINGLE_MISTAKE);
                 }else{
                     singleMistakeFound.add(false);
                     questionAnswerObject.getWord().addNewScore(0);
