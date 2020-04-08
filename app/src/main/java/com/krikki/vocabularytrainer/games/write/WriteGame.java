@@ -90,6 +90,11 @@ public class WriteGame extends Fragment {
             getActivity().finish();
         }
 
+        // TODO
+        if(questionsAndAnswers.size() != NUMBER_OF_QUESTIONS){
+            Toast.makeText(getContext(), "This should never happen! Please report this: questionsAndAnswers.size()=="+questionsAndAnswers.size()+", NUMBER_OF_QUESTIONS=="+NUMBER_OF_QUESTIONS, Toast.LENGTH_LONG).show();
+        }
+
         for (int i = 0; i < NUMBER_OF_QUESTIONS; i++) {
             Word word = questionsAndAnswers.get(i).getWord(); // FIXME IndexOutOfBoundsException Index: 9, Size: 9
             String textToDisplay = oneOf(questionType.get.apply(word));
@@ -104,7 +109,7 @@ public class WriteGame extends Fragment {
         doneButton.setOnClickListener(view1 -> {
             for (int i = 0; i < NUMBER_OF_QUESTIONS; i++) {
                 String text = answersEditTextList.get(i).getText().toString();
-                text = text.replaceAll("\\s{2,}", " ").trim().replaceAll(",{2,}", ",").replaceAll("^,|,$", "");
+                text = text.replaceAll("\\s{2,}", " ").trim().replaceAll("[, ]*,[, ]*", ",").replaceAll("^,|,$", "");
                 questionsAndAnswers.get(i).setAnswer(text);
             }
             gameControlActivity.onGameFinished(questionsAndAnswers);

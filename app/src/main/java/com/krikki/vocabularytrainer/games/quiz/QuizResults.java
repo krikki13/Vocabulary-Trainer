@@ -1,10 +1,6 @@
 package com.krikki.vocabularytrainer.games.quiz;
 
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.ShapeDrawable;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -20,11 +16,11 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.krikki.vocabularytrainer.R;
+import com.krikki.vocabularytrainer.games.write.WordInfoDialog;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 public class QuizResults extends Fragment {
@@ -69,15 +65,8 @@ public class QuizResults extends Fragment {
                     android.R.layout.simple_list_item_1,
                     mistakesList.stream().map(word -> word.getLiteralQuestion() + " = " + word.getLiteralAnswer()).collect(Collectors.toList()));
             mistakesListView.setAdapter(arrayAdapter);
-
-            Drawable background = mistakesListView.getBackground();
-            if (background instanceof ShapeDrawable) {
-                ((ShapeDrawable)background).getPaint().setColor(ContextCompat.getColor(getContext(), R.color.results_list_background_color));
-            } else if (background instanceof GradientDrawable) {
-                ((GradientDrawable)background).setColor(ContextCompat.getColor(getContext(), R.color.results_list_background_color));
-            } else if (background instanceof ColorDrawable) {
-                ((ColorDrawable)background).setColor(ContextCompat.getColor(getContext(), R.color.results_list_background_color));
-            }
+            mistakesListView.setOnItemClickListener((adapterView, view12, position, l) ->
+                new WordInfoDialog(getContext(), mistakesList.get(position).getWord(), null).show());
         }else{
             mistakesListView.setVisibility(View.GONE);
             yourMistakesText.setVisibility(View.GONE);

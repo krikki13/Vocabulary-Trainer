@@ -228,7 +228,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                     translatedWord.setMaxLines(1);
                     translatedWord.setEllipsize(TextUtils.TruncateAt.END);
                 }
-                scoreText.setText(score == -1 ? "??" : (""+score));
+                scoreText.setText(score == -1 ? "-" : (""+score));
 
                 demandText.setVisibility(View.GONE);
                 translatedDemandText.setVisibility(View.GONE);
@@ -251,7 +251,10 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                     translatedWord.setMaxLines(Integer.MAX_VALUE);
                     translatedWord.setEllipsize(null);
                 }
-                scoreText.setText(score == -1 ? "Ungraded" : ("Grade: "+score));
+                // scoreText.setText(score == -1 ? "Ungraded" : ("Grade: "+score)); TODO
+                scoreText.setText(theWord.getScores() != null ?
+                        theWord.getScores().stream().map(i->""+i).collect(Collectors.joining(","))
+                        : "Ungraded");
 
                 // set text, visibility and icon to word info fields
                 Word word = selectableData.getData();

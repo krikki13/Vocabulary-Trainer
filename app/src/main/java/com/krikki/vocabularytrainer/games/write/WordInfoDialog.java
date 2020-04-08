@@ -15,12 +15,22 @@ import com.krikki.vocabularytrainer.Word;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 
+/**
+ * A dialog that shows info about word. It may show info about one or two words.
+ * Dialog can be shown by calling {@link #show()}.
+ */
 public class WordInfoDialog {
     private Context context;
     private final AlertDialog alertDialog;
     private LinearLayout layout;
     private Drawable infoIcon, exclamationMarkIcon, translationIcon, descriptionIcon;
 
+    /**
+     * Initialize word info dialog. Parameter correctWord is required, but writtenWord is not.
+     * @param context application context
+     * @param correctWord word which info will be displayed
+     * @param writtenWord additional word of which info can be displayed (can be null)
+     */
     public WordInfoDialog(Context context, Word correctWord, Word writtenWord) {
         this.context = context;
 
@@ -30,7 +40,7 @@ public class WordInfoDialog {
         alertDialogBuilderUserInput.setView(layout);
         initializeDrawables();
 
-        addHorizontalLine(2, R.color.colorPrimaryDark, 0, 10, 16);
+        addHorizontalLine(2, R.color.colorPrimaryDark, 0, 10, 13);
 
         addWordData(correctWord);
         if(writtenWord != null) {

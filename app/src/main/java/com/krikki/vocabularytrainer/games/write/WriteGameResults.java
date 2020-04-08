@@ -2,10 +2,6 @@ package com.krikki.vocabularytrainer.games.write;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.ShapeDrawable;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -30,7 +26,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import static com.krikki.vocabularytrainer.util.StringManipulator.isStringSimplifiedFrom;
@@ -129,15 +124,6 @@ public class WriteGameResults extends Fragment {
             mistakesListView.setAdapter(arrayAdapter);
             mistakesListView.setOnItemClickListener((adapterView, view12, position, l) ->
                     new WordInfoDialog(getContext(), mistakesList.get(position).getWord(), mistakenWords[position]).show());
-
-            Drawable background = mistakesListView.getBackground();
-            if (background instanceof ShapeDrawable) {
-                ((ShapeDrawable)background).getPaint().setColor(ContextCompat.getColor(getContext(), R.color.results_list_background_color));
-            } else if (background instanceof GradientDrawable) {
-                ((GradientDrawable)background).setColor(ContextCompat.getColor(getContext(), R.color.results_list_background_color));
-            } else if (background instanceof ColorDrawable) {
-                ((ColorDrawable)background).setColor(ContextCompat.getColor(getContext(), R.color.results_list_background_color));
-            }
         }else{
             mistakesListView.setVisibility(View.GONE);
             yourMistakesText.setVisibility(View.GONE);
@@ -189,13 +175,25 @@ public class WriteGameResults extends Fragment {
         List<WriteGame.QuestionAnswerObject> mistakesList = new LinkedList<>();
         final int tooManyMistakes = 2;
 
+        // for answer to each question
         for(WriteGame.QuestionAnswerObject questionAnswerObject : questionAnswerObjects){
             int mistakes = -1; // mistakes counts differences between strings (0 is identical, string can still be simplified)
 
+            // for each individual answer among multiple answers to one question
             for(String answer : questionAnswerObject.getAnswer().split(",")) {
                 int minMistakes = Integer.MAX_VALUE;
+
+                // check if there is a match in list of correct answers
                 for(String correctAnswer : answerType.get.apply(questionAnswerObject.getWord())){
                     minMistakes = Math.min(minMistakes, isStringSimplifiedFromWithSingleMistake(correctAnswer, answer));
+                    if(minMistakes == 0) break;
+                }
+                if(minMistakes != 0) {
+                    // if no match was found, check also list of synonyms
+                    for (String correctAnswer : answerType.getSynonyms.apply(questionAnswerObject.getWord())) {
+                        minMistakes = Math.min(minMistakes, isStringSimplifiedFromWithSingleMistake(correctAnswer, answer));
+                        if(minMistakes == 0) break;
+                    }
                 }
                 if(minMistakes < tooManyMistakes && mistakes <= 0){
                     mistakes = minMistakes;
