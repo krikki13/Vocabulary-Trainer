@@ -50,6 +50,7 @@
         </activity>
         <activity
             android:name=".games.GameMenu"
+            android:theme="@style/FullscreenTheme"
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="com.krikki.vocabularytrainer.games.GameMenu" />
@@ -59,9 +60,21 @@
         </activity>
         <activity
             android:name=".games.quiz.QuizActivity"
+            android:theme="@style/FullscreenTheme"
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="com.krikki.vocabularytrainer.games.quiz.QuizActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".games.write.WriteActivity"
+            android:theme="@style/FullscreenTheme"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" >
+            <intent-filter>
+                <action android:name="com.krikki.vocabularytrainer.games.write.WriteActivity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

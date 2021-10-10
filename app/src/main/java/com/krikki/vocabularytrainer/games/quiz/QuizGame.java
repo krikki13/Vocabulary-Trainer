@@ -28,12 +28,15 @@ import java.util.List;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import static com.krikki.vocabularytrainer.games.quiz.QuizGenerator.QuizType;
+import static com.krikki.vocabularytrainer.games.CommonGameGenerator.GameType;
 
 /**
  * Controls quiz game.
  */
 public class QuizGame extends Fragment {
+    private final static int NUMBER_OF_POINTS_FOR_CORRECT_PRIMARY_TRANSLATED = 7;
+    private final static int NUMBER_OF_POINTS_FOR_CORRECT_PRIMARY_DESCRIPTION = 8;
+
     private QuizEventListener quizEventListener;
     private TextView question;
     private List<Button> buttonAnswers;
@@ -43,6 +46,9 @@ public class QuizGame extends Fragment {
     private List<QuizGenerator.QuestionWord> mistakesList = new LinkedList<>();
     private int score = 0;
     private boolean buttonsDisabled = false;
+
+    private GameType questionType;
+    private GameType answerType;
 
     @Override
     public void onAttach(Context context) {
@@ -89,8 +95,8 @@ public class QuizGame extends Fragment {
         readListOfWordsFromStorage();
         try {
             Intent intent = getActivity().getIntent();
-            QuizType questionType = QuizType.valueOf(intent.getStringExtra("quizQuestionType"));
-            QuizType answerType = QuizType.valueOf(intent.getStringExtra("quizAnswerType"));
+            GameType questionType = GameType.valueOf(intent.getStringExtra("gameQuestionType"));
+            GameType answerType = GameType.valueOf(intent.getStringExtra("gameAnswerType"));
             quizGenerator = new QuizGenerator(words, questionType, answerType);
             showQuestion();
         } catch (QuizGenerationException e) {
@@ -129,7 +135,11 @@ public class QuizGame extends Fragment {
             if (buttonIndex == quizGenerator.getCorrectAnswerIndex()) {
                 setButtonBackgroundColor(buttonAnswers.get(buttonIndex), R.color.correctBackgroundColor);
                 score++;
-                quizGenerator.getQuestionWord().getWord().addNewScore(Word.MAX_INDIVIDUAL_SCORE);
+                if(questionType == GameType.DESCRIPTION || answerType == GameType.DESCRIPTION) {
+                    quizGenerator.getQuestionWord().getWord().addNewScore(NUMBER_OF_POINTS_FOR_CORRECT_PRIMARY_DESCRIPTION);
+                }else{
+                    quizGenerator.getQuestionWord().getWord().addNewScore(NUMBER_OF_POINTS_FOR_CORRECT_PRIMARY_TRANSLATED);
+                }
             } else {
                 final QuizGenerator.QuestionWord questionWord = quizGenerator.getQuestionWord();
                 setButtonBackgroundColor(buttonAnswers.get(buttonIndex), R.color.incorrectBackgroundColor);
@@ -142,7 +152,7 @@ public class QuizGame extends Fragment {
 
             int i = 0;
             String delimiter = " = ";
-            if(quizGenerator.getQuestionType() == QuizType.DESCRIPTION || quizGenerator.getAnswerType() == QuizType.DESCRIPTION){
+            if(quizGenerator.getQuestionType() == GameType.DESCRIPTION || quizGenerator.getAnswerType() == GameType.DESCRIPTION){
                 delimiter = "\n=\n";
             }
             for (String correctTranslationForAnswer : quizGenerator.getAnswersTranslated()) {

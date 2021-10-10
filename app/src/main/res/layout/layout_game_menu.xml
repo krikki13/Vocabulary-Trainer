@@ -29,13 +29,14 @@
         android:layout_marginTop="32dp"
         android:layout_marginEnd="8dp"
         android:text="GAMES"
-        android:textColor="#33b5e5"
+        android:textColor="@color/title_text_color"
         android:textSize="24sp"
         android:textStyle="bold" />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" 
+        android:layout_height="wrap_content"
+        android:layout_marginTop="19dp"
         android:layout_below="@id/gameMenuTitle" >
         <LinearLayout
             android:layout_width="match_parent"
@@ -77,9 +78,17 @@
                     style="@style/GameMenuTitleText"
                     android:text="Write" />
                 <Button
-                    android:id="@+id/hangman_play"
+                    android:id="@+id/write_button_primary_translated"
                     style="@style/GameMenuButton"
-                    android:text="Coming soon" />
+                    android:text="English \u2192 Slovene" />
+                <Button
+                    android:id="@+id/write_button_translated_primary"
+                    style="@style/GameMenuButton"
+                    android:text="Slovene \u2192 English" />
+                <Button
+                    android:id="@+id/write_button_desc_primary"
+                    style="@style/GameMenuButton"
+                    android:text="Description \u2192 English" />
             </LinearLayout>
 
             <LinearLayout
@@ -88,7 +97,7 @@
                     style="@style/GameMenuTitleText"
                     android:text="Hangman" />
                 <Button
-                    android:id="@+id/write_play"
+                    android:id="@+id/hangman_play"
                     style="@style/GameMenuButton"
                     android:text="Coming soon" />
             </LinearLayout>

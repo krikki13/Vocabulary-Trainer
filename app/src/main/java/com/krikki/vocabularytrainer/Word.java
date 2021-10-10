@@ -34,7 +34,9 @@ import java.util.stream.Collectors;
  * <p>
  * For filtering words, where you want query 'cev' to find 'čevapi', but not 'člo' to find cloud, you can use
  * map {@link #letterSimplified}. It maps non english letters (those which are also in {@link RuleBasedCollator})
- * to most similar english letters. Method {@link #isStringSimplifiedFrom(String, String)} uses this
+ * to most similar english letters. Class {@link com.krikki.vocabularytrainer.util.StringManipulator}
+ * contains utility methods for such usage. For example method
+ * {@link com.krikki.vocabularytrainer.util.StringManipulator#isSubstringSimplifiedFrom(String, String)} uses this
  * and returns true when String is simplified version of another.
  */
 
@@ -73,14 +75,14 @@ public class Word {
      * For that use {@link #FORBIDDEN_SIGNS_FOR_WORDS_REGEX}
      * instead.
      */
-    public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"()/<>:;?'";
+    public static final String FORBIDDEN_SIGNS_FOR_WORDS = "\"()/<>:;?'*";
     /**
      * List of forbidden signs for words, translated words, synonyms and translated synonyms.
      * It should only be used in regex because it obeys regex syntax.
      * If you need a simple list of all characters use {@link #FORBIDDEN_SIGNS_FOR_WORDS}
      * instead.
      */
-    public static final String FORBIDDEN_SIGNS_FOR_WORDS_REGEX = "\"\\(\\)/<>:;?'";
+    public static final String FORBIDDEN_SIGNS_FOR_WORDS_REGEX = "\"\\(\\)/<>:;?'*";
 
     /* Collation rules specify sorting order using RuleBasedCollator
      * < letter difference
@@ -196,6 +198,10 @@ public class Word {
     public void setTranslatedDemand(String translatedDemand) {
         this.translatedDemand = getTrimmedOrNull(translatedDemand);
     }
+    // TODO
+public List<Integer> getScores(){
+        return scores;
+}
 
     public void setNote(String note) {
         this.note = getTrimmedOrNull(note);
@@ -358,6 +364,10 @@ public class Word {
         return synonyms != null ? String.join(", ", synonyms) : "";
     }
 
+    public String[] getTranslatedSynonyms() {
+        return translatedSynonyms;
+    }
+
     public String getTranslatedSynonymsJoined() {
         return translatedSynonyms != null ? String.join(", ", translatedSynonyms) : "";
     }
@@ -482,16 +492,17 @@ public class Word {
         if (scores.size() < 3) {
             return -1;
         }
-        double s = 1.83;
+        double s = 1.14;
         double t = 0.21;
+        double f = 2.21;
         Iterator<Integer> iter = scores.iterator();
         double score = 0;
         try {
-            score = Math.pow(iter.next(), s);
-            score += Math.pow(iter.next(), s - 0.3 * t);
-            score += Math.pow(iter.next(), s - 0.6 * t);
-            score += Math.pow(iter.next(), s - 1.3 * t);
-            score += Math.pow(iter.next(), s - 2.0 * t);
+            score = Math.pow(iter.next(), s) * f;
+            score += Math.pow(iter.next(), s - 0.3 * t) * f;
+            score += Math.pow(iter.next(), s - 0.6 * t) * f;
+            score += Math.pow(iter.next(), s - 1.3 * t) * f;
+            score += Math.pow(iter.next(), s - 2.0 * t) * f;
         } catch (Exception e) {
         }
         return Math.min(Math.max((int) score, MIN_TOTAL_SCORE), MAX_TOTAL_SCORE);
@@ -776,34 +787,6 @@ public class Word {
                 return 1;
             return w1.score - w2.score;
         };
-    }
-
-    /**
-     * Returns true if simplifiedString word is a simplified version of baseString or its leading substring (starting from 0).
-     * String is simplified when localized letters (like in baseString) are replaced with the most similar
-     * letters from english alphabet. Therefore this method returns true if cevapi is simplified from čevapi,
-     * but not the other way around. Note that simplifiedString can still contain localized letters.
-     * For mapping localized letters to their closest english letter, {@link #letterSimplified} is used.
-     *
-     * @param baseString       base string which needs to be evaluated (must not be shorter than simplifiedString)
-     * @param simplifiedString string which is used for evaluation
-     * @return true if simplifiedString is simplified leading substring of baseString
-     * @throws StringIndexOutOfBoundsException if baseString is shorter than simplifiedString
-     */
-    public static boolean isStringSimplifiedFrom(String baseString, String simplifiedString) {
-        for (int i = 0; i < simplifiedString.length(); i++) {
-            if (baseString.charAt(i) != simplifiedString.charAt(i)) {
-                int baseChar = (int) baseString.charAt(i);
-                if (letterSimplified.containsKey(baseChar)) {
-                    if (letterSimplified.get(baseChar) != simplifiedString.charAt(i)) {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 }
 

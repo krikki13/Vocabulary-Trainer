@@ -1,8 +1,6 @@
 package com.krikki.vocabularytrainer.games.quiz;
 
 import android.os.Bundle;
-import android.view.Window;
-import android.view.WindowManager;
 
 import com.krikki.vocabularytrainer.R;
 
@@ -25,18 +23,10 @@ public class QuizActivity extends AppCompatActivity implements QuizGame.QuizEven
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.fragment_layout_quiz);
+        setContentView(R.layout.simple_frame_layout);
 
         quizGame = new QuizGame();
         loadFragment(quizGame, "quizGame");
-        /*quizResults = new QuizResults();
-        Bundle bundle = new Bundle();
-        bundle.putInt("score", 9);
-        bundle.putString("gifUrl", gifUrl);
-        quizResults.setArguments(bundle);
-        loadFragment(quizResults, "quizGame");*/
     }
 
     private void loadFragment(Fragment frag, String tag){
@@ -67,7 +57,6 @@ public class QuizActivity extends AppCompatActivity implements QuizGame.QuizEven
 
     @Override
     public void quizFinished(int score, List<QuizGenerator.QuestionWord> mistakesList) {
-        // TODO
         quizResults = new QuizResults();
         Bundle bundle = new Bundle();
         bundle.putInt("score", score);

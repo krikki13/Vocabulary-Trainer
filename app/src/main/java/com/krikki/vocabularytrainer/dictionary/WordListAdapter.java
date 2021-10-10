@@ -10,6 +10,7 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.krikki.vocabularytrainer.R;
 import com.krikki.vocabularytrainer.Word;
@@ -20,9 +21,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
+import static com.krikki.vocabularytrainer.util.StringManipulator.isSubstringSimplifiedFrom;
 
 /**
  * This class controls main recycler view in dictionary.
@@ -97,6 +101,8 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
 
         holder.itemView.setOnLongClickListener(v -> {
             longClickConsumer.accept(selectableData.getData().getId());
+            // TODO
+            Toast.makeText(context, "<DEBUG> Scores: "+selectableData.getData().getScores().stream().map(i -> ""+i).collect(Collectors.joining(", ")), Toast.LENGTH_LONG).show();
             return true;
         });
     }
@@ -129,14 +135,14 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                         // check if any word begins with query (allow simplification of characters like čšž to csz)
                         if(Arrays.stream(word.getWords())
                                 .filter(w -> w.length() >= query.length())
-                                .anyMatch(w -> Word.isStringSimplifiedFrom(w, query))){
+                                .anyMatch(w -> isSubstringSimplifiedFrom(w, query))){
                             tempFilteredList.add(selectableData);
                             continue;
                         }
                         // same thing with translated words
                         if(word.hasTranslatedWords() && Arrays.stream(word.getTranslatedWords())
                                 .filter(w -> w.length() >= query.length())
-                                .anyMatch(w -> Word.isStringSimplifiedFrom(w, query))){
+                                .anyMatch(w -> isSubstringSimplifiedFrom(w, query))){
                             tempFilteredList.add(selectableData);
                         }
                     }
@@ -222,7 +228,7 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                     translatedWord.setMaxLines(1);
                     translatedWord.setEllipsize(TextUtils.TruncateAt.END);
                 }
-                scoreText.setText(score == -1 ? "??" : (""+score));
+                scoreText.setText(score == -1 ? "-" : (""+score));
 
                 demandText.setVisibility(View.GONE);
                 translatedDemandText.setVisibility(View.GONE);
@@ -245,7 +251,10 @@ public class WordListAdapter extends RecyclerView.Adapter<WordListAdapter.ViewHo
                     translatedWord.setMaxLines(Integer.MAX_VALUE);
                     translatedWord.setEllipsize(null);
                 }
-                scoreText.setText(score == -1 ? "Ungraded" : ("Grade: "+score));
+                // scoreText.setText(score == -1 ? "Ungraded" : ("Grade: "+score)); TODO
+                scoreText.setText(theWord.getScores() != null ?
+                        theWord.getScores().stream().map(i->""+i).collect(Collectors.joining(","))
+                        : "Ungraded");
 
                 // set text, visibility and icon to word info fields
                 Word word = selectableData.getData();

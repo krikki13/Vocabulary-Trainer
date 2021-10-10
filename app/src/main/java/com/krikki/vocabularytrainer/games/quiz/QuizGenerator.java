@@ -1,17 +1,13 @@
 package com.krikki.vocabularytrainer.games.quiz;
 
 import com.krikki.vocabularytrainer.Word;
+import com.krikki.vocabularytrainer.games.CommonGameGenerator;
+import com.krikki.vocabularytrainer.games.GameGeneratorException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.NoSuchElementException;
-import java.util.TreeSet;
-import java.util.function.Function;
-import java.util.function.IntUnaryOperator;
-import java.util.function.Predicate;
 import java.util.function.ToIntBiFunction;
 import java.util.stream.Collectors;
 
@@ -24,41 +20,17 @@ import lombok.Setter;
  * When picking false answers to appear in a question, it picks words that are similar to the
  * correct one.
  */
-public class QuizGenerator {
+public class QuizGenerator extends CommonGameGenerator {
     private final static int NUMBER_OF_QUESTIONS = 10;
-    /**
-     * Specifies which data of word will be used as a question or answer.
-     */
-    public enum QuizType {
-        PRIMARY_LANG(word -> true, Word::getWords),
-        SECONDARY_LANG(Word::hasTranslatedWords, Word::getTranslatedWords),
-        DESCRIPTION(Word::hasDescription, word -> new String[]{word.getDescription()});
 
-        /**
-         * Predicate that returns true when word contains needed data for given question or answer type.
-         * So predicate for SECONDARY_LANG will check if translated word exists in word.
-         * For PRIMARY_LANG it always returns true.
-         */
-        private Predicate<Word> existsInWord;
-        /**
-         * Function that gets one word from primary or translated word or the description
-         */
-        private Function<Word, String[]> get;
-
-        QuizType(Predicate<Word> existsInWord, Function<Word, String[]> get) {
-            this.existsInWord = existsInWord;
-            this.get = get;
-        }
-    }
-
-    private List<Word> words; // list of all words from which only the ones with nulls at required places are removed
+    // List<Word> words is in parent class (from it only the ones with nulls at required places are removed)
     private List<QuestionWord> questions; // list of 10 questions
     private List<List<AnswerWord>> falseAnswers; // list of 10x3 incorrect answers (correct answers are contained in questions)
 
     @Getter
-    private QuizType questionType;
+    private GameType questionType;
     @Getter
-    private QuizType answerType;
+    private GameType answerType;
 
     private int questionNumber = 0;
     private int correctAnswerIndex = -1;
@@ -71,7 +43,9 @@ public class QuizGenerator {
      * @param answerType type of word that appears in answer
      * @throws QuizGenerationException if questionType matches answerType or there are insufficient words (less than 20)
      */
-    public QuizGenerator(ArrayList<Word> words, QuizType questionType, QuizType answerType) throws QuizGenerationException {
+    public QuizGenerator(ArrayList<Word> words, GameType questionType, GameType answerType) throws QuizGenerationException {
+        super(words);
+
         if (questionType == answerType) {
             throw new QuizGenerationException("Question type must not match answer type");
         } else if (words == null || words.size() < 2*NUMBER_OF_QUESTIONS) {
@@ -80,20 +54,23 @@ public class QuizGenerator {
         this.questionType = questionType;
         this.answerType = answerType;
 
-        this.words = new ArrayList<>(words);
         // remove words from words list if words needed fo questions and answers do not exist
-        if (questionType != QuizType.PRIMARY_LANG) {
-            this.words.removeIf(questionType.existsInWord.negate());
-        }
-        if (answerType != QuizType.PRIMARY_LANG) {
-            this.words.removeIf(answerType.existsInWord.negate());
-        }
-        this.words.sort(Word.comparatorByScore());
+        removeWordsThatDoNotContainField(questionType);
+        removeWordsThatDoNotContainField(answerType);
 
         questions = new ArrayList<>(NUMBER_OF_QUESTIONS);
         falseAnswers = new ArrayList<>(NUMBER_OF_QUESTIONS);
 
-        pickQuestions();
+        try {
+            questions = pickQuestions(NUMBER_OF_QUESTIONS).stream().map(QuestionWord::new).collect(Collectors.toList());
+        } catch (GameGeneratorException e) {
+            // though this should never happen because QuizGenerator already checks for invalid states
+            throw new QuizGenerationException(e.getMessage());
+        }
+        questions.forEach(question -> {
+            question.setLiteralQuestion(oneOf(questionType.get.apply(question.getWord())));
+            question.setLiteralAnswer(oneOf(answerType.get.apply(question.getWord())));
+        });
         pickAnswers();
     }
 
@@ -175,76 +152,6 @@ public class QuizGenerator {
         return questionNumber + 1 < NUMBER_OF_QUESTIONS;
     }
 
-    /**
-     * Returns n picked words from list. Probability to pick a word grows, when its score decreases.
-     * Word score must be an int with values 0-100 or -1 which indicates undefined score (it is even more likely to be picked).
-     *
-     * Words are picked from sorted list. Traversing list is weighted according to words score.
-     * When scores are low, weights are also low and it is easy to traverse. Weights are obtained by using mapping function
-     * on word scores. To pick n random words from list, 10 numbers are picked between 0 and total sum of weights.
-     * Whenever accumulated sum of weights (when traversing) passes randomly picked number, current word is picked.
-     * Using this algorithm it may happen that 2 numbers point to last word in the list. In that case remaining words
-     * are the ones with lowest scores in the list (that have not been picked yet).
-     */
-    private void pickQuestions() {
-        final int numberOfQuestions = 10;
-        final IntUnaryOperator scoreToWeight = score -> {
-            int s = 110 - score;
-            if(score == -1)
-                s += 15;
-            if(score < 25)
-                s += 10;
-            if(score < 50)
-                s += 10;
-            if(score > 90)
-                s -= 5;
-            return s;
-        };
-        // generate random numbers in range 0-(sumOfAll)
-        int sumOfAll = words.stream().mapToInt(word -> scoreToWeight.applyAsInt(word.getScore())).sum();
-        ArrayList<Word> pickedWords = new ArrayList<>(numberOfQuestions);
-        TreeSet<Integer> weightSelectors = new TreeSet<>();
-        for (int i = 0; i < numberOfQuestions; i++) {
-            if(!weightSelectors.add((int)(Math.random() * sumOfAll))) {
-                i--;
-            }
-        }
-
-        // traverse the list and pick words from it
-        Iterator<Integer> weightSelectorIterator = weightSelectors.iterator();
-        ListIterator<Word> wordIterator = words.listIterator();
-        int totalAccumulatedWeight = 0;
-        while (weightSelectorIterator.hasNext() && wordIterator.hasNext()) {
-            final int nextAccumulatedWeight = weightSelectorIterator.next();
-            while (true) {
-                final Word currentWord = wordIterator.next();
-                totalAccumulatedWeight += scoreToWeight.applyAsInt(currentWord.getScore());
-                if (totalAccumulatedWeight >= nextAccumulatedWeight) {
-                    pickedWords.add(currentWord);
-                    break;
-                }
-            }
-        }
-        // if two or more random numbers point to last word, wordIterator will be done, but randomNumberIterator wont
-        // in that case just pick first n words from words list (which were not yet picked)
-        wordIterator = words.listIterator();
-        while (weightSelectorIterator.hasNext()) {
-            weightSelectorIterator.next();
-            while (wordIterator.hasPrevious()) {
-                final Word currentWord = wordIterator.previous();
-                if (!pickedWords.contains(currentWord)) {
-                    pickedWords.add(currentWord);
-                    break;
-                }
-            }
-        }
-
-        questions = pickedWords.stream().map(QuestionWord::new).collect(Collectors.toList());
-        questions.forEach(question -> {
-            question.setLiteralQuestion(oneOf(questionType.get.apply(question.getWord())));
-            question.setLiteralAnswer(oneOf(answerType.get.apply(question.getWord())));
-        });
-    }
 
     private void pickAnswers() {
         List<AnswerWord> answerList = words.stream()
@@ -340,14 +247,6 @@ public class QuizGenerator {
             }
             falseAnswers.add(finalFalseAnswers);
         }
-    }
-
-    private static String oneOf(String... array) {
-        return array[(int) (Math.random() * array.length)];
-    }
-
-    private static String arrayToPrettyString(String[] array){
-        return String.join(", ", array);
     }
 
     /**
